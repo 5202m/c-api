@@ -18,31 +18,6 @@ var userService = {
             }
             callback(members);
         });
-    },
-    /**
-     * 更新会员信息
-     */
-    saveChatUserGroupInfo:function(userInfo,callback){
-        var jsonStr={_id:userInfo.groupId,onlineStatus:userInfo.onlineStatus,onlineDate:userInfo.onlineDate,avatar:userInfo.avatar,nickname:userInfo.nickname};
-       member.findOneAndUpdate({'_id':userInfo.userId,'loginPlatform.chatUserGroup._id':{$ne:userInfo.groupId}},{'$push':{'loginPlatform.chatUserGroup':jsonStr}},function(err,row){
-            if(!err && !row){
-                member.findOneAndUpdate({'_id':userInfo.userId,'loginPlatform.chatUserGroup._id':userInfo.groupId},
-                    {'$set':{'loginPlatform.chatUserGroup.$.onlineDate':userInfo.onlineDate,'loginPlatform.chatUserGroup.$.onlineStatus':userInfo.onlineStatus}},function(err){
-                        callback(err);
-                    });
-            }else{
-                callback(err);
-            }
-        });
-    },
-    /**
-     *更新会员状态
-     */
-    updateChatUserGroupStatus:function(userInfo,chatStatus,callback){
-        member.findOneAndUpdate({'_id':userInfo.userId,'loginPlatform.chatUserGroup._id':userInfo.groupId},
-            {'$set':{'loginPlatform.chatUserGroup.$.onlineStatus':chatStatus}},function(err){
-            callback(err);
-        });
     }
 };
 

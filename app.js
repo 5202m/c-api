@@ -12,7 +12,7 @@ var mongoose = require('mongoose');
 var webRoutes = require('./routes/');//配置同源页面路由
 var appRoutes = require('./routes/api/appAPI');//配置应用api路由
 var advertisementRoutes = require('./routes/api/advertisementAPI');//配置广告api路由
-
+var tokenRoutes = require('./routes/api/tokenAPI');//配置应用api路由
 /*＃＃＃＃＃＃＃＃＃＃引入所需插件＃＃＃＃＃＃＃＃end */
 
 
@@ -42,6 +42,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', webRoutes);
 app.use('/api/app/', appRoutes);
 app.use('/api/advertisement/', advertisementRoutes);
+app.use('/api/token/',tokenRoutes);
 
 /*----------------  外部链接路由的路径 ---------------- end */
 
