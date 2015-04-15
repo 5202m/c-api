@@ -15,7 +15,7 @@ var advertisementService = {
      * @param platform   平台
      */
     getAdvertisementByPlatform : function(platform,callback){
-    	advertisement.findById(platform ,function (err,advertisement) {
+    	advertisement.findOne({'platform':platform},function (err,advertisement) {
             if(err!=null){
                 callback(null);
             }

@@ -16,8 +16,9 @@ router.get('/getAdvertisement', function(req, res) {
 	if(common.isBlank(platform)){
 		res.json(errorMessage.code_1000);
 	}else{
-		advertisementService.getAdvertisementByPlatform(platform,function(data){
-			res.json(data);
+		advertisementService.getAdvertisementByPlatform(platform,function(advertisement){
+			advertisement.img = constant.pmFilesPath + advertisement.img;
+			res.json(advertisement);
 		});
 	}
 });

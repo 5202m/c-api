@@ -11,6 +11,8 @@ var advertisementSchema = new Schema({
     _id : String,
     code: String ,
     title: String,
+    img : String,
+    imgUrl : String,
     platform:Number,
     status:Number,
     valid : Number

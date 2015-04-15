@@ -4,7 +4,7 @@
  * date:2015/4/15
  */
 var constant = {
-    "pmfilespath" : 'http://127.0.0.1/'
+    'pmFilesPath': 'http://127.0.0.1'
 };
 //导出类
 module.exports = constant;
