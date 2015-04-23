@@ -13,28 +13,44 @@ var commonJs = require('../util/common');       //引入公共的js
 var articleService = {
     /**
      * 根据栏目code-->提取文章资讯列表
+     * @param  code  栏目code
+     * @param  lang  语言
+     * @param  curPageNo 当前页数
+     * @param  pageSize  每页显示条数
      */
-    getArticleList:function(code,callback){
+    getArticleList:function(code,lang,curPageNo,pageSize,callback){
         var searchObj = {};
         if(!commonJs.isBlank(code)){
             this.getCategoryByCode(code,function(category){
-                searchObj = {'categoryId' : category._id};
+                if(commonJs.isBlank(lang)){
+                    searchObj = {'categoryId' : category._id};
+                }else{
+                    searchObj = {'categoryId' : category._id,'detailList.lang' : lang};
+                }
+                if(curPageNo <= 0){
+                    curPageNo = 1;
+                }
+                var from = (curPageNo-1) * pageSize;
+                var query = article.find(searchObj);
+                query.skip(from)
+                    .limit(pageSize)
+                    .sort({createDate: -1 })
+                    .select({'detailList.lang.$' : 1})
+                    .exec('find',function (err,articles) {
+                        if(err){
+                            console.error(err);
+                            callback(null);
+                        }
+                        callback(articles);
+                    });
             });
         }
-        article.find(searchObj,function (err,articles) {
-            if(err){
-                console.error(err);
-                callback(null);
-            }
-            callback(articles);
-        });
     },
     /**
      * 根据code --> 获取栏目信息
      * @param code  栏目code
      */
     getCategoryByCode : function(code,callback){
-        console.info(code);
         category.findOne({'code':code},function (err,category) {
             if(err){
                 console.error(err);
