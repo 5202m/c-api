@@ -1,5 +1,7 @@
 /**
- * 广告 API处理类
+ * 摘要：广告 API处理类
+ * author:Gavin.guo
+ * date:2015/4/15
  */
 var express = require('express');
 var router = express.Router();

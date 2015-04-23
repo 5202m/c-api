@@ -1,5 +1,7 @@
 /**
- * APP API处理类
+ * 摘要：APP API处理类
+ * author:Gavin.guo
+ * date:2015/4/3
  */
 var express = require('express');
 var router = express.Router();

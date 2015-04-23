@@ -10,9 +10,10 @@ var mongoose = require('mongoose');
 
 /*＃＃＃＃＃＃＃＃＃＃路由入口设置＃＃＃＃＃＃＃＃begin */
 var webRoutes = require('./routes/');//配置同源页面路由
-var appRoutes = require('./routes/api/appAPI');//配置应用api路由
+var appRoutes = require('./routes/api/appAPI');//配置app api路由
 var advertisementRoutes = require('./routes/api/advertisementAPI');//配置广告api路由
 var tokenRoutes = require('./routes/api/tokenAPI');//配置应用api路由
+var articleRoutes = require('./routes/api/articleAPI');//配置文章资讯api路由
 /*＃＃＃＃＃＃＃＃＃＃引入所需插件＃＃＃＃＃＃＃＃end */
 
 
@@ -43,7 +44,7 @@ app.use('/', webRoutes);
 app.use('/api/app/', appRoutes);
 app.use('/api/advertisement/', advertisementRoutes);
 app.use('/api/token/',tokenRoutes);
-
+app.use('/api/article/',articleRoutes);
 /*----------------  外部链接路由的路径 ---------------- end */
 
 // catch 404 and forward to error handler （400请求错误处理）
