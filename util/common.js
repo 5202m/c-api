@@ -60,6 +60,18 @@ var common = {
      */
     encodeHtml:function(str) {
         return str.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\\/g, "");
+    },
+    /**
+     * 提取ip
+     * @param req
+     * @returns {*}
+     */
+    getClientIp:function(req){
+        if(!req){
+            return '';
+        }
+        return req.headers['x-forwarded-for'] || req.ip || req._remoteAddress ||
+            (req.socket && (req.socket.remoteAddress || (req.socket.socket && req.socket.socket.remoteAddress)));
     }
 };
 //导出类
