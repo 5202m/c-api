@@ -8,7 +8,7 @@ var router = express.Router();
 var advertisementService = require('../../service/advertisementService');
 var errorMessage = require('../../util/errorMessage');
 var common = require('../../util/common');
-var constant = require('../../constant/constant');
+var config=require('../../resources/config');
 
 /**
  * 根据平台-->获取广告
@@ -19,7 +19,7 @@ router.get('/getAdvertisement', function(req, res) {
 		res.json(errorMessage.code_1000);
 	}else{
 		advertisementService.getAdvertisementByPlatform(platform,function(advertisement){
-			advertisement.img = constant.pmFilesPath + advertisement.img;
+			advertisement.img = config.filesDomain + advertisement.img;
 			res.json(advertisement);
 		});
 	}

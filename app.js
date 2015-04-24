@@ -1,15 +1,16 @@
 /*＃＃＃＃＃＃＃＃＃＃引入所需插件＃＃＃＃＃＃＃＃begin */
 var express = require('express');
 var path = require('path');
-var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var logger = require('./resources/logConf');
+var config=require('./resources/config');
 
 /*＃＃＃＃＃＃＃＃＃＃引入所需插件＃＃＃＃＃＃＃＃end */
 
 /*＃＃＃＃＃＃＃＃＃＃路由入口设置＃＃＃＃＃＃＃＃begin */
-var webRoutes = require('./routes/');//配置同源页面路由
+var webIndex = require('./routes/index');//配置同源页面路由
 var appRoutes = require('./routes/api/appAPI');//配置app api路由
 var advertisementRoutes = require('./routes/api/advertisementAPI');//配置广告api路由
 var tokenRoutes = require('./routes/api/tokenAPI');//配置应用api路由
@@ -33,14 +34,14 @@ app.set('views', path.join(__dirname, 'views'));
 /*app.set('view engine', 'ejs');*/
 app.set( 'view engine', 'html' );
 app.engine('.html',require('ejs').__express);//两个下划线
-app.use(logger('dev'));
+logger.use(app);//配置框架日志输出
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 //app.use(express.static(path.join(__dirname, 'views')));如需要设成静态目录，则这就去掉注释。（备注：设为静态目录，不能动态填充数据）
 /*---------------- 外部链接路由的路径 ---------------- begin */
-app.use('/', webRoutes);
+app.use('/', webIndex);
 app.use('/api/app/', appRoutes);
 app.use('/api/advertisement/', advertisementRoutes);
 app.use('/api/token/',tokenRoutes);
@@ -80,7 +81,7 @@ app.use(function(err, req, res, next) {
 /*＃＃＃＃＃＃＃＃＃＃定义app配置信息＃＃＃＃＃＃＃＃end */
 
 /*＃＃＃＃＃＃＃＃＃＃数据库连接配置＃＃＃＃＃＃＃＃begin */
-mongoose.connect('mongodb://192.168.35.236/cms');
+mongoose.connect(config.dbURL);
 /*＃＃＃＃＃＃＃＃＃＃数据库连接配置＃＃＃＃＃＃＃＃end */
 
 module.exports = app;
