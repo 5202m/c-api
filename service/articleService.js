@@ -35,7 +35,7 @@ var articleService = {
                 query.skip(from)
                     .limit(pageSize)
                     .sort({createDate: -1 })
-                    .select({'detailList.lang.$' : 1})
+                    .select({'createDate' : 1,'detailList.lang.$' : 1})
                     .exec('find',function (err,articles) {
                         if(err){
                             console.error(err);
