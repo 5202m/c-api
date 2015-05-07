@@ -72,6 +72,16 @@ var common = {
         }
         return req.headers['x-forwarded-for'] || req.ip || req._remoteAddress ||
             (req.socket && (req.socket.remoteAddress || (req.socket.socket && req.socket.socket.remoteAddress)));
+    },
+    /**
+     * g格式化数据
+     * @param xmlData
+     */
+    formatXML:function(xmlData){
+      if(!/<\/xml>$/g.test(xmlData)){
+          xmlData+='</xml>';
+      }
+      return xmlData.replace(/\s+/g, ' ');
     }
 };
 //导出类

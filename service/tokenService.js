@@ -4,12 +4,13 @@
 var token = require('../models/token');//引入member数据模型
 var uuid=require("node-uuid");//引入uuid
 var http = require('http');//引入http
+var Schedule = require("node-schedule");//引入定时器
+var config = require("../resources/config");
 /**
  * 定义token服务类
  * @type {{getMemberList: Function, updateMemberInfo: Function}}
  */
 var tokenService = {
-    webuiURL:'http://192.168.9.72:5555/webui_login_token.ucs',//webUI对应token地址
     /**
      * 提取token
      */
@@ -53,13 +54,21 @@ var tokenService = {
      * 提取webui对应token
      */
     getWebuiToken:function(callback) {
-        http.get(this.webuiURL, function(res) {
+        http.get(config.webUiUrl, function(res) {
              res.on('data',function(data){
-                 console.log("data: " + data);
                  callback(data);
             });
         }).on('error', function(e) {
             console.log("Get WebuiToken Error: " + e.message);
+        });
+    },
+    /**
+     * 销毁无效的token
+     * @param date
+     */
+    destroyToken:function(date,callback){
+        token.remove({"endTime":{ "$lt":date.getTime(),"$gt":0}},function (err) {
+            callback(!err);
         });
     }
 };

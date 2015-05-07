@@ -6,7 +6,6 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var logger = require('./resources/logConf');
 var config=require('./resources/config');
-
 /*＃＃＃＃＃＃＃＃＃＃引入所需插件＃＃＃＃＃＃＃＃end */
 
 /*＃＃＃＃＃＃＃＃＃＃路由入口设置＃＃＃＃＃＃＃＃begin */
@@ -15,20 +14,22 @@ var appRoutes = require('./routes/api/appAPI');//配置app api路由
 var advertisementRoutes = require('./routes/api/advertisementAPI');//配置广告api路由
 var tokenRoutes = require('./routes/api/tokenAPI');//配置应用api路由
 var articleRoutes = require('./routes/api/articleAPI');//配置文章资讯api路由
+var commonRoutes = require('./routes/api/commonAPI');//配置文章资讯api路由
+
 /*＃＃＃＃＃＃＃＃＃＃引入所需插件＃＃＃＃＃＃＃＃end */
 
 
 /*＃＃＃＃＃＃＃＃＃＃定义app配置信息＃＃＃＃＃＃＃＃begin */
 var app = express();
 //设置跨域访问
-/*app.all('*', function(req, res, next) {
+app.all('/api/common/*', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
     res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
     res.header("X-Powered-By",' 3.2.1');
     res.header("Content-Type", "application/json;charset=utf-8");
     next();
-});*/
+});
 // view engine setup(定义页面，使用html）
 app.set('views', path.join(__dirname, 'views'));
 /*app.set('view engine', 'ejs');*/
@@ -46,6 +47,7 @@ app.use('/api/app/', appRoutes);
 app.use('/api/advertisement/', advertisementRoutes);
 app.use('/api/token/',tokenRoutes);
 app.use('/api/article/',articleRoutes);
+app.use('/api/common/',commonRoutes);
 /*----------------  外部链接路由的路径 ---------------- end */
 
 // catch 404 and forward to error handler （400请求错误处理）
