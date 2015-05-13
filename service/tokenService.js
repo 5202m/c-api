@@ -1,37 +1,40 @@
 /** 用户服务类
  * Created by Alan.wu on 2015/3/4.
  */
-var token = require('../models/token');//引入member数据模型
+var token = require('../models/token');                 //引入token数据模型
+var tokenAccess = require('../models/tokenAccess');   //引入tokenAccess数据模型
 var uuid=require("node-uuid");//引入uuid
 var http = require('http');//引入http
 var Schedule = require("node-schedule");//引入定时器
 var config = require("../resources/config");
+
 /**
  * 定义token服务类
- * @type {{getMemberList: Function, updateMemberInfo: Function}}
  */
 var tokenService = {
     /**
      * 提取token
+     * @param expires 0:一次有效  1:1个小时  2:2个小时
      */
-    getToken:function(time,callback){
+    getToken:function(expires,tokenAccessId,callback){
         var beginTime=0,endTime=0;
-        if(time!=null) {
+        if(expires!=null && expires!= 0) {
             var date=new Date();
             beginTime=date.getTime();
-            endTime=date+parseInt(time);
+            endTime=date + expires*3600*1000;
         }
         var tokenVal=uuid.v4().replace(/-/g,'');
         var row={
             _id:null,
             value:tokenVal,
+            tokenAccessId:tokenAccessId,
             beginTime:beginTime,
             endTime:endTime,
             createDate:new Date() //创建日期
         };
         token.create(row,function(err){
             console.log('save token success!');
-            callback({token:tokenVal});
+            callback({token:tokenVal,expires : expires*3600});
         });
     },
 
@@ -46,7 +49,7 @@ var tokenService = {
                 callback(false);
              }else{
                  var date=new Date().getTime();
-                 callback((row.beginTime==0 && row.endTime==0)||(row.beginTime<=date && date<=row.endTime));
+                 callback(row.beginTime<=date && date<=row.endTime);
              }
          });
     },
@@ -69,6 +72,21 @@ var tokenService = {
     destroyToken:function(date,callback){
         token.remove({"endTime":{ "$lt":date.getTime(),"$gt":0}},function (err) {
             callback(!err);
+        });
+    },
+    /**
+     * 获取tokenAccess值
+     * @param appId
+     * @param appSecret
+     * @param callback
+     */
+    getTokenAccess:function(appId,appSecret,callback){
+        tokenAccess.findOne({appId:appId,appSecret:appSecret},function (err,row) {
+            if(err!=null||row==null){
+                callback(false);
+            }else{
+                callback(row);
+            }
         });
     }
 };

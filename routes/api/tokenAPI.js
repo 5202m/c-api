@@ -2,18 +2,25 @@ var express = require('express');
 var router = express.Router();
 var tokenService = require('../../service/tokenService');
 var common = require('../../util/common');
+var errorMessage = require('../../util/errorMessage');
 
 /**
  * 获取token
  */
-router.get('/getToken', function(req, res) {
-    var time=req.param('time');
-    console.log("getToken cache,time:"+time);
-    if(common.isBlank(time)){
-        time=null;
+router.post('/getToken', function(req, res) {
+    var appId = req.param('appId'),appSecret = req.param('appSecret');
+    if(common.isBlank(appId) || common.isBlank(appSecret)){
+        res.json(errorMessage.code_1000);
     }
-    tokenService.getToken(time,function(data){
-        res.json(data);
+    tokenService.getTokenAccess(appId,appSecret,function(data){
+        if(data){
+            console.info(data);
+            tokenService.getToken(data.expires,data._id,function(data){
+                res.json(data);
+            });
+        }else{
+            res.json(errorMessage.code_1001);
+        }
     });
 });
 
