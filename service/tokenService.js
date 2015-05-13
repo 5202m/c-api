@@ -48,8 +48,14 @@ var tokenService = {
              if(err!=null||row==null){
                 callback(false);
              }else{
-                 var date=new Date().getTime();
-                 callback(row.beginTime<=date && date<=row.endTime);
+                 if(row.beginTime == 0 && row.endTime == 0){
+                     tokenService.deleteToken(val,0,0,function(data){
+                         callback(true);
+                     });
+                 }else{
+                     var date=new Date().getTime();
+                     callback(row.beginTime<=date && date<=row.endTime);
+                 }
              }
          });
     },
@@ -63,6 +69,14 @@ var tokenService = {
             });
         }).on('error', function(e) {
             console.log("Get WebuiToken Error: " + e.message);
+        });
+    },
+    /**
+     * 删除token信息
+     */
+    deleteToken:function(val,beginTime,endTime,callback){
+        token.remove({"value": val,"beginTime":beginTime,"endTime":endTime},function (err) {
+            callback(!err);
         });
     },
     /**

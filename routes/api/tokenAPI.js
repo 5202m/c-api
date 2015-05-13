@@ -7,7 +7,7 @@ var errorMessage = require('../../util/errorMessage');
 /**
  * 获取token
  */
-router.post('/getToken', function(req, res) {
+router.get('/getToken', function(req, res) {
     var appId = req.param('appId'),appSecret = req.param('appSecret');
     if(common.isBlank(appId) || common.isBlank(appSecret)){
         res.json(errorMessage.code_1000);
@@ -35,7 +35,7 @@ router.get('/getWebuiToken', function(req, res) {
 /**
  * 验证token
  */
-router.post('/verifyToken', function(req, res) {
+router.get('/verifyToken', function(req, res) {
     var token=req.param('token');
     console.log("verifyToken token:"+token);
     if(common.isBlank(token)){
