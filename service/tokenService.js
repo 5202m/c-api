@@ -84,7 +84,11 @@ var tokenService = {
      * @param date
      */
     destroyToken:function(date,callback){
-        token.remove({"endTime":{ "$lt":date.getTime(),"$gt":0}},function (err) {
+        date.setHours(date.getHours()-2);
+        var searchObj = { "$or" : [{"endTime":{ "$lt":date.getTime(),"$gt":0}}
+                       ,{"beginTime":0,"endTime":0,"createDate" :{ "$lt" : date}}]
+        };
+        token.remove(searchObj,function (err) {
             callback(!err);
         });
     },
