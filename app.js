@@ -83,7 +83,12 @@ app.use(function(err, req, res, next) {
 /*＃＃＃＃＃＃＃＃＃＃定义app配置信息＃＃＃＃＃＃＃＃end */
 
 /*＃＃＃＃＃＃＃＃＃＃数据库连接配置＃＃＃＃＃＃＃＃begin */
-mongoose.connect(config.dbURL);
+var dboptions = {
+    server: { poolSize: 5 },
+    user: config.dbUserName,
+    pass: config.dbUserPWD
+};
+mongoose.connect(config.dbURL,dboptions);
 /*＃＃＃＃＃＃＃＃＃＃数据库连接配置＃＃＃＃＃＃＃＃end */
 
 module.exports = app;

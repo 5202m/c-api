@@ -9,8 +9,8 @@ var config = {
     filesDomain: 'http://218.213.241.84:8090',
     //db
     dbURL:'mongodb://192.168.35.236/pm_mis',
-    dbUserName:'',
-    dbUserPWD:''
+    dbUserName:'pmmisuser',
+    dbUserPWD:'pmmispwd123'
 };
 //导出常量类
 module.exports =config;
