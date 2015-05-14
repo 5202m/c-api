@@ -21,7 +21,7 @@ var tokenService = {
         if(expires!=null && expires!= 0) {
             var date=new Date();
             beginTime=date.getTime();
-            endTime=date + expires*3600*1000;
+            endTime=beginTime + expires*3600*1000;
         }
         var tokenVal=uuid.v4().replace(/-/g,'');
         var row={
