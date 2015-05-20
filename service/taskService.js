@@ -15,11 +15,11 @@ var taskService = {
      */
     autoDestoryToken:function(){
         var rule = new Schedule.RecurrenceRule();
-        rule.hour=0;
+        rule.hour=1;
         rule.minute=0;
         rule.second=0;
         var j = Schedule.scheduleJob(rule, function(){
-            console.log("系统开始自动执行任务==>每天零点自动注销过期的token值!");
+            console.log("系统开始自动执行任务==>每天凌晨1点自动注销过期的token值!");
             tokenService.destroyToken(new Date(),function(isOk){
                 if(isOk){
                     console.log("自动注销过期的token值==》执行成功！");
