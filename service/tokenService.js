@@ -17,24 +17,38 @@ var tokenService = {
      * @param expires 0:一次有效  1:1个小时  2:2个小时
      */
     getToken:function(expires,tokenAccessId,callback){
-        var beginTime=0,endTime=0;
-        if(expires!=null && expires!= 0) {
-            var date=new Date();
-            beginTime=date.getTime();
-            endTime=beginTime + expires*3600*1000;
-        }
-        var tokenVal=uuid.v4().replace(/-/g,'');
-        var row={
-            _id:null,
-            value:tokenVal,
-            tokenAccessId:tokenAccessId,
-            beginTime:beginTime,
-            endTime:endTime,
-            createDate:new Date() //创建日期
-        };
-        token.create(row,function(err){
-            console.log('save token success!');
-            callback({token:tokenVal,expires : expires*3600});
+        tokenService.getTokenByTokenAccessId(tokenAccessId,function(row){
+            var curDate = new Date().getTime();
+            if(curDate>=row.beginTime && curDate<=row.endTime){  //之前token未过期,直接返回现有的token
+                callback({token:row.value ,expires : expires*3600});
+            }else{
+                //先删除之前的token,然后生成新的token
+                tokenService.deleteToken(row.value,null,null,function (result) {
+                    if(result){
+                        var beginTime=0,endTime=0;
+                        if(expires!=null && expires!= 0) {
+                            var date=new Date();
+                            beginTime=date.getTime();
+                            endTime=beginTime + expires*3600*1000;
+                        }
+                        var tokenVal=uuid.v4().replace(/-/g,'');
+                        var row={
+                            _id:null,
+                            value:tokenVal,
+                            tokenAccessId:tokenAccessId,
+                            beginTime:beginTime,
+                            endTime:endTime,
+                            createDate:new Date() //创建日期
+                        };
+                        token.create(row,function(err){
+                            console.log('save token success!');
+                            callback({token:tokenVal,expires : expires*3600});
+                        });
+                    }else{
+                        callback(false);
+                    }
+                })
+            }
         });
     },
 
@@ -72,10 +86,14 @@ var tokenService = {
         });
     },
     /**
-     * 删除token信息
+     * 根据val、beginTime、endTime-->删除token信息
      */
     deleteToken:function(val,beginTime,endTime,callback){
-        token.remove({"value": val,"beginTime":beginTime,"endTime":endTime},function (err) {
+        var searchObj = {"value": val};
+        if(beginTime != null && endTime != null){
+            searchObj = {"value": val,"beginTime":beginTime,"endTime":endTime};
+        }
+        token.remove(searchObj,function (err) {
             callback(!err);
         });
     },
@@ -84,9 +102,8 @@ var tokenService = {
      * @param date
      */
     destroyToken:function(date,callback){
-        date.setHours(date.getHours()-2);
         var searchObj = { "$or" : [{"endTime":{ "$lt":date.getTime(),"$gt":0}}
-                       ,{"beginTime":0,"endTime":0,"createDate" :{ "$lt" : date}}]
+                       ,{"beginTime":0,"endTime":0,"createDate" :{ "$lt" :  date.setHours(date.getHours()-2)}}]
         };
         token.remove(searchObj,function (err) {
             callback(!err);
@@ -100,6 +117,19 @@ var tokenService = {
      */
     getTokenAccess:function(appId,appSecret,callback){
         tokenAccess.findOne({appId:appId,appSecret:appSecret},function (err,row) {
+            if(err!=null||row==null){
+                callback(false);
+            }else{
+                callback(row);
+            }
+        });
+    },
+    /**
+     * 根据tokenAccessId-->获取token
+     * @param tokenAccessId
+     */
+    getTokenByTokenAccessId : function(tokenAccessId,callback){
+        token.findOne({tokenAccessId:tokenAccessId},function (err,row) {
             if(err!=null||row==null){
                 callback(false);
             }else{

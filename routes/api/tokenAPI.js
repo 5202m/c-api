@@ -7,7 +7,7 @@ var errorMessage = require('../../util/errorMessage');
 /**
  * 获取token
  */
-router.post('/getToken', function(req, res) {
+router.get('/getToken', function(req, res) {
     var appId = req.param('appId'),appSecret = req.param('appSecret');
     if(common.isBlank(appId) || common.isBlank(appSecret)){
         res.json(errorMessage.code_1000);
