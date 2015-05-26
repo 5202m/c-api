@@ -18,14 +18,14 @@ var articleService = {
      * @param  curPageNo 当前页数
      * @param  pageSize  每页显示条数
      */
-    getArticleList:function(code,lang,curPageNo,pageSize,callback){
+    getArticleList:function(platform,code,lang,curPageNo,pageSize,callback){
         var searchObj = {};
         if(!commonJs.isBlank(code)){
             this.getCategoryByCode(code,function(category){
                 if(commonJs.isBlank(lang)){
-                    searchObj = {'categoryId' : category._id};
+                    searchObj = {platform:platform,categoryId : category._id};
                 }else{
-                    searchObj = {'categoryId' : category._id,'detailList.lang' : lang};
+                    searchObj = {platform:platform,categoryId: category._id,'detailList.lang' : lang};
                 }
                 if(curPageNo <= 0){
                     curPageNo = 1;
@@ -40,8 +40,9 @@ var articleService = {
                         if(err){
                             console.error(err);
                             callback(null);
+                        }else{
+                            callback(articles);
                         }
-                        callback(articles);
                     });
             });
         }
@@ -55,8 +56,9 @@ var articleService = {
             if(err){
                 console.error(err);
                 callback(null);
+            }else{
+                callback(category);
             }
-            callback(category);
         });
     }
 }

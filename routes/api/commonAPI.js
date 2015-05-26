@@ -15,17 +15,17 @@ var logger = require('../../resources/logConf').getLogger('commonAPI');
  */
 router.get('/get24kPrice', function(req, res) {
     request(config.web24kPriceUrl,function(error, response, data){
-        if (!error && response.statusCode == 200) {
+        if (!error && response.statusCode == 200 && common.isValid(data)) {
             var parser = new xml2js.Parser({ explicitArray : false, ignoreAttrs : false,attrkey:'attr' });
             parser.parseString(data,function(err, result){
                 if(err){
                     logger.error("get24kPrice>>>error:"+err);
-                    result={};
+                    result=null;
                 }
                 res.json(result);
             });
         }else{
-            res.json({});
+            res.json(null);
         }
     });
 });

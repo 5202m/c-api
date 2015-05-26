@@ -19,8 +19,12 @@ router.get('/getAdvertisement', function(req, res) {
 		res.json(errorMessage.code_1000);
 	}else{
 		advertisementService.getAdvertisementByPlatform(platform,function(advertisement){
-			advertisement.img = config.filesDomain + advertisement.img;
-			res.json(advertisement);
+            if(advertisement){
+                advertisement.img = config.filesDomain + advertisement.img;
+                res.json(advertisement);
+            }else{
+                res.json(null);
+            }
 		});
 	}
 });

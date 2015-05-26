@@ -15,13 +15,14 @@ var constant = require('../../constant/constant');
  */
 router.get('/getArticleList', function(req, res) {
 	var code = req.param("code");
+    var platform = req.param("platform");
 	var lang = commonJs.isBlank(req.param("lang")) ? constant.lang : req.param("lang");
 	var curPageNo = commonJs.isBlank(req.param("curPageNo")) ? constant.curPageNo : req.param("curPageNo");
 	var pageSize = commonJs.isBlank(req.param("pageSize")) ? constant.pageSize : req.param("pageSize");
 	if(commonJs.isBlank(code)){
 		res.json(errorMessage.code_1000);
 	}else{
-		articleService.getArticleList(code,lang,curPageNo,pageSize,function(articles){
+		articleService.getArticleList(platform,code,lang,curPageNo,pageSize,function(articles){
 			res.json(articles);
 		});
 	}
