@@ -24,7 +24,7 @@ log4js.configure({
 //封装日志输出
 exports.getLogger = function(loggerName){
     var logger=log4js.getLogger(loggerName);
-    logger.setLevel(log4js.levels.INFO);
+    //logger.setLevel(log4js.levels.INFO);
     return logger;
 };
 //封装框架日志输出
