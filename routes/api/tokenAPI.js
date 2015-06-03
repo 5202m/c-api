@@ -10,7 +10,7 @@ var logger =require("../../resources/logConf").getLogger("tokenAPI");
  */
 router.post('/getToken', function(req, res) {
     try {
-        var appId = req.query.appId, appSecret = req.query.appSecret;
+        var appId = req.param('appId'),appSecret = req.param('appSecret');
         logger.info("getToken->appId:" + appId + ",appSecret:" + appSecret);
         if (common.isBlank(appId) || common.isBlank(appSecret)) {
             res.json(errorMessage.code_1000);
