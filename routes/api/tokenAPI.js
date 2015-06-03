@@ -3,25 +3,33 @@ var router = express.Router();
 var tokenService = require('../../service/tokenService');
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage');
+var logger =require("../../resources/logConf").getLogger("tokenAPI");
 
 /**
  * 获取token
  */
 router.post('/getToken', function(req, res) {
-    var appId = req.param('appId'),appSecret = req.param('appSecret');
-    if(common.isBlank(appId) || common.isBlank(appSecret)){
-        res.json(errorMessage.code_1000);
-    }
-    tokenService.getTokenAccess(appId,appSecret,function(data){
-        if(data){
-            console.info(data);
-            tokenService.getToken(data.expires,data._id,function(data){
-                res.json(data);
-            });
-        }else{
-            res.json(errorMessage.code_1001);
+    try {
+        var appId = req.query.appId, appSecret = req.query.appSecret;
+        logger.info("getToken->appId:" + appId + ",appSecret:" + appSecret);
+        if (common.isBlank(appId) || common.isBlank(appSecret)) {
+            res.json(errorMessage.code_1000);
         }
-    });
+        tokenService.getTokenAccess(appId, appSecret, function (data) {
+            if (data) {
+                console.info(data);
+                tokenService.getToken(data.expires, data._id, function (data) {
+                    res.json(data);
+                });
+            } else {
+                res.json(errorMessage.code_1001);
+            }
+        });
+    }
+    catch(e){
+        logger.error(e);
+        res.send("ERROR !");
+    }
 });
 
 /**
