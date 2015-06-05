@@ -9,7 +9,7 @@ var mongoose = require('mongoose')
     ,categorySchema = new Schema({
         _id : String,
         name: String ,
-        code: String ,
+        code: {type:String,index:true} ,
         status:Number
     });
 module.exports = mongoose.model('category',categorySchema,'category');

@@ -22,10 +22,11 @@ var articleService = {
         var searchObj = {};
         if(!commonJs.isBlank(code)){
             this.getCategoryByCode(code,function(category){
+                var currDate=new Date();
                 if(commonJs.isBlank(lang)){
-                    searchObj = {platform:platform,categoryId : category._id};
+                    searchObj = {platform:platform,categoryId : category._id,status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
                 }else{
-                    searchObj = {platform:platform,categoryId: category._id,'detailList.lang' : lang};
+                    searchObj = {platform:platform,categoryId: category._id,'detailList.lang' : lang,status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
                 }
                 if(curPageNo <= 0){
                     curPageNo = 1;

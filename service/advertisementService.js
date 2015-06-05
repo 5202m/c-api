@@ -15,7 +15,7 @@ var advertisementService = {
      * @param platform   平台
      */
     getAdvertisementByPlatform : function(platform,callback){
-    	advertisement.findOne({platform:platform,valid:1},function (err,advertisement) {
+    	advertisement.findOne({platform:platform,valid:1,status:1},function (err,advertisement) {
             callback(advertisement);
         });
     }

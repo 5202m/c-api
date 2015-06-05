@@ -10,7 +10,7 @@ var mongoose = require('mongoose')
             onlineDate: Date,//上线时间
             avatar:String,//头像
             nickname:String,//昵称
-            accountNo:String //账号
+            accountNo:{type:String,index:true} //账号
      })
     ,loginPlatformSchema = new Schema({//登录平台Schema
          _id:String,
@@ -18,7 +18,7 @@ var mongoose = require('mongoose')
     })
     ,memberSchema = new Schema({//会员Schema
     _id:String,
-    mobilePhone: String ,
+    mobilePhone: {type:String,index:true} ,
     loginPlatform:[loginPlatformSchema]
    });
 module.exports = mongoose.model('member',memberSchema,"member");

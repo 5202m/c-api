@@ -9,7 +9,7 @@ var mongoose = require('mongoose')
 
 var advertisementSchema = new Schema({
     _id : String,
-    code: String ,
+    code: {type:String,index:true} ,
     title: String,
     img : String,
     imgUrl : String,

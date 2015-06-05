@@ -8,17 +8,19 @@ var mongoose = require('mongoose')
     , ObjectId = Schema.ObjectId
     ,articleDetailSchema = new Schema({   /**文章资讯详细信息*/
         _id : String,
-        lang: String ,          /**语言*/
+        lang: {type:String,index:true} ,          /**语言*/
         title: String ,         /**标题*/
         content:String         /**内容*/
     });
 
 var articleSchema = new Schema({
     _id : String,
-    categoryId: String ,   /**栏目*/
-    status: String,         /**状态*/
-    platform : String,      /**应用平台*/
+    categoryId: {type:String,index:true} ,   /**栏目*/
+    status: {type:Number, default:1}, /**状态*/
+    platform : {type:String,index:true},      /**应用平台*/
     createDate : Date,       /**创建时间*/
+    publishStartDate: {type:Date,index:true},
+    publishEndDate:{type:Date,index:true},
     detailList : [articleDetailSchema]  /**文章资讯详细信息*/
 });
 module.exports = mongoose.model('article',articleSchema,'article');
