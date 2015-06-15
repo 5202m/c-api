@@ -15,13 +15,14 @@ router.post('/getToken', function(req, res) {
         if (common.isBlank(appId) || common.isBlank(appSecret)) {
             res.json(errorMessage.code_1000);
         }
-        tokenService.getTokenAccess(appId, appSecret, function (data) {
-            if (data) {
-                console.info(data);
-                tokenService.getToken(data.expires, data._id, function (data) {
+        tokenService.getTokenAccess(appId, appSecret, function (dataResult) {
+            if (dataResult) {
+                tokenService.getToken(dataResult.expires, dataResult._id, function (data) {
+                    console.log("getToken->data:"+JSON.stringify(data));
                     res.json(data);
                 });
             } else {
+                console.log("getToken fail,please check!");
                 res.json(errorMessage.code_1001);
             }
         });

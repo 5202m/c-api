@@ -5,7 +5,6 @@ var token = require('../models/token');                 //引入token数据模�
 var tokenAccess = require('../models/tokenAccess');   //引入tokenAccess数据模型
 var uuid=require("node-uuid");//引入uuid
 var http = require('http');//引入http
-var Schedule = require("node-schedule");//引入定时器
 var config = require("../resources/config");
 
 /**
@@ -18,36 +17,57 @@ var tokenService = {
      */
     getToken:function(expires,tokenAccessId,callback){
         tokenService.getTokenByTokenAccessId(tokenAccessId,function(row){
-            var curDate = new Date().getTime();
-            if(curDate>=row.beginTime && curDate<=row.endTime){  //之前token未过期,直接返回现有的token
-                callback({token:row.value ,expires : expires*3600});
+            if(!row|| expires==null||expires==0){//一次使用的不用删除,因为使用方会直接删除，直接新增
+                tokenService.createToken(tokenAccessId,expires,function(tokenResult){
+                    callback(tokenResult);
+                });
             }else{
-                //先删除之前的token,然后生成新的token
-                tokenService.deleteToken(row.value,null,null,function (result) {
-                    if(result){
-                        var beginTime=0,endTime=0;
-                        if(expires!=null && expires!= 0) {
-                            var date=new Date();
-                            beginTime=date.getTime();
-                            endTime=beginTime + expires*3600*1000;
+                var curDate = new Date().getTime();
+                if(curDate>=row.beginTime && curDate<=row.endTime){  //之前token未过期,直接返回现有的token
+                    callback({token:row.value ,expires : expires*3600});
+                }else{
+                    //先删除之前的token,然后生成新的token
+                    tokenService.deleteToken(row.value,null,null,function (result) {
+                        if(result){
+                            tokenService.createToken(tokenAccessId,expires,function(tokenResult){
+                                callback(tokenResult);
+                            });
+                        }else{
+                            callback(null);
                         }
-                        var tokenVal=uuid.v4().replace(/-/g,'');
-                        var row={
-                            _id:null,
-                            value:tokenVal,
-                            tokenAccessId:tokenAccessId,
-                            beginTime:beginTime,
-                            endTime:endTime,
-                            createDate:new Date() //创建日期
-                        };
-                        token.create(row,function(err){
-                            console.log('save token success!');
-                            callback({token:tokenVal,expires : expires*3600});
-                        });
-                    }else{
-                        callback(false);
-                    }
-                })
+                    });
+                }
+            }
+        });
+    },
+
+    /**
+     * 创建新的token
+     * @param tokenAccessId
+     * @param expires
+     */
+    createToken:function(tokenAccessId,expires,callback){
+        var beginTime=0,endTime=0;
+        if(expires!=null && expires!= 0) {
+            var date=new Date();
+            beginTime=date.getTime();
+            endTime=beginTime + expires*3600*1000;
+        }
+        var tokenVal=uuid.v4().replace(/-/g,'');
+        var row={
+            _id:null,
+            value:tokenVal,
+            tokenAccessId:tokenAccessId,
+            beginTime:beginTime,
+            endTime:endTime,
+            createDate:new Date() //创建日期
+        };
+        token.create(row,function(err,rowObj){
+            if(err){
+                console.log('save token fail!');
+            }else{
+                console.log('save token success!token:'+rowObj.value);
+                callback({token:rowObj.value,expires : expires*3600});
             }
         });
     },
@@ -93,8 +113,8 @@ var tokenService = {
         if(beginTime != null && endTime != null){
             searchObj = {"value": val,"beginTime":beginTime,"endTime":endTime};
         }
-        token.remove(searchObj,function (err) {
-            callback(!err);
+        token.remove(searchObj,function (err,row) {
+            callback(!err && row);
         });
     },
     /**
