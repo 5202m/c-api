@@ -27,7 +27,7 @@ var common = {
      * @returns {boolean}
      */
     isBlank:function(v) {
-        return v == undefined || v == null || this.trim(v) == '';
+        return v == undefined || v == null ||v=='undefined'||v=='null'|| this.trim(v) == '';
     },
     /**
      * 非空判断
@@ -82,6 +82,26 @@ var common = {
           xmlData+='</xml>';
       }
       return xmlData.replace(/\s+/g, ' ');
+    },
+    /**
+     * 随机生成数字
+     * @param _idx  位数
+     * @returns {string}
+     */
+    randomNumber:function(_idx){
+        var str = '';
+        for(var i = 0; i < _idx; i++){
+            str += Math.floor(Math.random() * 10);
+        }
+        return str;
+    },
+    /**
+     * 提取分割匹配正则
+     * @param val
+     * @returns {Object}
+     */
+    getSplitMatchReg:function(val){
+        return eval('/^'+val+'|,'+val+'$|,'+val+',/g');
     }
 };
 //导出类

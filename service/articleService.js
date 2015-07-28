@@ -5,7 +5,7 @@
  */
 var article = require('../models/article');          //引入article数据模型
 var category = require('../models/category');   //引入category数据模型
-var commonJs = require('../util/common');       //引入公共的js
+var common = require('../util/common');       //引入公共的js
 
 /**
  * 定义服务类
@@ -18,51 +18,39 @@ var articleService = {
      * @param  curPageNo 当前页数
      * @param  pageSize  每页显示条数
      */
-    getArticleList:function(platform,code,lang,curPageNo,pageSize,callback){
-        var searchObj = {};
-        if(!commonJs.isBlank(code)){
-            this.getCategoryByCode(code,function(category){
-                var currDate=new Date();
-                if(commonJs.isBlank(lang)){
-                    searchObj = {platform:platform,categoryId : category._id,status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
-                }else{
-                    searchObj = {platform:platform,categoryId: category._id,'detailList.lang' : lang,status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
-                }
-                if(curPageNo <= 0){
-                    curPageNo = 1;
-                }
-                var from = (curPageNo-1) * pageSize;
-                var query = article.find(searchObj);
-                query.skip(from)
-                    .limit(pageSize)
-                    .sort({createDate: -1 })
-                    .select({'createDate' : 1,'detailList.lang.$' : 1})
-                    .exec('find',function (err,articles) {
-                        if(err){
-                            console.error(err);
-                            callback(null);
-                        }else{
-                            callback(articles);
-                        }
-                    });
-            });
+    getArticleList:function(params,callback){
+        var searchObj = {},selectField={};
+        var currDate=new Date();
+        if(common.isBlank(params.lang)){
+            selectField={platform:1,sequence:1,mediaUrl:1,mediaImgUrl:1,linkUrl:1,'createDate' : 1,'detailList' : 1};
+            searchObj = {valid:1,platform:common.getSplitMatchReg(params.platform),categoryId:params.code,status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
+        }else{
+            selectField={platform:1,sequence:1,mediaUrl:1,mediaImgUrl:1,linkUrl:1,'createDate' : 1,'detailList.$' : 1};
+            searchObj = {valid:1,platform:common.getSplitMatchReg(params.platform),categoryId:params.code,'detailList.lang' : params.lang,status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
         }
-    },
-    /**
-     * 根据code --> 获取栏目信息
-     * @param code  栏目code
-     */
-    getCategoryByCode : function(code,callback){
-        category.findOne({'code':code},function (err,category) {
-            if(err){
-                console.error(err);
-                callback(null);
-            }else{
-                callback(category);
-            }
-        });
+        if(params.curPageNo <= 0){
+            params.curPageNo = 1;
+        }
+        var from = (params.curPageNo-1) * params.pageSize;
+        var query = article.find(searchObj);
+        var orderByJsonObj={createDate: -1 };
+        if(common.isValid(params.orderByJsonStr)){
+            orderByJsonObj=JSON.parse(params.orderByJsonStr);
+        }
+        query.skip(from)
+            .limit(params.pageSize)
+            .sort(orderByJsonObj)
+            .select(selectField)
+            .exec('find',function (err,articles) {
+                if(err){
+                    console.error(err);
+                    callback(null);
+                }else{
+                    callback(articles);
+                }
+            });
     }
-}
+};
 
 //导出服务类
 module.exports = articleService;
