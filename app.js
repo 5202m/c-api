@@ -35,7 +35,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-var index = require('./routes/index').init(app);//配置同源页面路由
+require('./routes/index').init(app);//配置同源页面路由
 //app.use(express.static(path.join(__dirname, 'views')));如需要设成静态目录，则这就去掉注释。（备注：设为静态目录，不能动态填充数据）
 // catch 404 and forward to error handler （400请求错误处理）
 app.use(function(req, res, next) {

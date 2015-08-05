@@ -49,7 +49,6 @@ router.get('/get24kPrice', function(req, res) {
  */
 router.get('/getNewsInfoList', function(req, res) {
     var pageNo=req.query["pageNo"],pageSize=req.query["pageSize"],lang=req.query["lang"],contentType1=req.query["contentType1"],contentType2=req.query["contentType2"];
-    console.log(contentType1+";contentType2:"+contentType2);
     if(common.isBlank(pageNo)||common.isBlank(pageSize)||common.isBlank(lang)||common.isBlank(contentType1)){//参数输入有误，则返回空结果
         res.json(null);
     }else{
