@@ -15,16 +15,6 @@ var app = express();
 /*＃＃＃＃＃＃＃＃＃＃路由入口设置＃＃＃＃＃＃＃＃begin */
 //require("./util/common.js");//初始化Number的一些数据操作方法。
 /*＃＃＃＃＃＃＃＃＃＃引入所需插件＃＃＃＃＃＃＃＃end */
-//设置跨域访问
-app.all('/api/common/*', function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With");
-    res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
-    res.header("X-Powered-By",' 3.2.1');
-    res.header("P3P","CP=CAO PSA OUR");//处理ie跨域问题
-    res.header("Content-Type", "application/json;charset=utf-8");
-    next();
-});
 // view engine setup(定义页面，使用html）
 app.set('views', path.join(__dirname, 'views'));
 /*app.set('view engine', 'ejs');*/

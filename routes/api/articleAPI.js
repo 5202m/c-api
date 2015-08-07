@@ -17,7 +17,7 @@ router.get('/getArticleList', function(req, res) {
     var params={};
         params.code = req.param("code");
         params.platform = req.param("platform");
-        //params.lang = commonJs.isBlank(req.param("lang")) ? constant.lang : req.param("lang");
+        params.lang =req.param("lang");
         params.curPageNo = commonJs.isBlank(req.param("curPageNo")) ? constant.curPageNo : req.param("curPageNo");
         params.pageSize = commonJs.isBlank(req.param("pageSize")) ? constant.pageSize : req.param("pageSize");
         params.orderByJsonStr=req.param("orderByJsonStr");

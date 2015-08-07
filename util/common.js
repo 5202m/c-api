@@ -43,7 +43,7 @@ var common = {
      * @returns {XML|string|void}
      */
     trim:function(val){
-        return val.replace(/(^\s*)|(\s*$)/g, "");
+        return !val?'':val.toString().replace(/(^\s*)|(\s*$)/g, "");
     },
     /**
      * HTML代码转String
@@ -102,6 +102,18 @@ var common = {
      */
     getSplitMatchReg:function(val){
         return eval('/^'+val+'|,'+val+'$|,'+val+',/g');
+    },
+    /**
+     * 对象copy
+     * @param srcObj
+     * @param targetObj
+     */
+    copyObject:function(srcObj,targetObj){
+       for(var row in srcObj){
+           if(common.isValid(targetObj[row])){
+               srcObj[row]=targetObj[row];
+           }
+       }
     }
 };
 //导出类

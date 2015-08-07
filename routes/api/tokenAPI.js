@@ -4,48 +4,128 @@ var tokenService = require('../../service/tokenService');
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage');
 var logger =require("../../resources/logConf").getLogger("tokenAPI");
+/**
+ * 新增tokenAccess
+ */
+router.post('/setTokenAccess', function(req, res) {
+    try {
+        var result={isOK:false,error:null};
+        var model=req.body;
+        if(common.isBlank(model.appId)||common.isBlank(model.appSecret)||common.isBlank(model.platform)){
+            result.error=errorMessage.code_1000;
+            res.json(result);
+        }else{
+            if(common.isValid(model.tokenAccessId)){
+                tokenService.updateTokenAccess(model,function(resultTmp){
+                    res.json(resultTmp);
+                });
+            }else{
+                tokenService.createTokenAccess(model,function(resultTmp){
+                    res.json(resultTmp);
+                });
+            }
+        }
+    }catch(e){
+        logger.error(e);
+        result.error=errorMessage.code_10;
+        res.json(result);
+    }
+});
+
+/**
+ * 新增tokenAccess
+ */
+router.get('/getTokenAccessList', function(req, res) {
+    var model=null;
+    if(common.isValid(req.query.appId) || common.isValid(req.query.appSecret) || common.isValid(req.query.platform)){
+        model={appId:req.query.appId,appSecret:req.query.appSecret,platform:req.query.platform};
+    }
+    tokenService.getTokenAccessList(model,function(result){
+        res.json(result);
+    });
+});
+
+
+/**
+ * 新增tokenAccess
+ */
+router.post('/deleteTokenAccess', function(req, res) {
+    var ids=req.body.ids;
+    if(common.isBlank(ids)){
+        res.json({isOK:false,error:errorMessage.code_1000});
+    }else{
+        tokenService.deleteTokenAccess(ids,function(){
+            res.json({isOK:true,error:null});
+        });
+    }
+});
+
+/**
+ * 新增tokenAccess
+ */
+router.get('/getTokenAccessById', function(req, res) {
+    var tokenAccessId=req.query.tokenAccessId;
+    if(common.isBlank(tokenAccessId)){
+        res.json(null);
+    }else{
+        tokenService.getTokenAccessById(tokenAccessId,function(data){
+            res.json(data);
+        });
+    }
+});
+
+/**
+ * 新增tokenAccess
+ */
+router.get('/getTokenAccessByPlatform', function(req, res) {
+    var platform=req.query.platform;
+    if(common.isBlank(platform)){
+        res.json(null);
+    }else{
+        tokenService.getTokenAccessByPlatform(platform,function(data){
+            res.json(data);
+        })
+    }
+});
 
 /**
  * 获取token
  */
 router.post('/getToken', function(req, res) {
     try {
-        var appId = req.param('appId'),appSecret = req.param('appSecret');
+        var appId = req.body['appId'],appSecret =req.body['appSecret'];
         logger.info("getToken->appId:" + appId + ",appSecret:" + appSecret);
         if (common.isBlank(appId) || common.isBlank(appSecret)) {
             res.json(errorMessage.code_1000);
+        }else{
+            tokenService.getToken(appId,appSecret,function (data) {
+                logger.info("getToken->data:"+JSON.stringify(data));
+                res.json(data);
+            });
         }
-        tokenService.getTokenAccess(appId, appSecret, function (dataResult) {
-            if (dataResult) {
-                tokenService.getToken(dataResult.expires, dataResult._id, function (data) {
-                    console.log("getToken->data:"+JSON.stringify(data));
-                    res.json(data);
-                });
-            } else {
-                console.log("getToken fail,please check!");
-                res.json(errorMessage.code_1001);
-            }
-        });
-    }
-    catch(e){
+    }catch(e){
         logger.error(e);
-        res.send("ERROR !");
+        res.json(errorMessage.code_10);
     }
 });
 
 /**
- * 获取webui对应token
+ * 注销token
  */
-router.get('/getWebuiToken', function(req, res) {
-    tokenService.getWebuiToken(function(data){
-        res.json(JSON.parse(data));
+router.post('/destroyToken', function(req, res) {
+    var token=req.body.token;
+    if(common.isBlank(token)){
+        res.json({isOK:false,error:errorMessage.code_1000});
+    }
+    tokenService.destroyToken(token,function(isOK){
+        res.json({isOK:isOK});
     });
 });
 /**
  * 验证token
  */
 router.post('/verifyToken', function(req, res) {
-    var token=req.param('token');
+    var token=req.body.token;
     console.log("verifyToken token:"+token);
     if(common.isBlank(token)){
        res.json({success:false});
