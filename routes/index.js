@@ -8,10 +8,9 @@ var indexRouter = express.Router();
 indexRouter.get('/', function(req, res) {
     res.render('index');
 });
-
 /**
- * 摘要：所有功能API 公共路由入口
- * author:Gavin.guo
+ * 公共路由入口
+ * author:Alan.wu
  * date:2015/6/30
  */
 var apiRoutes=express();
@@ -41,17 +40,19 @@ exports.init = function(app){
     //授权处理
     apiRoutes.all(/\/chat\/*/, function(req, res, next) {//拦截token授权接口
         var token=req.query.token||req.body.token;
-        if(token){//检查token
-            require("../service/tokenService").verifyToken(token,function(isOK){
-              if(isOK){
-                  next();
-              }else{
-                  res.end("No Authority,Please Check!");
-              }
-            });
-        }else{
-            res.end("No Authority,Please Check!");
-        }
+        require("../service/tokenService").verifyToken(token,function(isOK){
+            if(isOK){
+                next();
+            }else{
+                var ApiResult = require('../util/ApiResult');
+                var errorMessage = require('../util/errorMessage.js');
+                if(req.path.indexOf('.xml')!=-1){
+                    res.end(ApiResult.result(errorMessage.code_15,null,ApiResult.dataType.xml));
+                }else{
+                    res.json(ApiResult.result(errorMessage.code_15,null));
+                }
+            }
+        });
     });
     apiRoutes.use('/app', appRoutes);
     apiRoutes.use('/token',tokenRoutes);

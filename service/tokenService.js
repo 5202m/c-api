@@ -151,7 +151,6 @@ var tokenService = {
             callback(false);
         }else{
             cacheClient.hgetall(tokenService.formatTokenKey(token),function(err,result){
-                console.log("result:"+result+";err:"+err);
                 callback(!err && result);
             });
         }

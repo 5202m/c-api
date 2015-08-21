@@ -6,41 +6,33 @@
 var express = require('express');
 var router = express.Router();
 var common = require('../../util/common');
+var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
-var xml2js = require('xml2js');
+var ApiResult = require('../../util/ApiResult');
 /**
  * 获取聊天信息
  */
 router.get(/^\/getMessageList(\.(json|xml))?$/, function(req, res) {
     var params=req.query;
-    if(!params.curPageNo||params.curPageNo <= 0){
-        params.curPageNo = 1;
+    if(!params.pageNo||params.pageNo <= 0){
+        params.pageNo = 1;
     }
-    params.pageSize=params.pageSize||15;
-    if(isNaN(params.curPageNo)||isNaN(params.pageSize)){
-        res.json(null);
+    params.pageNo=parseInt(params.pageNo);
+    params.pageSize=parseInt(params.pageSize)||15;
+    if(isNaN(params.pageNo)||isNaN(params.pageSize)){
+        if(req.path.indexOf('.xml')!=-1){
+            res.end(ApiResult.result(errorMessage.code_1000,null,ApiResult.dataType.xml));
+        }else{
+            res.json(ApiResult.result(errorMessage.code_1000));
+        }
     }else{
-        chatService.getMessageList(params,function(data){
-            if(data){
-                var dataList=[],row=null;
-                for(var i in data){
-                    row=data[i];
-                    dataList.push({userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:row.publishTime.replace(/_.+/,"")});
-                }
-                if(req.path.indexOf('.xml')!=-1){
-                    var xml = new xml2js.Builder({ignoreAttrs:false,attrkey:'attr'}).buildObject(dataList);
-                    xml=xml.replace(/<(\/)?(\d+)>/g,'<$1row>');
-                    res.end(xml);
-                }else{
-                    res.json(dataList);
-                }
+        chatService.getMessagePage(params,function(page){
+            if(req.path.indexOf('.xml')!=-1){
+                res.end(ApiResult.result(null,page,ApiResult.dataType.xml));
             }else{
-                res.json(null);
+                res.json(ApiResult.result(null,page));
             }
         });
     }
 });
-
-
-
 module.exports = router;

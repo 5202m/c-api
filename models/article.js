@@ -21,7 +21,9 @@ var mongoose = require('mongoose')
         detailList : [{     /**文章资讯详细信息*/
             lang: {type:String,index:true} ,          /**语言*/
             title: String ,         /**标题*/
-            content:String         /**内容*/
+            content:String,         /**内容*/
+            tag:String,     /**标签*/
+            remark:String //简介
         }]  /**文章资讯详细信息*/
     });
 module.exports = mongoose.model('article',articleSchema,'article');
