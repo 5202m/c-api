@@ -44,7 +44,7 @@ var articleService = {
             }
             searchObj = {valid:1,platform:common.getSplitMatchReg(params.platform),categoryId:{$in:categoryIdArr},'detailList' : {$elemMatch:{lang:params.lang}},status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
         }
-        var from = (params.curPageNo-1) * params.pageSize;
+        var from = (params.pageNo-1) * params.pageSize;
         var orderByJsonObj={createDate: 'desc' };
         if(common.isValid(params.orderByJsonStr)){
             orderByJsonObj=JSON.parse(params.orderByJsonStr);
