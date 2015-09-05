@@ -35,4 +35,20 @@ router.get(/^\/getMessageList(\.(json|xml))?$/, function(req, res) {
         });
     }
 });
+
+/**
+ * 检查客户是否已经点赞
+ * 已点赞返回false，否则返回true
+ */
+router.post("/checkChatPraise", function(req, res) {
+    var clientId=req.body.clientId,praiseId=req.body.praiseId;
+    if(common.isBlank(clientId)||common.isBlank(praiseId)){
+        res.json({result:true});
+    }else{
+        chatService.checkChatPraise(clientId,praiseId,function(isOK){
+            res.json({result:isOK});
+        });
+    }
+});
+
 module.exports = router;

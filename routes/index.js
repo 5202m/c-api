@@ -38,7 +38,7 @@ exports.init = function(app){
         next();
     });
     //授权处理
-    apiRoutes.all(/\/chat\/*/, function(req, res, next) {//拦截token授权接口
+    apiRoutes.all(/\/chat\/getMessage/, function(req, res, next) {//拦截token授权接口
         var token=req.query.token||req.body.token;
         require("../service/tokenService").verifyToken(token,function(isOK){
             if(isOK){

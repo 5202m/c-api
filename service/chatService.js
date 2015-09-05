@@ -11,7 +11,7 @@ var chatService ={
      * 提取聊天信息
      */
     getMessagePage:function (params,callback){
-        var searchObj = {groupId:'wechat',status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
+        var searchObj = {groupType:'wechat',status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
         var currDate=new Date();
         if(common.isValid(params.userType)){
             searchObj.userType=params.userType;
@@ -53,7 +53,26 @@ var chatService ={
             function(err, results) {
                 callback(ApiResult.page(params.pageNo,params.pageSize,results.totalSize,results.list));
          });
+    },
+    /**
+     * 检查客户是否已经点赞
+     * 已点赞返回false，否则返回true
+     */
+    checkChatPraise:function(clientId,praiseId,callback){
+        var cacheClient=require('../cache/cacheClient');
+        var key='chatPraise_'+clientId+'_'+praiseId;
+        cacheClient.hgetall(key,function(err,result){
+            if(!err && result){
+                callback(false);
+            }else{
+                cacheClient.hmset(key,'createTime',Date());
+                cacheClient.expire(key,24*3600);
+                callback(true);
+            }
+        });
     }
+
+
 };
 //导出服务类
 module.exports =chatService;
