@@ -63,8 +63,8 @@ router.get('/getNewsInfoList', function(req, res) {
         }
         request.post({strictSSL:false,url:(config.gwApiUrl+'/information/list'),form:param}, function(error,response,data){
             if(error){
-                logger.error("getRealTimeInfo has error:"+error);
-                callback(null);
+                logger.error("getNewsInfoList has error:"+error);
+                res.json(null);
             }else{
                 res.json(data?JSON.parse(data):null);
             }
