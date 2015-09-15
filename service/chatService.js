@@ -11,7 +11,7 @@ var chatService ={
      * 提取聊天信息
      */
     getMessagePage:function (params,callback){
-        var searchObj = {groupType:'wechat',status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
+        var searchObj = {'toUser.talkStyle':0, groupType:'wechat',status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
         var currDate=new Date();
         if(common.isValid(params.userType)){
             searchObj.userType=params.userType;
@@ -29,16 +29,20 @@ var chatService ={
                     chatMessage.find(searchObj).skip(from)
                         .limit(params.pageSize)
                         .sort(orderByJsonObj)
-                        .select("userType nickname content.msgType content.value publishTime")
+                        .select("toUser userType nickname content.msgType content.value publishTime")
                         .exec('find',function (err,infos) {
                             if(err){
                                 console.error(err);
                                 callbackTmp(null,null);
                             }else{
-                                var dataList=[],row=null;
+                                var dataList=[],row=null,newRow=null;
                                 for(var i in infos){
                                     row=infos[i];
-                                    dataList.push({userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:row.publishTime.replace(/_.+/,"")});
+                                    newRow={userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:row.publishTime.replace(/_.+/,"")};
+                                    if(common.isValid(row.toUser.userId)){
+                                        newRow.questionInfo={nickname:row.toUser.nickname||'',question:row.toUser.question||''};
+                                    }
+                                    dataList.push(newRow);
                                 }
                                 callbackTmp(null,dataList);
                             }

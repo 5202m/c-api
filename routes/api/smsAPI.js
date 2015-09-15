@@ -14,13 +14,13 @@ var config = require('../../resources/config');
  * 发送短信
  */
 router.get('/send', function(req, res) {
-	var mobile = req.param("mobile");
+	var mobile = req.query["mobile"];
 	if(common.isBlank(mobile)){
 		res.json(errorMessage.code_1000);
         return;
 	}
 	var smsUrl = config.smsUrl;
-	var content = req.param("content");
+	var content = req.query["content"];
 	if(common.isBlank(content)){   //如果不传入内容，则默认是短信验证码，随机输入6位
 		content = common.randomNumber(6);
 		smsUrl = smsUrl + "/sms_send.ucs?type=AUTH_CODE"+"&PHONE="+mobile+"&CODE="+content;

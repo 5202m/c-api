@@ -17,6 +17,12 @@ var mongoose = require('mongoose')
           msgType:String, //信息类型 text,img缩略图的值。
           value:String//默认值，
       },
+      toUser:{ //@用户
+         userId:String,
+         nickname:String,
+         talkStyle:{type:Number, default:0}, //聊天方式,0对话，1私聊
+         question:String
+      },
       status:{type:Number, default:1}, //内容状态：0、等待审批，1、通过 ；2、拒绝
       publishTime:{type:String,index:true}, //发布日期
       createDate:Date, //创建日期
