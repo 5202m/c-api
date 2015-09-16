@@ -116,10 +116,11 @@ router.post('/destroyToken', function(req, res) {
     var token=req.body.token;
     if(common.isBlank(token)){
         res.json({isOK:false,error:errorMessage.code_1000});
+    }else{
+        tokenService.destroyToken(token,function(isOK){
+            res.json({isOK:isOK});
+        });
     }
-    tokenService.destroyToken(token,function(isOK){
-        res.json({isOK:isOK});
-    });
 });
 /**
  * 验证token
@@ -129,10 +130,11 @@ router.post('/verifyToken', function(req, res) {
     console.log("verifyToken token:"+token);
     if(common.isBlank(token)){
        res.json({success:false});
+    }else{
+        tokenService.verifyToken(token,function(data){
+            res.json({success:data});
+        });
     }
-    tokenService.verifyToken(token,function(data){
-        res.json({success:data});
-    });
 });
 
 module.exports = router;
