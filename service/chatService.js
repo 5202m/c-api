@@ -39,8 +39,8 @@ var chatService ={
                                 for(var i in infos){
                                     row=infos[i];
                                     newRow={userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:row.publishTime.replace(/_.+/,"")};
-                                    if(common.isValid(row.toUser.userId)){
-                                        newRow.questionInfo={nickname:row.toUser.nickname||'',question:row.toUser.question||''};
+                                    if(common.isValid(row.toUser.userId) && common.isValid(row.toUser.question)){
+                                        newRow.questionInfo={nickname:row.toUser.nickname,question:row.toUser.question};
                                     }
                                     dataList.push(newRow);
                                 }
