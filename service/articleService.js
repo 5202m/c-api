@@ -40,7 +40,7 @@ var articleService = {
             if("1"==params.hasContent){
                 selectField+=" detailList.$";
             }else{
-                selectField+=" detailList.title detailList.remark detailList.tag detailList.lang";
+                selectField+=" detailList.title detailList.author detailList.remark detailList.tag detailList.lang";
             }
             searchObj = {valid:1,platform:common.getSplitMatchReg(params.platform),categoryId:{$in:categoryIdArr},'detailList' : {$elemMatch:{lang:params.lang}},status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
         }
