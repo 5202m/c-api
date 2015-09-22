@@ -6,7 +6,13 @@
 var constant = {
     'lang' : 'zh',
     'curPageNo' : 1,
-    'pageSize' : 50
+    'pageSize' : 50,
+    FileDirectory : {
+        pic : {code : 'pic', description: '图片' },
+        video : {code : 'video', description: '视频' }
+    }
 };
+
+
 //导出类
 module.exports = constant;

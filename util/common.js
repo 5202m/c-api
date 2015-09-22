@@ -27,7 +27,7 @@ var common = {
      * @returns {boolean}
      */
     isBlank:function(v) {
-        return v == undefined || v == null ||v=='undefined'||v=='null'|| this.trim(v) == '';
+    	return v == undefined || v == null ||v=='undefined'||v=='null'|| this.trim(v) == '';
     },
     /**
      * 非空判断
@@ -46,6 +46,22 @@ var common = {
         return !val?'':val.toString().replace(/(^\s*)|(\s*$)/g, "");
     },
     /**
+     * 字符串source以dest开头
+     * @param source
+     * @param dest
+     */
+    startsWith : function(source,dest){
+        return source.slice(0, dest.length) == dest;
+    },
+    /**
+     * 字符串source以dest结尾
+     * @param source
+     * @param dest
+     */
+    endsWith : function(source,dest){
+        return source.slice(-dest.length) == dest;
+    },
+    /**
      * HTML代码转String
      * @param html
      * @returns html
@@ -60,6 +76,18 @@ var common = {
      */
     encodeHtml:function(str) {
         return str.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\\/g, "");
+    },
+    /**
+     * 随机生成数字
+     * @param _idx  位数
+     * @returns {string}
+     */
+    randomNumber:function(_idx){
+        var str = '';
+        for(var i = 0; i < _idx; i++){
+            str += Math.floor(Math.random() * 10);
+        }
+        return str;
     },
     /**
      * 提取ip
@@ -104,6 +132,23 @@ var common = {
         return eval('/^'+val+'|,'+val+'$|,'+val+',/g');
     },
     /**
+     * 过滤内容，将HTML标签过滤，并且截取前150个字符。
+     * @param content
+     * @returns {string}
+     */
+    filterContentHTML:function(content){
+        if(!content){
+            return "";
+        }
+        return content.replace(/<[^>]+>/g, "").substr(0, 150);
+    },
+    /**
+     * 将html转换成字符串(去掉html标签)
+     */
+    html2str : function(content){
+        return content.replace(/<.*?>/ig ,'');
+    },
+    /**
      * 对象copy
      * @param srcObj
      * @param targetObj
@@ -116,6 +161,7 @@ var common = {
        }
     }
 };
+
 //导出类
 try {
     if (module) {

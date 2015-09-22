@@ -22,8 +22,9 @@ var appService = {
         app.find(searchObj,function (err,apps) {
             if(err!=null){
                 callback(null);
+            }else{
+                callback(apps);
             }
-            callback(apps);
         });
     },
     /**

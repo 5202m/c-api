@@ -14,13 +14,13 @@ var config = require('../../resources/config');
  * 发送短信
  */
 router.get('/send', function(req, res) {
-	var mobile = req.query["mobile"];
+	var mobile = req.param("mobile");
 	if(common.isBlank(mobile)){
 		res.json(errorMessage.code_1000);
         return;
 	}
 	var smsUrl = config.smsUrl;
-	var content = req.query["content"];
+	var content = req.param("content");
 	if(common.isBlank(content)){   //如果不传入内容，则默认是短信验证码，随机输入6位
 		content = common.randomNumber(6);
 		smsUrl = smsUrl + "/sms_send.ucs?type=AUTH_CODE"+"&PHONE="+mobile+"&CODE="+content;
@@ -32,7 +32,7 @@ router.get('/send', function(req, res) {
 		if (!error && response.statusCode == 200 && common.isValid(data)) {
 			res.json({result:0,content : content});
 		}else{
-			res.json({result:1,error:errorMessage.code_1002});
+			res.json({result:1,errCode:errorMessage.code_1002.errcode,errMessage:errorMessage.code_1002.errmsg});
 		}
 	});
 });

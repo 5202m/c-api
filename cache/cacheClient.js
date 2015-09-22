@@ -9,4 +9,3 @@ var redis = require("redis"),//引入redis
         console.log("connect to redis has error:" + err);
     });
 module.exports =cacheClient;
-
