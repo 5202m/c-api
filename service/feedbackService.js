@@ -236,7 +236,7 @@ var feedbackService = {
         APIUtil.DBFindOne(FeedbackAuto, {
             query : {
                 isDeleted : 1,
-                antistop : keywords
+                antistop : {$regex: keywords}
             }
         },callback);
     }
