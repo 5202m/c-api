@@ -353,7 +353,7 @@ var ReplyService = {
      * @param sendTopicUser  发帖人Id
      */
     replyTopicPushMessage : function(topicId,replyUserName,sendTopicUserId){
-        var content = replyUserName+"评论了您的发帖       "+Utils.formatTime(new Date().getTime()),tag = [sendTopicUserId];
+        var content = replyUserName+" 评论了您的发帖",tag = [sendTopicUserId];
         var extra = {
             "dataid": topicId ,        //帖子Id
             "lang": 'zh',              //语言
