@@ -1,9 +1,9 @@
 {
-  "name": "pm_api_sit",
+  "name": "pm_api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/pm_api_sit"
+    "start": "node ./bin/pm_api"
   },
   "dependencies": {
     "async": "^1.4.0",
