@@ -32,6 +32,7 @@ router.get('/send', function(req, res) {
 		if (!error && response.statusCode == 200 && common.isValid(data)) {
 			res.json({result:0,content : content});
 		}else{
+            console.error("smsAPI->sendSms has error:"+error);
 			res.json({result:1,errCode:errorMessage.code_1002.errcode,errMessage:errorMessage.code_1002.errmsg});
 		}
 	});

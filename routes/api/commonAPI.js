@@ -33,6 +33,7 @@ router.get('/get24kPrice', function(req, res) {
                         res.json(result);
                     });
                 }else{
+                    logger.error("get24kPrice has error:"+error);
                     res.json(null);
                 }
             });
