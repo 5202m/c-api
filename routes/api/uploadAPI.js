@@ -30,7 +30,7 @@ router.post('/upload', function (req, res) {
     APIUtil.logRequestInfo(req, "uploadAPI");
     var form = new Formidable.IncomingForm();
     form.encoding = 'utf-8';
-    form.uploadDir = Config.uploadBasePath;
+    form.uploadDir = Config.uploadTempPath;
     form.keepExtensions = true;
 
     form.parse(req, function(err, fields, files) {
@@ -46,10 +46,7 @@ router.post('/upload', function (req, res) {
             return;
         }
         var loc_timeNow = new Date();
-        var loc_filePath = loc_fileDir;
-        loc_filePath += "/";
-        loc_filePath += Utils.dateFormat(loc_timeNow, 'yyyyMM');
-        loc_filePath += "/";
+        var loc_filePath = path.join(loc_fileDir, Utils.dateFormat(loc_timeNow, 'yyyyMM'));
 
         var FtpClient = new Ftp();
         FtpClient.on('ready', function() {
@@ -66,11 +63,11 @@ router.post('/upload', function (req, res) {
                     for(var j = 0; j < 8; j++){
                         loc_fileName += parseInt(Math.random() * 10, 10).toString()
                     }
-                    loc_fileName += file.name.substring(file.name.lastIndexOf("."));
+                    loc_fileName += path.extname(file.name);
                     //FTP上传文件
-                    FtpClient.put(file.path, Config.filesFtpBasePath + loc_filePath + loc_fileName, function(err){
+                    FtpClient.put(file.path, path.join(Config.filesFtpBasePath, loc_filePath, loc_fileName), function(err){
                         if (err) {
-                            console.error("文件上传失败，FTP上传出错:" + loc_filePath + loc_fileName, err);
+                            console.error("文件上传失败，FTP上传出错:" + path.join(loc_filePath, loc_fileName), err);
                             callback(err, null);
                         }else{
                             //删除本地文件
@@ -78,9 +75,8 @@ router.post('/upload', function (req, res) {
                                 if(err){
                                     console.warn("文件上传--删除临时文件失败:" + file.path);
                                 }
-                                console.log("文件上传--删除临时文件成功:" + file.path);
                             });
-                            callback(null, "/" + Config.uploadBasePath + "/" + loc_filePath + loc_fileName);
+                            callback(null, path.join("/", Config.uploadBasePath, loc_filePath, loc_fileName));
                         }
                     });
                 }, function(err, fileResults){

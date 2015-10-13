@@ -12,6 +12,8 @@ var config = {
     filesDomain: 'http://192.168.35.91:8090',
     uploadBasePath :'upload',
     pmfilesRootPath : '/web/pm_files',
+    //FTP上传
+    uploadTempPath : "/web/pm_api",
     filesFtpHost : "192.168.35.91",
     filesFtpPort : 21,
     filesFtpUser : "pmmisftpuser",
