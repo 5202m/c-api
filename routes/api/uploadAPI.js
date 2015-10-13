@@ -15,6 +15,7 @@ var path = require('path');
 var express = require('express');
 var router = express.Router();
 var Formidable  = require('formidable');
+var Ftp = require('ftp');
 var APIUtil = require('../../util/APIUtil.js');
 var Config = require('../../resources/config.js');
 var Constant = require('../../constant/constant.js');
@@ -29,7 +30,7 @@ router.post('/upload', function (req, res) {
     APIUtil.logRequestInfo(req, "uploadAPI");
     var form = new Formidable.IncomingForm();
     form.encoding = 'utf-8';
-    form.uploadDir = Config.pmfilesRootPath + "/" + Config.uploadBasePath;
+    form.uploadDir = Config.uploadBasePath;
     form.keepExtensions = true;
 
     form.parse(req, function(err, fields, files) {
@@ -45,74 +46,70 @@ router.post('/upload', function (req, res) {
             return;
         }
         var loc_timeNow = new Date();
-        var loc_filePath = "/";
-        loc_filePath += Config.uploadBasePath;
-        loc_filePath += "/";
-        loc_filePath += loc_fileDir;
+        var loc_filePath = loc_fileDir;
         loc_filePath += "/";
         loc_filePath += Utils.dateFormat(loc_timeNow, 'yyyyMM');
         loc_filePath += "/";
 
-        //递归创建文件目录
-        var mkdirsFunc = function(dirpath, callback) {
-            fs.exists(dirpath, function(exists) {
-                if(exists) {
-                    callback(null);
-                } else {
-                    //尝试创建父目录，然后再创建当前目录
-                    mkdirsFunc(path.dirname(dirpath), function(err){
-                        if(err){
-                            callback(err);
-                            return;
-                        }
-                        fs.mkdir(dirpath, callback);
-                    });
-                }
-            });
-        };
-
-        mkdirsFunc(Config.pmfilesRootPath + loc_filePath, function(err){
-            if(err){
-                console.error("文件上传失败，创建文件夹出错！", err);
-                res.json(APIUtil.APIResult("code_1004", null, null));
-                return;
-            }
-            //异步迭代文件列表，重命名文件
-            IteratorUtil.asyncObject(files, function(filekey, file, callback){
-                var loc_fileName = Utils.dateFormat(loc_timeNow, 'yyyyMMddhhmmss');
-                loc_fileName += "_";
-                for(var j = 0; j < 8; j++){
-                    loc_fileName += parseInt(Math.random() * 10, 10).toString()
-                }
-                loc_fileName += file.name.substring(file.name.lastIndexOf("."));
-
-                fs.rename(file.path, Config.pmfilesRootPath + loc_filePath + loc_fileName, function (err) {
-                    if (err) {
-                        console.log(Config.pmfilesRootPath + loc_filePath + loc_fileName);
-                        console.error("文件上传失败，重命名出错！", err);
-                        callback(err, null);
-                    }else{
-                        callback(null, loc_filePath + loc_fileName);
-                    }
-                });
-
-            }, function(err, fileResults){
-                if(err){
-                    console.error("文件上传失败！", err);
+        var FtpClient = new Ftp();
+        FtpClient.on('ready', function() {
+            FtpClient.mkdir(loc_filePath, true, function(err){
+                if (err) {
+                    console.error("文件上传失败，创建FTP目录失败！", err);
                     res.json(APIUtil.APIResult("code_1004", null, null));
                     return;
                 }
-                var loc_keys = Object.keys(fileResults);
-                var loc_results = [];
-                for(var i = 0, lenI = loc_keys.length; i < lenI; i++){
-                    loc_results.push({
-                        name : loc_keys[i],
-                        fileDomain : Config.filesDomain,
-                        filePath : fileResults[loc_keys[i]]
+                //异步迭代FTP上传文件列表
+                IteratorUtil.asyncObject(files, function(filekey, file, callback){
+                    var loc_fileName = Utils.dateFormat(loc_timeNow, 'yyyyMMddhhmmss');
+                    loc_fileName += "_";
+                    for(var j = 0; j < 8; j++){
+                        loc_fileName += parseInt(Math.random() * 10, 10).toString()
+                    }
+                    loc_fileName += file.name.substring(file.name.lastIndexOf("."));
+                    //FTP上传文件
+                    FtpClient.put(file.path, Config.filesFtpBasePath + loc_filePath + loc_fileName, function(err){
+                        if (err) {
+                            console.error("文件上传失败，FTP上传出错:" + loc_filePath + loc_fileName, err);
+                            callback(err, null);
+                        }else{
+                            //删除本地文件
+                            fs.unlink(file.path, function(err){
+                                if(err){
+                                    console.warn("文件上传--删除临时文件失败:" + file.path);
+                                }
+                                console.log("文件上传--删除临时文件成功:" + file.path);
+                            });
+                            callback(null, "/" + Config.uploadBasePath + "/" + loc_filePath + loc_fileName);
+                        }
                     });
-                }
-                res.json(APIUtil.APIResult(null, loc_results, null));
+                }, function(err, fileResults){
+                    if(err){
+                        console.error("文件上传失败！", err);
+                        res.json(APIUtil.APIResult("code_1004", null, null));
+                        return;
+                    }
+                    var loc_keys = Object.keys(fileResults);
+                    var loc_results = [];
+                    for(var i = 0, lenI = loc_keys.length; i < lenI; i++){
+                        loc_results.push({
+                            name : loc_keys[i],
+                            fileDomain : Config.filesDomain,
+                            filePath : fileResults[loc_keys[i]]
+                        });
+                    }
+                    //关闭FTP连接
+                    FtpClient.end();
+                    res.json(APIUtil.APIResult(null, loc_results, null));
+                });
             });
+        });
+
+        FtpClient.connect({
+            host : Config.filesFtpHost,
+            port : Config.filesFtpPort,
+            user : Config.filesFtpUser,
+            password : Config.filesFtpPWD
         });
     });
 });
