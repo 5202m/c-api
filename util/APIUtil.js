@@ -92,7 +92,7 @@ TestRequest.prototype.request = function(){
     req.on('error', function(err) {
         thatCallback(err, null);
     });
-    if(typeof this.param === "object") {
+    if(typeof this.param === "object" && this.method === "POST") {
         req.write(JSON.stringify(this.param) + "\r\n");
     }
     req.end();
@@ -184,8 +184,8 @@ TestRequest.post = function(url, param, callback){
     TestRequest.request(url, param, 'POST', callback);
 };
 //测试接口工具(类方法)--get请求
-TestRequest.get = function(url, param, callback){
-    TestRequest.request(url, param, 'GET', callback);
+TestRequest.get = function(url, callback){
+    TestRequest.request(url, null, 'GET', callback);
 };
 //测试接口工具(类方法)--get请求
 TestRequest.upload = function(url, param, callback){
