@@ -29,7 +29,7 @@ var chatService ={
                     chatMessage.find(searchObj).skip(from)
                         .limit(params.pageSize)
                         .sort(orderByJsonObj)
-                        .select("toUser userType nickname content.msgType content.value publishTime")
+                        .select("avatar toUser userType nickname content.msgType content.value publishTime")
                         .exec('find',function (err,infos) {
                             if(err){
                                 console.error(err);
@@ -38,7 +38,7 @@ var chatService ={
                                 var dataList=[],row=null,newRow=null;
                                 for(var i in infos){
                                     row=infos[i];
-                                    newRow={userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:row.publishTime.replace(/_.+/,"")};
+                                    newRow={avatar:row.avatar,userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:row.publishTime.replace(/_.+/,"")};
                                     if(common.isValid(row.toUser.userId) && common.isValid(row.toUser.question)){
                                         newRow.questionInfo={nickname:row.toUser.nickname,question:row.toUser.question};
                                     }
