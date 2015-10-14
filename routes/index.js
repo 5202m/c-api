@@ -61,6 +61,7 @@ exports.init = function(app){
             }else{
                 var ApiResult = require('../util/ApiResult');
                 var errorMessage = require('../util/errorMessage.js');
+                console.warn("check token fail->token:" + token);
                 if(req.path.indexOf('.xml')!=-1){
                     res.end(ApiResult.result(errorMessage.code_15,null,ApiResult.dataType.xml));
                 }else{
