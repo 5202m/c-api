@@ -9,6 +9,7 @@ var mongoose = require('mongoose')
     {
       _id:String,
       userId:{type:String,index:true},//用户id
+      avatar:String,//用户头像
       nickname:String,//用户昵称
       groupType:{type:String,index:true},//房间大类组
       userType:{type:Number, default:0},//区分系统用户还是会员，0表示会员，1表示系统用户
