@@ -167,15 +167,11 @@ var tokenService = {
                 return;
             }
             var token=row.token,expires=parseFloat(row.expires);
-            if(common.isValid(token) && expires>0){
-                tokenService.verifyToken(token,function(isOK){
-                    if(isOK){
-                        callback({token:token,expires :expires*3600});//返回token
-                    }else{
-                        tokenService.createToken(expires,row,function(newToken){
-                            callback({token:newToken,expires :expires*3600});//返回token
-                        });
-                    }
+            if(common.isValid(token)){
+                tokenService.destroyToken(function(){
+                    tokenService.createToken(expires,row,function(newToken){
+                        callback({token:newToken,expires :expires*3600});//返回token
+                    });
                 });
             }else{
                 tokenService.createToken(expires,row,function(newToken){
@@ -199,7 +195,9 @@ var tokenService = {
         }
         var token=uuid.v4().replace(/-/g,'');
         row.token=token;
+        //更新TokenAccess
         tokenService.createTokenAccess(row,function(result){
+            //更新Token
             var key=tokenService.formatTokenKey(token);
             cacheClient.hmset(key,
                 'expires',expires,
