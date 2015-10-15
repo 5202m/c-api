@@ -168,7 +168,7 @@ var tokenService = {
             }
             var token=row.token,expires=parseFloat(row.expires);
             if(common.isValid(token)){
-                tokenService.destroyToken(function(){
+                tokenService.destroyToken(token, function(){
                     tokenService.createToken(expires,row,function(newToken){
                         callback({token:newToken,expires :expires*3600});//返回token
                     });
