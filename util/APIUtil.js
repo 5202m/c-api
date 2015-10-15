@@ -227,7 +227,7 @@ var APIResult = function(error, data, page){
             loc_result.errmsg = "未知错误";
         }
     }
-    console.info("[APIResult] %s", JSON.stringify(loc_result));
+    //console.info("[APIResult] %s", JSON.stringify(loc_result));
 
     return loc_result;
 };
