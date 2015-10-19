@@ -11,6 +11,7 @@ var taskService = {
      * 开启任务
      */
     start:function(){
+        console.log("系统启动==>加载定时任务配置！");
         this.autoClearQuotationPredict();//清理行情预测数据，将数据转移到历史表
         this.autoUpdateMemberBalance();  //自动更新会员统计的相关字段
         this.autoStatisticMemberRank();//自动统计会员收益率排名
