@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+/**
+ * PM定时任务，请勿使用集群
+ * @type {taskService|exports}
+ */
+var taskService = require('../service/taskService');
+//开启定时器
+taskService.start();

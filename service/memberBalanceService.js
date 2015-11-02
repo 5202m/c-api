@@ -259,17 +259,41 @@ var MemberBalanceService = {
                 }
                 var loc_timeNow = new Date();
                 var loc_timeHis = new Date(loc_timeNow.getFullYear(), loc_timeNow.getMonth(), 0);
+                var loc_timeHisTime = loc_timeHis.getTime();
                 IteratorUtil.asyncArray(memberBalances, function(index, memberBalance, callback){
-                    memberBalance.update(
-                        {$push : {
-                            "incomeRankHis" : {
-                                dataDate : loc_timeHis,
-                                percentYield : memberBalance.percentYield,
-                                rank : index + 1
+                    //如果存在则直接更新，否者添加
+                    var loc_incomeRankObj = null;
+                    for(var i = !memberBalance.incomeRankHis ? -1 : memberBalance.incomeRankHis.length - 1; i >= 0; i--){
+                        loc_incomeRankObj = memberBalance.incomeRankHis[i];
+                        if(loc_incomeRankObj.dataDate instanceof Date && loc_timeHisTime == loc_incomeRankObj.dataDate.getTime()){
+                            if(loc_incomeRankObj.percentYield == memberBalance.percentYield && loc_incomeRankObj.rank == index + 1){
+                                callback(null, 0);
+                            }else{
+                                var loc_update = {"$set" : {}};
+                                loc_update["$set"]["incomeRankHis." + i] = {
+                                    dataDate : loc_timeHis,
+                                    percentYield : memberBalance.percentYield,
+                                    rank : index + 1
+                                };
+                                memberBalance.update(loc_update, function(err){
+                                        callback(err, !err ? 1 : 0);
+                                });
                             }
-                        }}, function(err){
-                            callback(err, !err ? 1 : 0);
-                        });
+                            return;
+                        }
+                    }
+                    if(i == -1){
+                        memberBalance.update(
+                            {$push : {
+                                "incomeRankHis" : {
+                                    dataDate : loc_timeHis,
+                                    percentYield : memberBalance.percentYield,
+                                    rank : index + 1
+                                }
+                            }}, function(err){
+                                callback(err, !err ? 1 : 0);
+                            });
+                    }
                 }, function(err, newMemberBalances){
                     if(err){
                         console.error("统计会员收益率排名失败--更新会员资产信息失败！", err);

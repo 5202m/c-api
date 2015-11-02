@@ -4,10 +4,8 @@
  * Module dependencies.
  */
 var app = require('../app');
-var taskService = require('../service/taskService');
 //启动服务
 var apiServer=app.listen('3000',function(){
     console.log('API server running. Listening on port ' + apiServer.address().port);
     //开启定时器
-    taskService.start();
 });
