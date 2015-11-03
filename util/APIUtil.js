@@ -442,7 +442,6 @@ var DBPage = function(schema, options, callback){
             loc_op = defaultOp;
         }
 
-    }catch(err){
         //计算总数
         schema.count(loc_op.query, function(err, cnt){
             if(err!=null){
@@ -491,6 +490,7 @@ var DBPage = function(schema, options, callback){
                 callback(err, null, null);
             }
         });
+    }catch(err){
         console.error(err);
         callback(err, null, null);
     }

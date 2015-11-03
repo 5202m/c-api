@@ -5,58 +5,86 @@
  */
 var express = require('express');
 var router = express.Router();
-var request = require('request');
-var errorMessage = require('../../util/errorMessage');
 var common = require('../../util/common');
-var config = require('../../resources/config');
 var SmsService = require('../../service/smsService.js');
+var APIUtil = require('../../util/APIUtil.js');
 
 /**
  * 发送短信
  */
-router.get('/send', function(req, res) {
-	var mobile = req.query["mobile"];
-	var useType = req.query["useType"];
-	if(common.isBlank(mobile)){
-		res.json(errorMessage.code_1000);
-        return;
-	}
-	var smsUrl = config.smsUrl;
-	var content = req.query["content"];
-    var loc_smsInfo = {
-        mobilePhone : mobile,
-        status : 0,
-        content : content,
-        useType : useType,
-        type : "NORMAL"
+router.post('/send', function(req, res) {
+    var loc_smsParam = {
+        type : req.body["type"],               //类型 "AUTH_CODE"、"NORMAL"，当短信内容为空时type为"AUTH_CODE"。默认值为"NORMAL"
+        useType : req.body["useType"],         //应用点（参考后台数据字典）
+        mobilePhone : req.body["mobilePhone"], //手机号、必输
+        deviceKey : req.body["deviceKey"],     //设备key值，用于检查发送次数。如果是web页面使用IP，手机客户端使用MAC地址，不传则仅使用手机号作为key值
+        content : req.body["content"],         //短信内容，如果内容为空，则默认发送六位数字验证码
+        validTime : req.body["validTime"]      //（针对于验证码）有效时间（毫秒数），默认一天24*60*60*1000
     };
-	if(common.isBlank(content)){   //如果不传入内容，则默认是短信验证码，随机输入6位
-		content = common.randomNumber(6);
-        loc_smsInfo.type = "AUTH_CODE";
-        loc_smsInfo.content = content;
-		smsUrl = smsUrl + "/sms_send.ucs?type=AUTH_CODE"+"&PHONE="+mobile+"&CODE="+content;
-	}else{    //如果传入内容，则按内容输出
-		smsUrl = smsUrl + "/sms_send_common.ucs?phone="+mobile+"&content="+content;
-	}
-	request(smsUrl,function(error, response, data){
-        var loc_result = null;
-		if (!error && response.statusCode == 200 && common.isValid(data)) {
-            loc_result = {result:0,content : content};
-            loc_smsInfo.status = 1;
-		}else{
-            console.error("smsAPI["+smsUrl+"]->sendSms has error:"+error);
-            loc_result = {result:1,errCode:errorMessage.code_1002.errcode,errMessage:errorMessage.code_1002.errmsg};
-            loc_smsInfo.status = 2;
-		}
-        SmsService.add(loc_smsInfo, function(err, smsInfo){
-            if(err){
-                //保存信息失败，不影响短信发送，仅打印错误日志。
-                console.error("save sms information error, smsInfo=[" + JSON.stringify(loc_smsInfo) + "] error：" + error);
-            }
+    if(common.isBlank(loc_smsParam.mobilePhone) || !common.isMobilePhone(loc_smsParam.mobilePhone) || common.isBlank(loc_smsParam.useType)){
+        res.json(APIUtil.APIResult("code_1000", null, null));
+        return;
+    }
+    //内容为空，发送默认六位数验证码
+    if(common.isBlank(loc_smsParam.content)){
+        loc_smsParam.type = "AUTH_CODE";
+        loc_smsParam.content = common.randomNumber(6);
+    }
+    //类型为空，默认值为NORMAL
+    if(common.isBlank(loc_smsParam.type)){
+        loc_smsParam.type = "NORMAL";
+    }
+    if(common.isBlank(loc_smsParam.deviceKey)){
+        loc_smsParam.deviceKey = "";
+    }
+    //有效时长为空或无效，默认为一天
+    if(common.isBlank(loc_smsParam.validTime)){
+        loc_smsParam.validTime = 86400000; //24 * 60 * 60 * 1000
+    }else{
+        try{
+            loc_smsParam.validTime = parseInt(loc_smsParam.validTime, 10);
+        }catch(e){
+            loc_smsParam.validTime = 86400000; //24 * 60 * 60 * 1000
+        }
+    }
 
-            //记录短信发送
-            res.json(loc_result);
-        });
+    //发送短信
+    SmsService.send(loc_smsParam, true, function(apiResult){
+        res.json(apiResult);
+    });
+});
+
+/**
+ * 校验验证码
+ */
+router.post('/checkAuth', function(req, res) {
+    var loc_mobilePhone = req.body["mobilePhone"];
+    var loc_authCode = req.body["authCode"];
+    var loc_useType = req.body["useType"];
+    if(common.isBlank(loc_mobilePhone) || common.isBlank(loc_authCode) || common.isBlank(loc_authCode)){
+        res.json(APIUtil.APIResult("code_1000", null, null));
+        return;
+    }
+
+    //重发短信
+    SmsService.checkAuth(loc_mobilePhone, loc_authCode, loc_useType, function(apiResult){
+        res.json(apiResult);
+    });
+});
+
+/**
+ * 重发短信（不检查短信限制，用于后台客服人员重发短信）
+ */
+router.post('/resend', function(req, res) {
+    var loc_smsId = req.body["smsId"];
+    if(common.isBlank(loc_smsId)){
+        res.json(APIUtil.APIResult("code_1000", null, null));
+        return;
+    }
+
+    //重发短信
+    SmsService.resend(loc_smsId, function(apiResult){
+        res.json(apiResult);
     });
 });
 

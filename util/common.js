@@ -159,6 +159,13 @@ var common = {
                srcObj[row]=targetObj[row];
            }
        }
+    },
+    /**
+     * 验证是否符合手机号码格式
+     * @param val
+     */
+    isMobilePhone:function(val){
+        return /(^[0-9]{11})$|(^86(-){0,3}[0-9]{11})$/.test(val);
     }
 };
 
