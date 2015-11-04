@@ -106,13 +106,6 @@ var smsService = {
 
                 //如果是验证码，并且发送成功，需要将同一个手机号、同类型、同应用点之前发送成功的验证码设置失效
                 if(loc_smsInfo.type === "AUTH_CODE" && loc_smsInfo.status == 1){
-                    console.info(JSON.stringify({
-                        _id : {$ne : loc_smsInfo._id},
-                        type : loc_smsInfo.type,
-                        useType : loc_smsInfo.useType,
-                        mobilePhone : loc_smsInfo.mobilePhone,
-                        status : 1
-                    }));
                     SmsInfo.update({
                         _id : {$ne : loc_smsInfo._id},
                         type : loc_smsInfo.type,
@@ -124,7 +117,6 @@ var smsService = {
                     },{
                         multi : true
                     }, function(err){
-                        console.log(JSON.stringify(arguments));
                         if (err) {
                             //更新短信状态错误失败，不影响短信发送，仅打印错误日志。
                             console.error("更新短信状态错误, smsInfo=[" + JSON.stringify(loc_smsInfo) + "] error：" + error);
