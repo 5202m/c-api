@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/8/4
  */
+var logger =require("../../resources/logConf").getLogger("praiseAPI");
 var express = require('express');
 var router = express.Router();
 var PraiseService = require('../../service/praiseService.js');
@@ -19,19 +20,19 @@ router.post('/add', function(req, res){
     var loc_type = parseInt(req.body["type"], 10);
     if(!loc_memberId || !loc_topicId){
         //缺少参数
-        console.error("param is invalid! ", loc_memberId, loc_topicId);
+        logger.error("param is invalid! ", loc_memberId, loc_topicId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(isNaN(loc_type)){
         //缺少参数
-        console.error("type of praise is invalid! ", loc_type);
+        logger.error("type of praise is invalid! ", loc_type);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
     if(loc_type !== 1 && loc_type !== 2){
         //缺少参数
-        console.error("type of praise is invalid! ", loc_type);
+        logger.error("type of praise is invalid! ", loc_type);
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }

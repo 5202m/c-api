@@ -10,6 +10,7 @@
  *     投资社区  产品服务类
  * </p>
  */
+var logger = require('../resources/logConf').getLogger("productService");
 var Product = require('../models/product.js');
 var ProductSetting = require('../models/productSetting.js');
 var APIUtil = require('../util/APIUtil.js');
@@ -30,7 +31,7 @@ var productService = {
             fieldIn : ['code', 'name', 'sort', 'children.code', 'children.name', 'children.sort']
         }, function(err, prods){
             if(err){
-                console.error("查询产品列表失败!", err);
+                logger.error("查询产品列表失败!", err);
                 callback(APIUtil.APIResult("code_2011", null, null));
                 return;
             }
@@ -63,7 +64,7 @@ var productService = {
             fieldIn : ['children.code', 'children.name', 'children.sort','children.status']
         }, function(err, prods){
             if(err){
-                console.error("查询产品列表失败!", err);
+                logger.error("查询产品列表失败!", err);
                 callback(APIUtil.APIResult("code_2011", null, null));
                 return;
             }
@@ -110,7 +111,7 @@ var productService = {
         }
         productService.getProdSetting(loc_prodCodes, function(err, prodSettings){
             if(err){
-                console.error("查询产品配置信息失败!", err);
+                logger.error("查询产品配置信息失败!", err);
                 callback("code_2012", null);
             }
             var loc_prodSettings = [];

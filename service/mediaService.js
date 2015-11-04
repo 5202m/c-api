@@ -11,6 +11,7 @@
  *     1.广告列表
  * </p>
  */
+var logger = require('../resources/logConf').getLogger("mediaService");
 var Article = require('../models/article.js');
 var APIUtil = require('../util/APIUtil.js');
 var CommonJS = require('../util/common.js');
@@ -38,7 +39,7 @@ var mediaService = {
             fieldEx : ["_id"]
         }, function(err, medias){
             if(err){
-                console.error("查询媒体列表信息失败!", err);
+                logger.error("查询媒体列表信息失败!", err);
                 callback(APIUtil.APIResult("code_2020", null, null));
                 return;
             }

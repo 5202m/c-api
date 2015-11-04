@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/7/1
  */
+var logger = require('../resources/logConf').getLogger("TopicService");
 var Topic = require('../models/topic');	                    //引入topic数据模型
 var commonJs = require('../util/common'); 	 	            //引入公共的js
 var IdSeqManager = require('../constant/IdSeqManager.js');  //引入序号生成器js
@@ -44,7 +45,7 @@ var TopicService = {
             query : searchObj
         },function(err, topics, page){
             if(err){
-                console.error("查询帖子列表失败!", err);
+                logger.error("查询帖子列表失败!", err);
                 callback(APIUtil.APIResult("code_2021", null, null));
                 return;
             }
@@ -83,7 +84,7 @@ var TopicService = {
         //查询帖子统计信息
         TopicStatisticalService.getStatisticals(loc_topics, function(err, topicStatisticals){
             if(err){
-                console.error("查询帖子统计信息失败!", err);
+                logger.error("查询帖子统计信息失败!", err);
                 callback(err, null);
                 return;
             }
@@ -91,7 +92,7 @@ var TopicService = {
             //查询帖子首条回帖信息
             ReplyService.getFirstReplyByTopics(topicStatisticals, function(err, topicReplys){
                 if(err){
-                    console.error("查询回帖信息失败!", err);
+                    logger.error("查询回帖信息失败!", err);
                     callback(err, null);
                     return;
                 }
@@ -107,7 +108,7 @@ var TopicService = {
                 //查询发帖人，回帖人信息
                 FinanceUserService.getMemberInfoByMemberIds(loc_memberIds, function(err, members){
                     if(err){
-                        console.error("查询发帖人信息失败!", err);
+                        logger.error("查询发帖人信息失败!", err);
                         callback(err, null);
                         return;
                     }
@@ -189,7 +190,7 @@ var TopicService = {
         if(opType === 2){
             ReplyService.getReplysWithMember(topicId, 1, pageLast, pageSize, function(err, replys, page){
                 if(err){
-                    console.error("查询帖子回帖信息失败！", err);
+                    logger.error("查询帖子回帖信息失败！", err);
                     callback(APIUtil.APIResult("code_2033", null, null));
                     return;
                 }
@@ -207,7 +208,7 @@ var TopicService = {
                 },
                 function(err, topic){
                     if(err){
-                        console.error("查询帖子详情失败！", err);
+                        logger.error("查询帖子详情失败！", err);
                         callback(APIUtil.APIResult("code_2033", null, null));
                         return;
                     }
@@ -220,7 +221,7 @@ var TopicService = {
                     loc_topic.type = 1;
                     TopicStatisticalService.getStatistical(loc_topic._id, 1, function(err, statistical){
                         if(err){
-                            console.error("查询帖子详情--帖子统计信息失败！", err);
+                            logger.error("查询帖子详情--帖子统计信息失败！", err);
                             callback(APIUtil.APIResult("code_2033", null, null));
                             return;
                         }
@@ -233,7 +234,7 @@ var TopicService = {
                         }
                         FinanceUserService.getMemberById(loc_topic.memberId, function(err, member){
                             if(err){
-                                console.error("查询帖子详情--发帖人信息失败！", err);
+                                logger.error("查询帖子详情--发帖人信息失败！", err);
                                 callback(APIUtil.APIResult("code_2033", null, null));
                                 return;
                             }
@@ -249,7 +250,7 @@ var TopicService = {
                             //获取回复列表
                             ReplyService.getReplysWithMember(topicId, 1, pageLast, pageSize, function(err, replys, page){
                                 if(err){
-                                    console.error("查询帖子回帖信息失败！", err);
+                                    logger.error("查询帖子回帖信息失败！", err);
                                     callback(APIUtil.APIResult("code_2033", null, null));
                                     return;
                                 }
@@ -288,7 +289,7 @@ var TopicService = {
             }
             TopicService.getFirstTopicByMemberIds(loc_memberIds, function(err, topics){
                 if(err){
-                    console.error("查询关注人发帖信息失败！", err);
+                    logger.error("查询关注人发帖信息失败！", err);
                     callback("code_2021", null, null);
                     return;
                 }
@@ -307,7 +308,7 @@ var TopicService = {
 
                 TopicStatisticalService.getStatisticals(loc_topics, function(err) {
                     if (err) {
-                        console.error("查询帖子统计信息失败!", err);
+                        logger.error("查询帖子统计信息失败!", err);
                         callback(err, null);
                         return;
                     }
@@ -325,19 +326,19 @@ var TopicService = {
     deleteTopic : function(topicId, callback){
         ReplyService.modifyByUpdater({topicId : topicId}, {$set : {isDeleted : 0}}, function(err){
             if(err){
-                console.error("删除回帖信息失败", err);
+                logger.error("删除回帖信息失败", err);
                 callback(APIUtil.APIResult("code_2022", null, null));
                 return;
             }
             TopicService.modifyById(topicId, {$set : {isDeleted : 0}}, function(err, topic){
                 if(err){
-                    console.error("删除帖子信息失败", err);
+                    logger.error("删除帖子信息失败", err);
                     callback(APIUtil.APIResult("code_2022", null, null));
                     return;
                 }
                 FinanceUserService.modifyById(topic.memberId, {$inc : {"loginPlatform.financePlatForm.topicCount" : -1}}, function(err){
                     if(err){
-                        console.error("更新用户发帖数失败！", err);
+                        logger.error("更新用户发帖数失败！", err);
                         callback(APIUtil.APIResult("code_2022", null, null));
                         return;
                     }
@@ -356,7 +357,7 @@ var TopicService = {
                         }}},
                         function(err){
                             if(err){
-                                console.error("更新用户收藏信息失败！", err);
+                                logger.error("更新用户收藏信息失败！", err);
                                 callback(APIUtil.APIResult("code_2022", null, null));
                                 return;
                             }
@@ -383,7 +384,7 @@ var TopicService = {
     doAddTopic : function(topic, callback){
         IdSeqManager.Topic.getNextSeqId(function(err, topicId){
             if(err){
-                console.error("发帖失败--获取帖子编号失败！", err);
+                logger.error("发帖失败--获取帖子编号失败！", err);
                 callback("code_2005", null);
                 return;
             }
@@ -412,18 +413,18 @@ var TopicService = {
             });
             loc_topic.save(function(err, topic){
                 if(err){
-                    console.error("保存帖子信息失败！", err);
+                    logger.error("保存帖子信息失败！", err);
                     callback("code_2034", null);
                     return;
                 }
-                console.info("保存帖子信息成功！", topic._id);
+                logger.info("保存帖子信息成功！", topic._id);
 
                 //发帖子时向自己的粉丝推送消息
                 TopicService.sendTopicPushMessage(topicId,topic.title,topic.memberId);
 
                 FinanceUserService.modifyById(topic.memberId, {$inc : {"loginPlatform.financePlatForm.topicCount" : 1}}, function(err){
                     if(err){
-                        console.error("更新用户发帖数失败！", err);
+                        logger.error("更新用户发帖数失败！", err);
                         callback("code_2030", null);
                         return;
                     }
@@ -446,7 +447,7 @@ var TopicService = {
     addTopic : function(topic, callback){
         FinanceUserService.getMemberById(topic.memberId, function(err, member){
             if(err){
-                console.error("发帖失败--查询用户信息失败！", err);
+                logger.error("发帖失败--查询用户信息失败！", err);
                 callback(APIUtil.APIResult("code_2010", null, null));
                 return;
             }
@@ -460,7 +461,7 @@ var TopicService = {
                     callback(APIUtil.APIResult(null, topic, null));
                 });
             }else{
-                console.error("发帖失败--用户被禁言！", err);
+                logger.error("发帖失败--用户被禁言！", err);
                 callback(APIUtil.APIResult("code_2015", null, null));
             }
         });
@@ -487,7 +488,7 @@ var TopicService = {
         }
         TopicService.modifyById(topic.topicId, loc_updater, function(err){
             if(err){
-                console.error("修改帖子失败！", err);
+                logger.error("修改帖子失败！", err);
                 callback(APIUtil.APIResult("code_2043", null, null));
                 return;
             }
@@ -562,7 +563,7 @@ var TopicService = {
     sendTopicPushMessage : function(topicId,topicTitle,sendUserId){
         FinanceUserService.getMemberById(sendUserId, function(err, member) {
             if (err) {
-                console.error("回帖失败--查询用户信息失败！", err);
+                logger.error("回帖失败--查询用户信息失败！", err);
                 callback(APIUtil.APIResult("code_2010", null, null));
                 return;
             }
@@ -574,7 +575,7 @@ var TopicService = {
                 "messageType" : 3              //显示方式为小秘书的Tab类型 (1:自定义 2：文章资讯 3：关注订阅 4：评论提醒  5:公告 6:反馈)
             };
             pushService.doPushMessage(2,'蜘蛛投资',content,tag,extra,function(apiResult) {
-                console.info(apiResult);
+                logger.info(apiResult);
                 var curTime = new Date();
                 var pushMessage = {
                     dataid : topicId,                  //数据Id
@@ -600,7 +601,7 @@ var TopicService = {
                     pushMessage.pushStatus = 3;
                 }
                 pushService.savePushMessage(pushMessage,function(err, curPushMessage){
-                    console.info(curPushMessage);
+                    logger.info(curPushMessage);
                 })
             });
         })

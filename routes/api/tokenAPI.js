@@ -1,12 +1,13 @@
+var logger =require("../../resources/logConf").getLogger("tokenAPI");
 var express = require('express');
 var router = express.Router();
 var tokenService = require('../../service/tokenService');
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage');
-var logger =require("../../resources/logConf").getLogger("tokenAPI");
 /**
  * 新增tokenAccess
  */
+
 router.post('/setTokenAccess', function(req, res) {
     try {
         var result={isOK:false,error:null};
@@ -127,7 +128,7 @@ router.post('/destroyToken', function(req, res) {
  */
 router.post('/verifyToken', function(req, res) {
     var token=req.body.token;
-    console.log("verifyToken token:"+token);
+    logger.info("verifyToken token:"+token);
     if(common.isBlank(token)){
        res.json({success:false});
     }else{

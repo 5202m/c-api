@@ -14,6 +14,7 @@
  *     4.平仓
  * </p>
  */
+var logger =require("../../resources/logConf").getLogger("tradeAPI");
 var express = require('express');
 var router = express.Router();
 var APIUtil = require('../../util/APIUtil.js');
@@ -28,13 +29,13 @@ router.get('/positions', function(req, res) {
     var loc_memberId = req.query["memberId"];
     if(!loc_memberId){
         //缺少参数
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_memberId !== "string"){
         //参数类型错误
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -52,13 +53,13 @@ router.get('/records', function(req, res) {
     var loc_memberId = req.query["memberId"];
     if(!loc_memberId){
         //缺少参数
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_memberId !== "string"){
         //参数类型错误
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -96,14 +97,14 @@ router.post('/open', function(req, res) {
         || isNaN(loc_openParam.openPrice)
         || isNaN(loc_openParam.contractPeriod)){
         //缺少参数
-        console.error("parameter is invalid! ", JSON.stringify(loc_openParam));
+        logger.error("parameter is invalid! ", JSON.stringify(loc_openParam));
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_openParam.memberId !== "string"
         ||typeof loc_openParam.productCode !== "string"){
         //参数类型错误
-        console.error("parameter is invalid! ", JSON.stringify(loc_openParam));
+        logger.error("parameter is invalid! ", JSON.stringify(loc_openParam));
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -112,7 +113,7 @@ router.post('/open', function(req, res) {
         || loc_openParam.leverageRatio <= 0
         || (loc_openParam.tradeMark === 3 && !loc_openParam.followOrderNo)){
         //参数数据错误
-        console.error("parameter is invalid! ", JSON.stringify(loc_openParam));
+        logger.error("parameter is invalid! ", JSON.stringify(loc_openParam));
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }
@@ -155,14 +156,14 @@ router.post('/shout', function(req, res) {
         || !loc_params.title
         || !loc_params.expandAttr){
         //缺少参数
-        console.error("parameter is invalid! ", JSON.stringify(loc_params));
+        logger.error("parameter is invalid! ", JSON.stringify(loc_params));
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     try{
         loc_params.expandAttr = JSON.parse(loc_params.expandAttr);
     }catch(e){
-        console.error("parameter is invalid! ", JSON.stringify(loc_params));
+        logger.error("parameter is invalid! ", JSON.stringify(loc_params));
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }
@@ -175,7 +176,7 @@ router.post('/shout', function(req, res) {
     if((loc_params.tradeDirection !== 1 && loc_params.tradeDirection !== 2)
         || loc_params.leverageRatio <= 0){
         //参数数据错误
-        console.error("parameter is invalid! ", JSON.stringify(loc_params));
+        logger.error("parameter is invalid! ", JSON.stringify(loc_params));
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }
@@ -205,7 +206,7 @@ router.post('/close', function(req, res) {
         || isNaN(loc_closeParam.volume)
         || isNaN(loc_closeParam.closePrice)){
         //缺少参数
-        console.error("parameter is invalid! ", JSON.stringify(loc_closeParam));
+        logger.error("parameter is invalid! ", JSON.stringify(loc_closeParam));
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -213,7 +214,7 @@ router.post('/close', function(req, res) {
         ||typeof loc_closeParam.orderNo !== "string"
         ||typeof loc_closeParam.productCode !== "string"){
         //参数类型错误
-        console.error("parameter is invalid! ", JSON.stringify(loc_closeParam));
+        logger.error("parameter is invalid! ", JSON.stringify(loc_closeParam));
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -231,7 +232,7 @@ router.get("/balance", function(req, res) {
     var loc_memberId = req.query["memberId"];
     if(!loc_memberId){
         //缺少参数
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }

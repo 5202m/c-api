@@ -3,6 +3,7 @@
  * author：Gavin.guo
  * date:2015/4/23
  */
+var logger = require('../resources/logConf').getLogger("articleService");
 var article = require('../models/article');          //引入article数据模型
 var category = require('../models/category');   //引入category数据模型
 var ApiResult = require('../util/ApiResult');
@@ -62,7 +63,7 @@ var articleService = {
                             .select(selectField)
                             .exec('find',function (err,articles) {
                             if(err){
-                                console.error(err);
+                                logger.error(err);
                                 callbackTmp(null,null);
                             }else{
                                 callbackTmp(null,articles);
@@ -118,7 +119,7 @@ var articleService = {
                     .select({'createDate' : 1,'detailList.lang.$' : 1})
                     .exec('find',function (err,articles) {
                         if(err){
-                            console.error(err);
+                            logger.error(err);
                             callback(null);
                         }else{
                             callback(articles);
@@ -135,7 +136,7 @@ var articleService = {
     getCategoryByCode : function(code,callback){
         category.findOne({'code':code},function (err,category) {
             if(err){
-                console.error(err);
+                logger.error(err);
                 callback(null);
             }else{
                 callback(category);
@@ -171,7 +172,7 @@ var articleService = {
             query : searchObj
         },function(err, articles, page){
             if(err){
-                console.error("查询文章列表失败!", err);
+                logger.error("查询文章列表失败!", err);
                 callback(APIUtil.APIResult("code_2046", null, null));
                 return;
             }
@@ -213,7 +214,7 @@ var articleService = {
         //查询文章统计信息
         TopicStatisticalService.getStatisticals(loc_articles, function(err, articleStatisticals){
             if(err){
-                console.error("查询文章统计信息失败!", err);
+                logger.error("查询文章统计信息失败!", err);
                 callback(err, null);
                 return;
             }
@@ -221,7 +222,7 @@ var articleService = {
             //查询文章首条回帖信息
             ReplyService.getFirstReplyByTopics(articleStatisticals, function(err, articleReplys){
                 if(err){
-                    console.error("查询回帖信息失败!", err);
+                    logger.error("查询回帖信息失败!", err);
                     callback(err, null);
                     return;
                 }
@@ -236,7 +237,7 @@ var articleService = {
                 //查询发帖人，回帖人信息
                 FinanceUserService.getMemberInfoByMemberIds(loc_memberIds, function(err, members){
                     if(err){
-                        console.error("查询发帖人信息失败!", err);
+                        logger.error("查询发帖人信息失败!", err);
                         callback(err, null);
                         return;
                     }
@@ -299,7 +300,7 @@ var articleService = {
             },
             function (err, articles) {
                 if(err){
-                    console.error("查询文章列表失败!", err);
+                    logger.error("查询文章列表失败!", err);
                     callback(err, null);
                     return;
                 }
@@ -321,7 +322,7 @@ var articleService = {
         if(opType === 2){
             ReplyService.getReplysWithMember(articleId, 2, pageLast, pageSize, function(err, replys, page){
                 if(err){
-                    console.error("查询文章回复信息失败！", err);
+                    logger.error("查询文章回复信息失败！", err);
                     callback(APIUtil.APIResult("code_2047", null, null));
                     return;
                 }
@@ -339,7 +340,7 @@ var articleService = {
                 },
                 function(err, article){
                     if(err){
-                        console.error("查询文章详情失败！", err);
+                        logger.error("查询文章详情失败！", err);
                         callback(APIUtil.APIResult("code_2047", null, null));
                         return;
                     }
@@ -349,13 +350,13 @@ var articleService = {
                     }
                     //文章被点击时，阅读数加1
                     TopicStatisticalService.read(articleId , 2 ,null, function(apiResult){
-                        console.info("文章被阅读！", articleId);
+                        logger.info("文章被阅读！", articleId);
                     });
                     var loc_article = articleService.convertArticle(article.toObject());
                     loc_article.publishTime = loc_article.publishTime instanceof Date ? loc_article.publishTime.getTime() : 0;
                     TopicStatisticalService.getStatistical(loc_article._id, 2, function(err, statistical){
                         if(err){
-                            console.error("查询文章详情--文章统计信息失败！", err);
+                            logger.error("查询文章详情--文章统计信息失败！", err);
                             callback(APIUtil.APIResult("code_2047", null, null));
                             return;
                         }
@@ -372,7 +373,7 @@ var articleService = {
                         //获取回复列表
                         ReplyService.getReplysWithMember(articleId, 2, pageLast, pageSize, function(err, replys, page){
                             if(err){
-                                console.error("查询文章回帖信息失败！", err);
+                                logger.error("查询文章回帖信息失败！", err);
                                 callback(APIUtil.APIResult("code_2047", null, null));
                                 return;
                             }

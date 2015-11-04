@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/7/1
  */
+var logger =require("../../resources/logConf").getLogger("topicAPI");
 var express = require('express');
 var router = express.Router();
 var topicService = require('../../service/topicService');
@@ -38,13 +39,13 @@ router.get('/detail', function(req, res){
     var loc_topicId = req.query["topicId"];
     if(!loc_topicId){
         //缺少参数
-        console.error("topicId is invalid! ", loc_topicId);
+        logger.error("topicId is invalid! ", loc_topicId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_topicId !== "string"){
         //参数类型错误
-        console.error("topicId is invalid! ", loc_topicId);
+        logger.error("topicId is invalid! ", loc_topicId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -68,13 +69,13 @@ router.post('/delete', function(req, res){
     var loc_topicId = req.body["topicId"];
     if(!loc_topicId){
         //缺少参数
-        console.error("topicId is invalid! ", loc_topicId);
+        logger.error("topicId is invalid! ", loc_topicId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_topicId !== "string"){
         //参数类型错误
-        console.error("topicId is invalid! ", loc_topicId);
+        logger.error("topicId is invalid! ", loc_topicId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -102,7 +103,7 @@ router.post('/add', function(req, res){
     if(!loc_topic.memberId
         || !loc_topic.subjectType
         || (!loc_topic.content && !loc_topic.title)){
-        console.error("topic information is invalid! ", loc_topic);
+        logger.error("topic information is invalid! ", loc_topic);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -111,7 +112,7 @@ router.post('/add', function(req, res){
         || (loc_topic.device && typeof loc_topic.device !== "string")
         || (loc_topic.title && typeof loc_topic.title !== "string")
         || (loc_topic.content && typeof loc_topic.content !== "string")){
-        console.error("topic information is invalid! ", loc_topic);
+        logger.error("topic information is invalid! ", loc_topic);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -155,7 +156,7 @@ router.post('/modify', function(req, res){
     };
     if(!loc_topic.topicId
         || (!loc_topic.content && !loc_topic.title)){
-        console.error("topic information is invalid! ", loc_topic);
+        logger.error("topic information is invalid! ", loc_topic);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -173,19 +174,19 @@ router.post('/report', function(req, res){
     var loc_type = parseInt(req.body["type"], 10);
     if(!loc_topicId){
         //缺少参数
-        console.error("param is invalid! ", loc_topicId);
+        logger.error("param is invalid! ", loc_topicId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(isNaN(loc_type)){
         //缺少参数
-        console.error("type of report is invalid! ", loc_type);
+        logger.error("type of report is invalid! ", loc_type);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
     if(loc_type !== 1 && loc_type !== 2){
         //缺少参数
-        console.error("type of report is invalid! ", loc_type);
+        logger.error("type of report is invalid! ", loc_type);
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }

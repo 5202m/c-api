@@ -14,6 +14,7 @@
  *     4.平仓
  * </p>
  */
+var logger = require('../resources/logConf').getLogger("financeTradeService");
 var Position = require('../models/position.js');
 var TradeRecord = require('../models/tradeRecord.js');
 var QuotaRecord = require('../models/quotaRecord.js');
@@ -41,7 +42,7 @@ var financeTradeService = {
             fieldEx : ["_id", "memberId"]
         }, function(err, positions){
             if(err){
-                console.error("查询持仓单失败!", err);
+                logger.error("查询持仓单失败!", err);
                 callback(APIUtil.APIResult("code_2008", null, null));
                 return;
             }
@@ -83,7 +84,7 @@ var financeTradeService = {
             fieldEx : ["memberId"]
         }, function(err, records, page){
             if(err){
-                console.error("查询持仓单失败!", err);
+                logger.error("查询持仓单失败!", err);
                 callback(APIUtil.APIResult("code_2009", null, null));
                 return;
             }
@@ -129,18 +130,18 @@ var financeTradeService = {
         //先判断产品配置信息是否被禁用
         ProductService.getProdSettingByCode(param.productCode , function(err, prodSettings){
             if(err){
-                console.error("查询产品配置信息失败!", err);
+                logger.error("查询产品配置信息失败!", err);
                 resultCallback("code_2012", null);
                 return;
             }
             if(prodSettings == null || prodSettings.status == 0){  //产品配置信息已经被禁用
-                console.error("产品配置信息被禁用!", err);
+                logger.error("产品配置信息被禁用!", err);
                 resultCallback("code_2050", null);
                 return;
             }else{
                 MemberBalanceService.find(param.memberId, function(err, memberBalance){
                     if(err){
-                        console.error("查询用户资产信息失败！", err);
+                        logger.error("查询用户资产信息失败！", err);
                         resultCallback("code_2028", null);
                         return;
                     }
@@ -150,7 +151,7 @@ var financeTradeService = {
                     var loc_earnestMoney = financeTradeService._calcEarnestMoney(param.productCode,param.openPrice,param.volume
                         ,param.contractPeriod,param.leverageRatio);
                     if(Utils.accSub(memberBalance.balance, memberBalance.balanceUsed) < loc_earnestMoney){
-                        console.error("会员可用资金不足！", JSON.stringify(memberBalance), loc_earnestMoney);
+                        logger.error("会员可用资金不足！", JSON.stringify(memberBalance), loc_earnestMoney);
                         resultCallback("code_2042", null);
                         return;
                     }
@@ -160,7 +161,7 @@ var financeTradeService = {
                         tradeOrderNo : function(callback){
                             IdSeqManager.FinanceTradeOrder.getNextSeqId(function(err, seq){
                                 if(err){
-                                    console.error("获取订单号失败！", err);
+                                    logger.error("获取订单号失败！", err);
                                 }
                                 callback(err, seq);
                             });
@@ -169,7 +170,7 @@ var financeTradeService = {
                         positionId : function(callback){
                             IdSeqManager.FinancePosition.getNextSeqId(function(err, seq){
                                 if(err){
-                                    console.error("获取持仓单号失败！", err);
+                                    logger.error("获取持仓单号失败！", err);
                                 }
                                 callback(err, seq);
                             });
@@ -178,7 +179,7 @@ var financeTradeService = {
                         tradeRecordId : function(callback){
                             IdSeqManager.FinanceTradeRecord.getNextSeqId(function(err, seq){
                                 if(err){
-                                    console.error("获取持交易记录号失败！", err);
+                                    logger.error("获取持交易记录号失败！", err);
                                 }
                                 callback(err, seq);
                             });
@@ -247,11 +248,11 @@ var financeTradeService = {
                             savePosition : function(callback){
                                 loc_postion.save(function(err){
                                     if(err){
-                                        console.error("[订单:%s]保存持仓记录失败！", seqs.tradeOrderNo, err);
+                                        logger.error("[订单:%s]保存持仓记录失败！", seqs.tradeOrderNo, err);
                                         callback("code_2006", 0);
                                         return;
                                     }
-                                    console.info("[订单:%s]保存持仓信息成功！", seqs.tradeOrderNo);
+                                    logger.info("[订单:%s]保存持仓信息成功！", seqs.tradeOrderNo);
                                     callback(null, 1);
                                 });
                             },
@@ -260,11 +261,11 @@ var financeTradeService = {
                             saveTradeRecord : function(callback){
                                 loc_tradeRecord.save(function(err){
                                     if(err){
-                                        console.error("[订单:%s]保存交易记录失败！", seqs.tradeOrderNo, err);
+                                        logger.error("[订单:%s]保存交易记录失败！", seqs.tradeOrderNo, err);
                                         callback("code_2007", 0);
                                         return;
                                     }
-                                    console.info("[订单:%s]保存交易记录成功！", seqs.tradeOrderNo);
+                                    logger.info("[订单:%s]保存交易记录成功！", seqs.tradeOrderNo);
                                     callback(null, 1);
                                 });
                             },
@@ -273,21 +274,21 @@ var financeTradeService = {
                             saveBalance : function(callback){
                                 MemberBalanceService.modify(param.memberId, loc_balanceUpdater, function(err){
                                     if(err){
-                                        console.error("[订单:%s]更新资产信息失败！", seqs.tradeOrderNo, err);
+                                        logger.error("[订单:%s]更新资产信息失败！", seqs.tradeOrderNo, err);
                                         callback("code_2019", 0);
                                         return;
                                     }
-                                    console.info("[订单:%s]更新资产信息成功！", seqs.tradeOrderNo);
+                                    logger.info("[订单:%s]更新资产信息成功！", seqs.tradeOrderNo);
                                     callback(null, 1);
                                 });
                             }
                         }, function(err){
                             if(err != null){
-                                console.error("[订单:%s]开仓失败, 错误号:<%s>！", seqs.tradeOrderNo, JSON.stringify(param), err);
+                                logger.error("[订单:%s]开仓失败, 错误号:<%s>！", seqs.tradeOrderNo, JSON.stringify(param), err);
                                 resultCallback(err, null);
                                 return;
                             }
-                            console.info("[订单:%s]开仓成功！", seqs.tradeOrderNo);
+                            logger.info("[订单:%s]开仓成功！", seqs.tradeOrderNo);
                             loc_tradeRecord = loc_tradeRecord.toObject();
                             delete loc_tradeRecord["__v"];
                             delete loc_tradeRecord["_id"];
@@ -330,13 +331,13 @@ var financeTradeService = {
     shout : function(param, resultCallback){
         FinanceUserService.getMemberById(param.memberId, function(err, member){
             if(err){
-                console.error("喊单失败--查询用户信息失败！", err);
+                logger.error("喊单失败--查询用户信息失败！", err);
                 callback(APIUtil.APIResult("code_2010", null, null));
                 return;
             }
             //用户非禁言状态才可发帖
             if(!member || !member.loginPlatform || !member.loginPlatform.financePlatForm || member.loginPlatform.financePlatForm.isGag !== 0){
-                console.error("喊单失败--用户被禁言！", err);
+                logger.error("喊单失败--用户被禁言！", err);
                 callback(APIUtil.APIResult("code_2015", null, null));
                 return;
             }
@@ -381,7 +382,7 @@ var financeTradeService = {
                     }
                     FinanceUserService.modifyById(param.memberId, {$inc : {"loginPlatform.financePlatForm.shoutCount" : 1}}, function(err){
                         if(err){
-                            console.error("更新用户喊单数失败！", err);
+                            logger.error("更新用户喊单数失败！", err);
                             resultCallback(APIUtil.APIResult("code_2055", null, null));
                             return;
                         }
@@ -402,12 +403,12 @@ var financeTradeService = {
         //先判断产品配置信息是否被禁用
         ProductService.getProdSettingByCode(param.productCode , function(err, prodSettings) {
             if (err) {
-                console.error("查询产品配置信息失败!", err);
+                logger.error("查询产品配置信息失败!", err);
                 resultCallback(APIUtil.APIResult("code_2012", null, null));
                 return;
             }
             if (prodSettings == null || prodSettings.status == 0) {  //产品配置信息已经被禁用
-                console.error("产品配置信息被禁用!", err);
+                logger.error("产品配置信息被禁用!", err);
                 resultCallback(APIUtil.APIResult("code_2050", null, null));
                 return;
             }else{
@@ -417,18 +418,18 @@ var financeTradeService = {
                     fieldEx : ["__v", "_id"]
                 },function(err, loc_position){
                     if(err){
-                        console.error("查询持仓单失败!", err);
+                        logger.error("查询持仓单失败!", err);
                         resultCallback(APIUtil.APIResult("code_2007", null, null));
                         return;
                     }
                     if(loc_position === null){
-                        console.error("持仓单不存在，客户ID：%s, 订单号：%s!", param.memberId, param.orderNo);
+                        logger.error("持仓单不存在，客户ID：%s, 订单号：%s!", param.memberId, param.orderNo);
                         resultCallback(APIUtil.APIResult("code_2013", null, null));
                         return;
                     }
                     loc_position = loc_position.toObject();
                     if(param.volume > loc_position.volume){
-                        console.error("平仓数大于持仓数，平仓数：%d, 持仓数：%d!", param.volume, loc_position.volume);
+                        logger.error("平仓数大于持仓数，平仓数：%d, 持仓数：%d!", param.volume, loc_position.volume);
                         resultCallback(APIUtil.APIResult("code_2014", null, null));
                         return;
                     }
@@ -436,7 +437,7 @@ var financeTradeService = {
                     //查询账户资金
                     MemberBalanceService.find(param.memberId, function(err, memberBalance){
                         if(err || !memberBalance){
-                            console.error("查询会员资产信息失败!", err);
+                            logger.error("查询会员资产信息失败!", err);
                             resultCallback(APIUtil.APIResult("code_2028", null, null));
                             return;
                         }
@@ -447,7 +448,7 @@ var financeTradeService = {
                             tradeOrderNo : function(callback){
                                 IdSeqManager.FinanceTradeOrder.getNextSeqId(function(err, seq){
                                     if(err){
-                                        console.error("获取订单号失败！", err);
+                                        logger.error("获取订单号失败！", err);
                                     }
                                     callback(err, seq);
                                 });
@@ -456,7 +457,7 @@ var financeTradeService = {
                             quotaRecordId : function(callback){
                                 IdSeqManager.FinanceQuotaRecord.getNextSeqId(function(err, seq){
                                     if(err){
-                                        console.error("获取额度记录号失败！", err);
+                                        logger.error("获取额度记录号失败！", err);
                                     }
                                     callback(err, seq);
                                 });
@@ -465,7 +466,7 @@ var financeTradeService = {
                             tradeRecordId : function(callback){
                                 IdSeqManager.FinanceTradeRecord.getNextSeqId(function(err, seq){
                                     if(err){
-                                        console.error("获取持交易记录号失败！", err);
+                                        logger.error("获取持交易记录号失败！", err);
                                     }
                                     callback(err, seq);
                                 });
@@ -566,11 +567,11 @@ var financeTradeService = {
                                 saveTradeRecord : function(callback){
                                     loc_tradeRecord.save(function(err){
                                         if(err){
-                                            console.error("[%s]保存交易记录失败！", seqs.tradeOrderNo, err);
+                                            logger.error("[%s]保存交易记录失败！", seqs.tradeOrderNo, err);
                                             callback("code_2007", 0);
                                             return;
                                         }
-                                        console.info("[%s]保存交易记录成功！", seqs.tradeOrderNo);
+                                        logger.info("[%s]保存交易记录成功！", seqs.tradeOrderNo);
                                         callback(null, 1);
                                     });
                                 },
@@ -578,11 +579,11 @@ var financeTradeService = {
                                 saveQuotaRecord : function(callback){
                                     loc_quotaRecord.save(function(err){
                                         if(err){
-                                            console.error("[%s]保存额度记录失败！", seqs.tradeOrderNo, err);
+                                            logger.error("[%s]保存额度记录失败！", seqs.tradeOrderNo, err);
                                             callback("code_2016", 0);
                                             return;
                                         }
-                                        console.info("[%s]保存额度记录成功！", seqs.tradeOrderNo);
+                                        logger.info("[%s]保存额度记录成功！", seqs.tradeOrderNo);
                                         callback(null, 1);
                                     });
                                 },
@@ -593,11 +594,11 @@ var financeTradeService = {
                                     if(loc_isCloseFully){
                                         Position.findOneAndRemove(loc_query, function(err){
                                             if(err){
-                                                console.error("[%s]删除持仓信息失败！", seqs.tradeOrderNo, err);
+                                                logger.error("[%s]删除持仓信息失败！", seqs.tradeOrderNo, err);
                                                 callback("code_2018", 0);
                                                 return;
                                             }
-                                            console.info("[%s]删除持仓信息成功！", seqs.tradeOrderNo);
+                                            logger.info("[%s]删除持仓信息成功！", seqs.tradeOrderNo);
                                             callback(null, 1);
                                         });
                                     }else{
@@ -609,11 +610,11 @@ var financeTradeService = {
                                             }};
                                         Position.findOneAndUpdate(loc_query, loc_updater, function(err){
                                             if(err){
-                                                console.error("[%s]修改持仓信息失败！", seqs.tradeOrderNo, err);
+                                                logger.error("[%s]修改持仓信息失败！", seqs.tradeOrderNo, err);
                                                 callback("code_2017", 0);
                                                 return;
                                             }
-                                            console.info("[%s]修改持仓信息成功！", seqs.tradeOrderNo);
+                                            logger.info("[%s]修改持仓信息成功！", seqs.tradeOrderNo);
                                             callback(null, 1);
                                         });
                                     }
@@ -622,21 +623,21 @@ var financeTradeService = {
                                 modifyBalance : function(callback){
                                     MemberBalanceService.modify(param.memberId, loc_balanceUpdater, function(err){
                                         if(err){
-                                            console.error("[%s]更新资产信息失败！", seqs.tradeOrderNo, err);
+                                            logger.error("[%s]更新资产信息失败！", seqs.tradeOrderNo, err);
                                             callback("code_2019", 0);
                                             return;
                                         }
-                                        console.info("[%s]更新资产信息成功！", seqs.tradeOrderNo);
+                                        logger.info("[%s]更新资产信息成功！", seqs.tradeOrderNo);
                                         callback(null, 1);
                                     });
                                 }
                             },function(err){
                                 if(err != null){
-                                    console.error("[%s]平仓失败, 错误号:<%s>！", seqs.tradeOrderNo, JSON.stringify(param), err);
+                                    logger.error("[%s]平仓失败, 错误号:<%s>！", seqs.tradeOrderNo, JSON.stringify(param), err);
                                     resultCallback(APIUtil.APIResult(err, null, null));
                                     return;
                                 }
-                                console.info("[%s]平仓成功！", seqs.tradeOrderNo);
+                                logger.info("[%s]平仓成功！", seqs.tradeOrderNo);
                                 loc_tradeRecord = loc_tradeRecord.toObject();
                                 delete loc_tradeRecord["__v"];
                                 delete loc_tradeRecord["_id"];
@@ -653,7 +654,7 @@ var financeTradeService = {
                                 loc_tradeRecord.incomeRank = 0;
                                 MemberBalanceService.getRankingAfterClose(param.memberId, function(err, rank){
                                     if(err){
-                                        console.error("查询会员收益率排名信息失败！", err);
+                                        logger.error("查询会员收益率排名信息失败！", err);
                                         //排名查询失败的时候，直接忽略那个错误。不影响平仓操作，为0时页面不更新
                                     }else{
                                         loc_tradeRecord.incomeRank = rank;
@@ -676,7 +677,7 @@ var financeTradeService = {
     getBalanceInfo : function(memberId, resultCallback){
         MemberBalanceService.find(memberId, function(err, balance){
             if(err || !balance){
-                console.error("查询会员资产信息失败！", balance, err);
+                logger.error("查询会员资产信息失败！", balance, err);
                 resultCallback(APIUtil.APIResult("code_2028", null, null));
                 return;
             }
@@ -694,7 +695,7 @@ var financeTradeService = {
 
             MemberBalanceService.getRanking(balance, function(err, rank){
                 if(err){
-                    console.error("查询会员收益率排名信息失败！", err);
+                    logger.error("查询会员收益率排名信息失败！", err);
                     resultCallback(APIUtil.APIResult("code_2028", null, null));
                     return;
                 }

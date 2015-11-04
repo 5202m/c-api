@@ -14,6 +14,7 @@
  *     4.用户信息修改：基本资料修改+密码修改
  * </p>
  */
+var logger =require("../../resources/logConf").getLogger("financeUserAPI");
 var express = require('express');
 var router = express.Router();
 var APIUtil = require('../../util/APIUtil.js');
@@ -31,13 +32,13 @@ router.get('/info', function(req, res) {
     var loc_memberId = req.query["memberId"];
     if(!loc_memberId){
         //缺少参数
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_memberId !== "string"){
         //参数类型错误
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -55,13 +56,13 @@ router.post('/login', function(req, res) {
     var loc_loginAuth = req.body["loginAuth"];
     if(!loc_loginName){
         //缺少参数
-        console.error("loginName is invalid! ", loc_loginName);
+        logger.error("loginName is invalid! ", loc_loginName);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_loginName !== "string"){
         //参数类型错误
-        console.error("loginName is invalid! ", loc_loginName);
+        logger.error("loginName is invalid! ", loc_loginName);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -80,13 +81,13 @@ router.post('/checkMobile', function(req, res){
     var loc_mobilePhone = req.body["mobilePhone"];
     if(!loc_mobilePhone){
         //缺少参数
-        console.error("mobilePhone is invalid! ", loc_mobilePhone);
+        logger.error("mobilePhone is invalid! ", loc_mobilePhone);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_mobilePhone !== "string"){
         //参数类型错误
-        console.error("mobilePhone is invalid! ", loc_mobilePhone);
+        logger.error("mobilePhone is invalid! ", loc_mobilePhone);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -104,13 +105,13 @@ router.post('/register', function(req, res){
     var loc_mobilePhone = req.body["mobilePhone"];
     if(!loc_mobilePhone){
         //缺少参数
-        console.error("mobilePhone is invalid! ", loc_mobilePhone);
+        logger.error("mobilePhone is invalid! ", loc_mobilePhone);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_mobilePhone !== "string"){
         //参数类型错误
-        console.error("mobilePhone is invalid! ", loc_mobilePhone);
+        logger.error("mobilePhone is invalid! ", loc_mobilePhone);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -138,13 +139,13 @@ router.post('/modify', function(req, res){
     var loc_memberId = req.body["memberId"];
     if(!loc_memberId){
         //缺少参数
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_memberId !== "string"){
         //参数类型错误
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -163,7 +164,7 @@ router.post('/modify', function(req, res){
     var loc_nickName = req.body["nickName"];
     if(typeof loc_nickName === "string"){
         if(loc_nickName === ""){
-            console.error("nickName is blank! ", loc_nickName);
+            logger.error("nickName is blank! ", loc_nickName);
             res.json(APIUtil.APIResult("code_2003", null, null));
             return;
         }
@@ -202,7 +203,7 @@ router.post('/modify', function(req, res){
     //最开始注册时可以修改密码
     if(loc_opType === 1 && Object.keys(loc_memberInfo).length === 1){
         //参数类型错误
-        console.error("there is no change any information! ", loc_memberInfo.memberId);
+        logger.error("there is no change any information! ", loc_memberInfo.memberId);
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }
@@ -214,13 +215,13 @@ router.post('/modify', function(req, res){
 
     if(loc_opType === 2){
         if(!loc_memberInfo.newPassword || !loc_memberInfo.password){
-            console.error("修改密码时密码和新密码均不能为空! ", loc_password, loc_newPassword);
+            logger.error("修改密码时密码和新密码均不能为空! ", loc_password, loc_newPassword);
             res.json(APIUtil.APIResult("code_2001", null, null));
             return;
         }
     }else if(loc_opType === 3){
         if(!loc_memberInfo.password){
-            console.error("找回密码时密码均不能为空! ", loc_password, loc_newPassword);
+            logger.error("找回密码时密码均不能为空! ", loc_password, loc_newPassword);
             res.json(APIUtil.APIResult("code_2001", null, null));
             return;
         }
@@ -245,26 +246,26 @@ router.post('/attention', function(req, res){
     var loc_memberId = req.body["memberId"];
     if(!loc_memberId){
         //缺少参数
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_memberId !== "string"){
         //参数类型错误
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
     var loc_attentionId = req.body["attentionId"];
     if(!loc_attentionId){
         //缺少参数
-        console.error("attentionId is invalid! ", loc_attentionId);
+        logger.error("attentionId is invalid! ", loc_attentionId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_attentionId !== "string"){
         //参数类型错误
-        console.error("attentionId is invalid! ", loc_attentionId);
+        logger.error("attentionId is invalid! ", loc_attentionId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
@@ -292,13 +293,13 @@ router.get('/attentionList', function(req, res){
     var loc_memberId = req.query["memberId"];
     if(!loc_memberId){
         //缺少参数
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_memberId !== "string"){
         //参数类型错误
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }

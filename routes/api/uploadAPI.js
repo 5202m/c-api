@@ -10,6 +10,7 @@
  *     文件上传
  * </p>
  */
+var logger =require("../../resources/logConf").getLogger("uploadAPI");
 var fs = require('fs');
 var path = require('path');
 var express = require('express');
@@ -35,7 +36,7 @@ router.post('/upload', function (req, res) {
 
     form.parse(req, function(err, fields, files) {
         if (err) {
-            console.error("文件上传失败，解析表单错误！", err);
+            logger.error("文件上传失败，解析表单错误！", err);
             res.json(APIUtil.APIResult("code_1004", null, null));
             return;
         }
@@ -52,7 +53,7 @@ router.post('/upload', function (req, res) {
         FtpClient.on('ready', function() {
             FtpClient.mkdir(loc_filePath, true, function(err){
                 if (err) {
-                    console.error("文件上传失败，创建FTP目录失败！", err);
+                    logger.error("文件上传失败，创建FTP目录失败！", err);
                     res.json(APIUtil.APIResult("code_1004", null, null));
                     return;
                 }
@@ -67,13 +68,13 @@ router.post('/upload', function (req, res) {
                     //FTP上传文件
                     FtpClient.put(file.path, Config.filesFtpBasePath + "/" + loc_filePath + "/" + loc_fileName, function(err){
                         if (err) {
-                            console.error("文件上传失败，FTP上传出错:" + loc_filePath + "/" + loc_fileName, err);
+                            logger.error("文件上传失败，FTP上传出错:" + loc_filePath + "/" + loc_fileName, err);
                             callback(err, null);
                         }else{
                             //删除本地文件
                             fs.unlink(file.path, function(err){
                                 if(err){
-                                    console.warn("文件上传--删除临时文件失败:" + file.path);
+                                    logger.warn("文件上传--删除临时文件失败:" + file.path);
                                 }
                             });
                             callback(null, "/" + Config.uploadBasePath + "/" + loc_filePath + "/" + loc_fileName);
@@ -81,7 +82,7 @@ router.post('/upload', function (req, res) {
                     });
                 }, function(err, fileResults){
                     if(err){
-                        console.error("文件上传失败！", err);
+                        logger.error("文件上传失败！", err);
                         res.json(APIUtil.APIResult("code_1004", null, null));
                         return;
                     }

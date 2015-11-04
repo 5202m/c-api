@@ -15,6 +15,7 @@ app.set('views', path.join(__dirname, 'views'));
 /*app.set('view engine', 'ejs');*/
 app.set( 'view engine', 'html' );
 app.engine('.html',require('ejs').__express);//两个下划线
+logger.initConfig();
 logger.use(app);//配置框架日志输出
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

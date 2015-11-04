@@ -1,3 +1,4 @@
+var logger = require('../resources/logConf').getLogger("chatService");
 var chatMessage = require('../models/chatMessage');//引入chatMessage数据模型
 var common = require('../util/common');//引入common类
 var ApiResult = require('../util/ApiResult');
@@ -32,7 +33,7 @@ var chatService ={
                         .select("avatar toUser userType nickname content.msgType content.value publishTime")
                         .exec('find',function (err,infos) {
                             if(err){
-                                console.error(err);
+                                logger.error(err);
                                 callbackTmp(null,null);
                             }else{
                                 var dataList=[],row=null,newRow=null;

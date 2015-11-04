@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/8/28
  */
+var logger = require('../resources/logConf').getLogger("pushService");
 var JPush = require("jpush-sdk");
 var IdSeqManager = require('../constant/IdSeqManager.js');  //引入序号生成器js
 var commonJs = require('../util/common'); 	 	            //引入公共的js
@@ -22,7 +23,7 @@ var pushService = {
      * @param   extra    推送数据(以对象的方式)
      */
     doPushMessage : function(type,title,content,tag,extra,callback){
-        console.info("pushMessage->[title:%s,content:%s,tag:%s,extra:%s]",title,content,tag,extra);
+        logger.info("pushMessage->[title:%s,content:%s,tag:%s,extra:%s]",title,content,tag,extra);
         var client = JPush.buildClient(config.messagePush.appKey,config.messagePush.masterSecret);
         var pd = client.push().setPlatform('android').setAudience(JPush.alias(tag));
         if(type == 1){   //通知消息
@@ -35,13 +36,13 @@ var pushService = {
         pd .setOptions(null, 60).send(function(err, res) {
                 if (err) {
                     if (err instanceof JPush.APIConnectionError) {
-                        console.error("<<push fail:[errMessage:%s,isResponseTimeout:%s]",err.message,err.isResponseTimeout);
+                        logger.error("<<push fail:[errMessage:%s,isResponseTimeout:%s]",err.message,err.isResponseTimeout);
                     } else if (err instanceof  JPush.APIRequestError) {
-                        console.error("<<push fail:[errMessage:%s]",err.message);
+                        logger.error("<<push fail:[errMessage:%s]",err.message);
                     }
                     callback({result : 1 ,data : {sendNo : '',msgId : ''}});
                 } else {
-                    console.log('pushMessage<-push success : [Sendno: %s,Msg_id:%s]',res.sendno,res.msg_id);
+                	logger.info('pushMessage<-push success : [Sendno: %s,Msg_id:%s]',res.sendno,res.msg_id);
                     callback({result : 0 ,data : {sendNo : res.sendno,msgId : res.msg_id}});
                 }
         });
@@ -54,7 +55,7 @@ var pushService = {
     savePushMessage : function(pushMsg,callback){
         IdSeqManager.PushMessage.getNextSeqId(function(err, pushMessageId) {
             if (err) {
-                console.error("保存推送消息到数据库失败！", err);
+                logger.error("保存推送消息到数据库失败！", err);
                 callback("code_2051", null);
                 return;
             }
@@ -62,11 +63,11 @@ var pushService = {
             var pMessage = new PushMessage(pushMsg);
             pMessage.save(function(err, curPushMessage) {
                 if (err) {
-                    console.error("保存推送消息到数据库失败！", err);
+                    logger.error("保存推送消息到数据库失败！", err);
                     callback("code_2051", null);
                     return;
                 }
-                console.info("保存推送消息到数据库成功！", pushMessageId);
+                logger.info("保存推送消息到数据库成功！", pushMessageId);
                 callback(null, curPushMessage);
             })
         })
@@ -97,7 +98,7 @@ var pushService = {
             query : searchObj
         },function(err, pushMessages, page){
             if(err){
-                console.error("查询推送消息列表失败!", err);
+                logger.error("查询推送消息列表失败!", err);
                 callback(APIUtil.APIResult("code_2052", null, null));
                 return;
             }

@@ -3,23 +3,48 @@
  * Created by James.pu on 2015/4/23.
  */
 var log4js = require('log4js');
-//配置日志格式
-log4js.configure({
-    appenders: [
-        {//控制台输出
-            type: 'console'
-        },
-        {//日志文件输出
-            type: "dateFile",
-            filename: 'logs/pm_api.log',
-            pattern: "_yyyy-MM-dd",//日期文件格式
-            alwaysIncludePattern: true  //当天的日志文件名是否加上日期
 
-        }
-    ],
-    replaceConsole: true   //替换console.log
+/**
+ * 初始化配置
+ * @param [appName]
+ */
+exports.initConfig = function(appName){
+    if("pm_task" === appName){
+        //配置日志格式
+        log4js.configure({
+            appenders: [
+                {//控制台输出
+                    type: 'console'
+                },
+                {//日志文件输出
+                    type: "dateFile",
+                    filename: 'logs/pm_task.log',
+                    pattern: "_yyyy-MM-dd",//日期文件格式
+                    alwaysIncludePattern: true  //当天的日志文件名是否加上日期
 
-});
+                }
+            ],
+            replaceConsole: true   //替换console.log
+        });
+    }else{
+        //配置日志格式
+        log4js.configure({
+            appenders: [
+                {//控制台输出
+                    type: 'console'
+                },
+                {//日志文件输出
+                    type: "dateFile",
+                    filename: 'logs/pm_api.log',
+                    pattern: "_yyyy-MM-dd",//日期文件格式
+                    alwaysIncludePattern: true  //当天的日志文件名是否加上日期
+
+                }
+            ],
+            replaceConsole: true   //替换console.log
+        });
+    }
+};
 
 //封装日志输出
 exports.getLogger = function(loggerName){

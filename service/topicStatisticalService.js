@@ -3,6 +3,7 @@
  * author:Dick.guo
  * date:2015/8/3
  */
+var logger = require('../resources/logConf').getLogger("TopicStatisticalService");
 var TopicStatistical = require('../models/topicStatistical.js');	                    //引入reply数据模型
 var APIUtil = require('../util/APIUtil.js');
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -81,7 +82,7 @@ var TopicStatisticalService = {
             },
             function(error,topicStatistical){
                 if(error){
-                    console.error("举报失败！", err);
+                    logger.error("举报失败！", err);
                     callback(APIUtil.APIResult("code_2048", null, null));
                     return;
                 }
@@ -124,7 +125,7 @@ var TopicStatisticalService = {
             },
             function(error,topicStatistical){
                 if(error){
-                    console.error("阅读失败！", err);
+                    logger.error("阅读失败！", err);
                     callback(APIUtil.APIResult("code_2049", null, null));
                     return;
                 }
@@ -184,7 +185,7 @@ var TopicStatisticalService = {
             {'new' : true},
             function(err, topicStatisticalTmp){
                 if(err){
-                    console.error("修改帖子统计信息失败！", err);
+                    logger.error("修改帖子统计信息失败！", err);
                     callback(err, null);
                     return;
                 }
@@ -193,7 +194,7 @@ var TopicStatisticalService = {
                     topicStatistical._id = new ObjectId();
                     new TopicStatistical(topicStatistical).save(function(err, topicStatistical){
                         if(err){
-                            console.error("保存帖子统计信息失败！", err);
+                            logger.error("保存帖子统计信息失败！", err);
                             callback(err, null);
                             return;
                         }
@@ -242,7 +243,7 @@ var TopicStatisticalService = {
             }
         }, function(err, statisticals){
             if(err){
-                console.error("查询帖子统计信息失败!", err);
+                logger.error("查询帖子统计信息失败!", err);
                 callback(err, null);
                 return;
             }

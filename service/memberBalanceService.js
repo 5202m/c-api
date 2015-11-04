@@ -10,6 +10,7 @@
  *     投资社区  账户资产服务类
  * </p>
  */
+var logger = require('../resources/logConf').getLogger("MemberBalanceService");
 var MemberBalance = require('../models/memberBalance.js');
 var Member = require('../models/member.js');
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -74,7 +75,7 @@ var MemberBalanceService = {
 
         }, function(err, rank){
             if(err){
-                console.error("查询收益率排名信息失败！", err);
+                logger.error("查询收益率排名信息失败！", err);
                 callback(err, 0);
                 return;
             }
@@ -93,7 +94,7 @@ var MemberBalanceService = {
             },
             function(err, memberBalances){
                 if(err){
-                    console.error("统计会员收益率排名失败--查询会员资产信息失败！", err);
+                    logger.error("统计会员收益率排名失败--查询会员资产信息失败！", err);
                     callback(err, 0);
                     return;
                 }
@@ -129,7 +130,7 @@ var MemberBalanceService = {
             { multi : true},
             function(err){
                 if(err){
-                    console.error("删除会员原有资产信息失败！", err);
+                    logger.error("删除会员原有资产信息失败！", err);
                     callback(err, null);
                     return;
                 }
@@ -161,7 +162,7 @@ var MemberBalanceService = {
                 });
                 loc_balance.save(function(err, balance){
                     if(err){
-                        console.error("重建会员资产信息失败！", err);
+                        logger.error("重建会员资产信息失败！", err);
                         callback(err, null);
                         return;
                     }
@@ -194,7 +195,7 @@ var MemberBalanceService = {
             },
             function(err, memberBalances) {
                 if (err) {
-                    console.error("统计会员收益率排名失败--查询会员资产信息失败！", err);
+                    logger.error("统计会员收益率排名失败--查询会员资产信息失败！", err);
                     callback(err, 0);
                     return;
                 }
@@ -212,7 +213,7 @@ var MemberBalanceService = {
                         fieldIn : ["_id", "mobilePhone", "loginPlatform.financePlatForm"]
                     }, function(error,data){
                         if(err){
-                            console.error("查询账户信息失败!", err);
+                            logger.error("查询账户信息失败!", err);
                             callback(err);
                             return;
                         }
@@ -248,7 +249,7 @@ var MemberBalanceService = {
             },
             function(err, memberBalances){
                 if(err){
-                    console.error("统计会员收益率排名失败--查询会员资产信息失败！", err);
+                    logger.error("统计会员收益率排名失败--查询会员资产信息失败！", err);
                     callback(err, 0);
                     return;
                 }
@@ -296,7 +297,7 @@ var MemberBalanceService = {
                     }
                 }, function(err, newMemberBalances){
                     if(err){
-                        console.error("统计会员收益率排名失败--更新会员资产信息失败！", err);
+                        logger.error("统计会员收益率排名失败--更新会员资产信息失败！", err);
                         callback(err, 0);
                         return;
                     }

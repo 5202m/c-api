@@ -208,7 +208,6 @@ var Utils = {
     formatTime : function(mills){
         var interval = "";
         var time = new Date().getTime() - mills;               // 得出的时间间隔是毫秒
-        console.info(time);
         if(time/60000 < 5 && time/60000 >= 0) {  			   //如果时间间隔小于5分钟,显示为刚刚
             interval = "刚刚";
         }else if(time/3600000 < 1){							 //如果时间间隔大于5分钟小于1小时,显示为5分钟前

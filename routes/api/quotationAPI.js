@@ -12,6 +12,7 @@
  *     2.查询产品行情预测统计
  * </p>
  */
+var logger =require("../../resources/logConf").getLogger("quotationAPI");
 var express = require('express');
 var router = express.Router();
 var APIUtil = require('../../util/APIUtil.js');
@@ -30,12 +31,12 @@ router.post('/addPredict', function (req, res) {
     if(!loc_predict.memberId
         || isNaN(loc_predict.type)
         || !loc_predict.prodCode){
-        console.error("quotation predict information is invalid! ", loc_predict);
+        logger.error("quotation predict information is invalid! ", loc_predict);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(loc_predict.type !== 1 && loc_predict.type !== 2){
-        console.error("type of quotation predict is invalid! ", loc_predict.type);
+        logger.error("type of quotation predict is invalid! ", loc_predict.type);
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }
@@ -52,7 +53,7 @@ router.get('/predictStatis', function (req, res) {
     APIUtil.logRequestInfo(req, "quotationAPI");
     var loc_prodCode = req.query["prodCode"];
     if(!loc_prodCode){
-        console.error("product code is invalid! ", loc_prodCode);
+        logger.error("product code is invalid! ", loc_prodCode);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }

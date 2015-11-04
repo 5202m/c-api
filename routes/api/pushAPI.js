@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/8/27
  */
+var logger =require("../../resources/logConf").getLogger("pushAPI");
 var express = require('express');
 var router = express.Router();
 var pushService = require('../../service/pushService');
@@ -27,7 +28,7 @@ router.get('/list', function(req, res) {
 
 	if(!messageType){
 		//缺少参数
-		console.error("messageType is invalid! ", messageType);
+		logger.error("messageType is invalid! ", messageType);
 		res.json(APIUtil.APIResult("code_2001", null, null));
 		return;
 	}

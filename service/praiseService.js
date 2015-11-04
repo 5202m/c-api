@@ -3,6 +3,7 @@
  * author:Dick.guo
  * date:2015/8/4
  */
+var logger = require('../resources/logConf').getLogger("PraiseService");
 var Topic = require('../models/topic');	                    //引入topic数据模型
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
 var TopicStatisticalService = require('../service/topicStatisticalService.js');
@@ -22,12 +23,12 @@ var PraiseService = {
     doPraise : function(memberId, topicId, type, ip, callback){
         TopicStatisticalService.praise(topicId, type, ip, function(err, data){
             if(err){
-                console.error("帖子点赞失败", err);
+                logger.error("帖子点赞失败", err);
                 callback(APIUtil.APIResult("code_2025", null, null));
                 return;
             }
             if(data === null){
-                console.error("帖子点赞失败，帖子信息不存在或不允许点赞！");
+                logger.error("帖子点赞失败，帖子信息不存在或不允许点赞！");
                 callback(APIUtil.APIResult("code_2025", null, null));
                 return;
             }

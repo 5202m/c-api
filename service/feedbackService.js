@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/7/20
  */
+var logger = require('../resources/logConf').getLogger("feedbackService");
 var ObjectId = require('mongoose').Types.ObjectId;
 var Feedback = require('../models/feedback');	       //引入feedback数据模型
 var FeedbackAuto = require('../models/feedbackAuto.js');	       //引入feedbackAuto数据模型
@@ -23,7 +24,7 @@ var feedbackService = {
     getFeedbackByMemberId : function(memberId, pageLast, pageSize, callback){
         feedbackService.findFeedbackByMemberId(memberId, function(err, feedback){
             if(err){
-                console.error("查询会员反馈信息失败!", err);
+                logger.error("查询会员反馈信息失败!", err);
                 callback(APIUtil.APIResult("code_2037", null, null));
                 return;
             }
@@ -69,13 +70,13 @@ var feedbackService = {
         var loc_page = APIUtil.getPageInfo(feedbackParam.pageLast, feedbackParam.pageSize);
         feedbackService.findFeedbackByMemberId(feedbackParam.memberId, function(err, Dbfeedback){
             if(err){
-                console.error("添加会员反馈——查询会员反馈信息失败!", err);
+                logger.error("添加会员反馈——查询会员反馈信息失败!", err);
                 callback(APIUtil.APIResult("code_2037", null, null));
                 return;
             }
             feedbackService.getFeedbackAuto(feedbackParam.content, function(err, feedbackAuto){
                 if(err) {
-                    console.error("添加会员反馈——查询自动回复信息失败!", err);
+                    logger.error("添加会员反馈——查询自动回复信息失败!", err);
                     callback(APIUtil.APIResult("code_2038", null, null));
                     return;
                 }
@@ -136,11 +137,11 @@ var feedbackService = {
                     var feedbackObj = new Feedback(loc_feedbackObjTmp);
                     feedbackObj.save(function(err, feedback){
                         if(err){
-                            console.error("保存会员反馈信息失败！", err);
+                            logger.error("保存会员反馈信息失败！", err);
                             callback(APIUtil.APIResult("code_2038", null, null));
                             return;
                         }
-                        console.info("保存会员反馈信息成功！", feedback._id);
+                        logger.info("保存会员反馈信息成功！", feedback._id);
 
                         feedback = feedback.toObject();
                         var loc_replyList = APIUtil.getPageListByArr(feedback.replyList, loc_page, false, function(item){
@@ -205,7 +206,7 @@ var feedbackService = {
                     }
                     Feedback.findOneAndUpdate({_id : Dbfeedback._id}, loc_updater, {"new" : true}, function(err, feedback){
                         if(err){
-                            console.error("保存会员反馈信息失败！", err);
+                            logger.error("保存会员反馈信息失败！", err);
                             callback(APIUtil.APIResult("code_2038", null, null));
                             return;
                         }

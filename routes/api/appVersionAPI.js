@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/9/15
  */
+var logger =require("../../resources/logConf").getLogger("appVersionAPI");
 var express = require('express');
 var router = express.Router();
 var appVersionService = require('../../service/appVersionService');
@@ -16,7 +17,7 @@ router.get('/get', function(req, res) {
 	var platform  =  req.query["platform"];
 	if(!platform){
 		//缺少参数
-		console.error("platform is invalid! ", platform);
+		logger.error("platform is invalid! ", platform);
 		res.json(APIUtil.APIResult("code_2001", null, null));
 		return;
 	}

@@ -3,6 +3,7 @@
  * author:Dick.guo
  * date:2015/8/4
  */
+var logger = require('../resources/logConf').getLogger("CollectService");
 var Topic = require('../models/topic');	                    //引入topic数据模型
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
 var CommonJS = require('../util/common.js');
@@ -42,12 +43,12 @@ var CollectService = {
             },
             function(err, member){
                 if(err){
-                    console.error("查询会员信息失败！", err);
+                    logger.error("查询会员信息失败！", err);
                     callback(APIUtil.APIResult("code_2010", null, null));
                     return;
                 }
                 if(member){
-                    console.error("收藏帖子信息失败，收藏信息已存在");
+                    logger.error("收藏帖子信息失败，收藏信息已存在");
                     callback(APIUtil.APIResult("code_2023", null, null));
                     return;
                 }
@@ -64,7 +65,7 @@ var CollectService = {
                     },
                     function(err){
                         if(err){
-                            console.error("收藏帖子信息失败", err);
+                            logger.error("收藏帖子信息失败", err);
                             callback(APIUtil.APIResult("code_2023", null, null));
                             return;
                         }
@@ -103,12 +104,12 @@ var CollectService = {
             },
             function(err, data){
                 if(err){
-                    console.error("取消收藏帖子信息失败", err);
+                    logger.error("取消收藏帖子信息失败", err);
                     callback(APIUtil.APIResult("code_2024", null, null));
                     return;
                 }
                 if(data === null){
-                    console.error("取消收藏帖子信息失败，收藏信息不存在或用户信息不存在！");
+                    logger.error("取消收藏帖子信息失败，收藏信息不存在或用户信息不存在！");
                     callback(APIUtil.APIResult("code_2024", null, null));
                     return;
                 }
@@ -127,7 +128,7 @@ var CollectService = {
     getCollects : function(memberId, pageLast, pageSize, callback){
         FinanceUserService.getMemberById(memberId, function(err, member) {
             if (err) {
-                console.error("查询用户信息失败！", err);
+                logger.error("查询用户信息失败！", err);
                 callback(APIUtil.APIResult("code_2026", null, null));
                 return;
             }
@@ -155,7 +156,7 @@ var CollectService = {
             //查询收藏帖子
             TopicService.getTopicByIds(loc_topicIds, function(err, topics){
                 if(err){
-                    console.error("查询帖子信息失败！", err);
+                    logger.error("查询帖子信息失败！", err);
                     callback(APIUtil.APIResult("code_2026", null, null));
                     return;
                 }
@@ -229,7 +230,7 @@ var CollectService = {
         //查询帖子统计信息
         TopicStatisticalService.getStatisticals(loc_topics, function(err, topicStatisticals){
             if(err){
-                console.error("查询帖子统计信息失败!", err);
+                logger.error("查询帖子统计信息失败!", err);
                 callback(err, null);
                 return;
             }
@@ -237,7 +238,7 @@ var CollectService = {
             //查询帖子首条回帖信息
             ReplyService.getFirstReplyByTopics(topicStatisticals, function(err, topicReplys){
                 if(err){
-                    console.error("查询回帖信息失败!", err);
+                    logger.error("查询回帖信息失败!", err);
                     callback(err, null);
                     return;
                 }
@@ -255,7 +256,7 @@ var CollectService = {
                 //查询发帖人，回帖人信息
                 FinanceUserService.getMemberInfoByMemberIds(loc_memberIds, function(err, members){
                     if(err){
-                        console.error("查询发帖人信息失败!", err);
+                        logger.error("查询发帖人信息失败!", err);
                         callback(err, null);
                         return;
                     }

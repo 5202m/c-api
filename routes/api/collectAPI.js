@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/8/4
  */
+var logger =require("../../resources/logConf").getLogger("collectAPI");
 var express = require('express');
 var router = express.Router();
 var CollectService = require('../../service/collectService.js');
@@ -20,7 +21,7 @@ router.get('/list', function(req, res) {
 
     if(!loc_memberId){
         //缺少参数
-        console.error("memberId is invalid! ", loc_memberId);
+        logger.error("memberId is invalid! ", loc_memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -40,7 +41,7 @@ router.post('/add', function(req, res){
     var loc_type = parseInt(req.body["type"], 10);
     if(!loc_memberId || !loc_topicId){
         //缺少参数
-        console.error("param is invalid! ", loc_memberId, loc_topicId);
+        logger.error("param is invalid! ", loc_memberId, loc_topicId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -48,13 +49,13 @@ router.post('/add', function(req, res){
         || typeof loc_topicId !== "string"
         || isNaN(loc_type)){
         //参数类型错误
-        console.error("param is invalid! ", loc_memberId, loc_topicId, req.body["type"]);
+        logger.error("param is invalid! ", loc_memberId, loc_topicId, req.body["type"]);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
     if(loc_type !== 1 && loc_type !== 2){
         //参数数据错误
-        console.error("type of praise is invalid! ", loc_type);
+        logger.error("type of praise is invalid! ", loc_type);
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }
@@ -73,7 +74,7 @@ router.post('/cancel', function(req, res){
     var loc_type = parseInt(req.body["type"], 10);
     if(!loc_memberId || !loc_topicId){
         //缺少参数
-        console.error("param is invalid! ", loc_memberId, loc_topicId);
+        logger.error("param is invalid! ", loc_memberId, loc_topicId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -81,13 +82,13 @@ router.post('/cancel', function(req, res){
         || typeof loc_topicId !== "string"
         || isNaN(loc_type)){
         //参数类型错误
-        console.error("param is invalid! ", loc_memberId, loc_topicId, req.body["type"]);
+        logger.error("param is invalid! ", loc_memberId, loc_topicId, req.body["type"]);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
     if(loc_type !== 1 && loc_type !== 2){
         //参数数据错误
-        console.error("type of praise is invalid! ", loc_type);
+        logger.error("type of praise is invalid! ", loc_type);
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }

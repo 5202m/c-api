@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/4/23
  */
+var logger =require("../../resources/logConf").getLogger("articleAPI");
 var express = require('express');
 var router = express.Router();
 var articleService = require('../../service/articleService');
@@ -70,7 +71,7 @@ router.get('/finance/list', function(req, res) {
     var loc_pageSize = req.query["pageSize"];
     if(!loc_code){
         //缺少参数
-        console.error("code is invalid! ", loc_code);
+        logger.error("code is invalid! ", loc_code);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -91,13 +92,13 @@ router.get('/finance/detail', function(req, res){
     var loc_articleId = req.query["articleId"];
     if(!loc_articleId){
         //缺少参数
-        console.error("articleId is invalid! ", loc_articleId);
+        logger.error("articleId is invalid! ", loc_articleId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(typeof loc_articleId !== "string"){
         //参数类型错误
-        console.error("articleId is invalid! ", loc_articleId);
+        logger.error("articleId is invalid! ", loc_articleId);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }

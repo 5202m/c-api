@@ -3,6 +3,7 @@
  * author:Dick.guo
  * date:2015/8/3
  */
+var logger = require('../resources/logConf').getLogger("ReplyService");
 var Reply = require('../models/reply');	                    //引入reply数据模型
 var IdSeqManager = require('../constant/IdSeqManager.js');  //引入序号生成器js
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
@@ -92,7 +93,7 @@ var ReplyService = {
             },
             function(err, replys, page){
                 if(err){
-                    console.error("查询帖子回帖列表失败！", err);
+                    logger.error("查询帖子回帖列表失败！", err);
                     callback(err, null, null);
                     return;
                 }
@@ -138,7 +139,7 @@ var ReplyService = {
         ReplyService.getReplys(topicId, type, pageLast, pageSize,
             function(err, replys, page){
                 if(err){
-                    console.error("查询帖子回帖列表失败！", err);
+                    logger.error("查询帖子回帖列表失败！", err);
                     callback(err, null, null);
                     return;
                 }
@@ -157,7 +158,7 @@ var ReplyService = {
                 //完善回帖人信息
                 FinanceUserService.getMemberInfoByMemberIds(loc_memberIds, function(err, members){
                     if(err){
-                        console.error("查询发帖人或回帖人信息失败!", err);
+                        logger.error("查询发帖人或回帖人信息失败!", err);
                         callback(err, null, null);
                         return;
                     }
@@ -246,7 +247,7 @@ var ReplyService = {
 
                 loc_reply.save(function(err, reply){
                     if(err){
-                        console.error("保存回帖信息失败！", err);
+                        logger.error("保存回帖信息失败！", err);
                         callback(err, null);
                         return;
                     }
@@ -276,7 +277,7 @@ var ReplyService = {
                 };
                 Reply.findOneAndUpdate({_id : reply.replyId},{$push : {"replyList": loc_reply}}, {"new" : true}, function(err, reply){
                     if(err || !reply || !reply.replyList || reply.replyList.length < 1){
-                        console.error("回帖失败--保存回帖信息失败！", err);
+                        logger.error("回帖失败--保存回帖信息失败！", err);
                         callback(err, null);
                         return;
                     }
@@ -302,7 +303,7 @@ var ReplyService = {
     addReply : function(opType, reply, callback){
         FinanceUserService.getMemberById(reply.memberId, function(err, member){
             if(err){
-                console.error("回帖失败--查询用户信息失败！", err);
+                logger.error("回帖失败--查询用户信息失败！", err);
                 callback(APIUtil.APIResult("code_2010", null, null));
                 return;
             }
@@ -320,7 +321,7 @@ var ReplyService = {
                     }
                     FinanceUserService.modifyById(reply.memberId, {$inc : {"loginPlatform.financePlatForm.replyCount" : 1}}, function(err){
                         if(err){
-                            console.error("更新用户回帖数失败！", err);
+                            logger.error("更新用户回帖数失败！", err);
                             callback("code_2053", null);
                             return;
                         }
@@ -328,7 +329,7 @@ var ReplyService = {
                         if(opType === 1){
                             TopicStatisticalService.reply(reply.topicId, reply.type, reply.ip, function(err){
                                 if(err){
-                                    console.error("回帖失败--更新帖子统计信息失败！", err);
+                                    logger.error("回帖失败--更新帖子统计信息失败！", err);
                                     callback(APIUtil.APIResult("code_2035", null, null));
                                     return;
                                 }
@@ -340,7 +341,7 @@ var ReplyService = {
                     });
                 });
             }else{
-                console.error("回帖失败--用户被禁言！", err);
+                logger.error("回帖失败--用户被禁言！", err);
                 callback(APIUtil.APIResult("code_2015", null, null));
             }
         });
@@ -361,7 +362,7 @@ var ReplyService = {
             "messageType" : 4              //显示方式为小秘书的Tab类型 (1:自定义 2：文章资讯 3：关注订阅 4：评论提醒  5:公告 6:反馈)
         };
         pushService.doPushMessage(2,'蜘蛛投资',content,tag,extra,function(apiResult) {
-            console.info(apiResult);
+            logger.info(apiResult);
             var curTime = new Date();
             var pushMessage = {
                 dataid : topicId,                  //数据Id
@@ -387,7 +388,7 @@ var ReplyService = {
                 pushMessage.pushStatus = 3;
             }
             pushService.savePushMessage(pushMessage,function(err, curPushMessage){
-                console.info(curPushMessage);
+                logger.info(curPushMessage);
             })
         });
     }

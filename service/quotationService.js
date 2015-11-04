@@ -12,6 +12,7 @@
  *     2.查询产品行情预测统计
  * </p>
  */
+var logger = require('../resources/logConf').getLogger("QuotationService");
 var ObjectId = require('mongoose').Types.ObjectId;
 var QuotationPredict = require('../models/quotationPredict.js');
 var QuotationPredictHis = require('../models/quotationPredictHis.js');
@@ -32,12 +33,12 @@ var QuotationService = {
             }
         }, function(err, dbPredict){
             if(err){
-                console.error("查询行情预测失败！", err);
+                logger.error("查询行情预测失败！", err);
                 callback(APIUtil.APIResult("code_2039", null, null));
                 return;
             }
             if(!!dbPredict){
-                console.error("该会员当日已参与看多/看空！", dbPredict);
+                logger.error("该会员当日已参与看多/看空！", dbPredict);
                 callback(APIUtil.APIResult(dbPredict.type === 1 ? "code_2041" : "code_2045", null, null));
                 return;
             }
@@ -50,13 +51,13 @@ var QuotationService = {
             });
             loc_predict.save(function(err){
                 if(err){
-                    console.error("保存行情预测失败！", err);
+                    logger.error("保存行情预测失败！", err);
                     callback(APIUtil.APIResult("code_2039", null, null));
                     return;
                 }
                 FinanceUserService.modifyById(predict.memberId , {$inc : {"loginPlatform.financePlatForm.commentCount" : 1}}, function(err){
                     if(err){
-                        console.error("更新用户评论数失败！", err);
+                        logger.error("更新用户评论数失败！", err);
                         callback(APIUtil.APIResult("code_2054", null, null));
                         return;
                     }
@@ -80,7 +81,7 @@ var QuotationService = {
             })
             .exec(function(err, predictStatis){
                 if(err){
-                    console.error("查询产品行情预测统计数据失败！", err);
+                    logger.error("查询产品行情预测统计数据失败！", err);
                     callback(APIUtil.APIResult("code_2040", null, null));
                     return;
                 }
@@ -108,7 +109,7 @@ var QuotationService = {
     clearPredict : function(callback){
         APIUtil.DBFind(QuotationPredict, {}, function(err, predicts){
             if(err){
-                console.error("清空行情预测数据失败--查询当前行情预测数据失败！", err);
+                logger.error("清空行情预测数据失败--查询当前行情预测数据失败！", err);
                 callback(err, 0);
                 return;
             }
@@ -118,13 +119,13 @@ var QuotationService = {
             }
             QuotationPredictHis.create(predicts, function(err){
                 if(err){
-                    console.error("清空行情预测数据失败--添加历史行情预测数据失败！", err);
+                    logger.error("清空行情预测数据失败--添加历史行情预测数据失败！", err);
                     callback(err, 0);
                     return;
                 }
                 QuotationPredict.remove({}, function(err){
                     if(err){
-                        console.error("清空行情预测数据失败--删除当前行情预测数据失败！", err);
+                        logger.error("清空行情预测数据失败--删除当前行情预测数据失败！", err);
                         callback(err, 0);
                     }
                     callback(null, predicts.length);

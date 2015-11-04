@@ -3,6 +3,7 @@
  * author：Gavin.guo
  * date:2015/9/15
  */
+var logger = require('../resources/logConf').getLogger("appVersionService");
 var appVersion = require('../models/appVersion');       //引入app数据模型
 var APIUtil = require('../util/APIUtil'); 	 	        //引入API工具类js
 
@@ -22,7 +23,7 @@ var appVersionService = {
             },
             function (err, appVersions) {
                 if(err){
-                    console.error("查询应用版本列表失败!", err);
+                    logger.error("查询应用版本列表失败!", err);
                     callback(APIUtil.APIResult("code_2046", null, null));
                     return;
                 }

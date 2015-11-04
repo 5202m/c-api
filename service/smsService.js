@@ -10,6 +10,7 @@
  *
  * </p>
  */
+var logger = require('../resources/logConf').getLogger("smsService");
 var common = require('../util/common');
 var request = require('request');
 var config = require('../resources/config');
@@ -93,7 +94,7 @@ var smsService = {
             if (!error && response.statusCode == 200 && common.isValid(data)) {
                 loc_smsInfo.status = 1;
             } else {
-                console.error("smsAPI[" + smsUrl + "]->sendSms has error:" + error);
+                logger.error("smsAPI[" + smsUrl + "]->sendSms has error:" + error);
                 loc_result = new Error("发送短信失败！");
                 loc_smsInfo.status = 2;
             }
@@ -101,7 +102,7 @@ var smsService = {
             new SmsInfo(loc_smsInfo).save(function(err){
                 if (err) {
                     //保存信息失败，不影响短信发送，仅打印错误日志。
-                    console.error("保存短信记录错误, smsInfo=[" + JSON.stringify(loc_smsInfo) + "] error：" + err);
+                    logger.error("保存短信记录错误, smsInfo=[" + JSON.stringify(loc_smsInfo) + "] error：" + err);
                 }
 
                 //如果是验证码，并且发送成功，需要将同一个手机号、同类型、同应用点之前发送成功的验证码设置失效
@@ -119,7 +120,7 @@ var smsService = {
                     }, function(err){
                         if (err) {
                             //更新短信状态错误失败，不影响短信发送，仅打印错误日志。
-                            console.error("更新短信状态错误, smsInfo=[" + JSON.stringify(loc_smsInfo) + "] error：" + error);
+                            logger.error("更新短信状态错误, smsInfo=[" + JSON.stringify(loc_smsInfo) + "] error：" + error);
                         }
                         callback(loc_result);
                     });
@@ -144,7 +145,7 @@ var smsService = {
             }
         }, function(err, smsConfig){
             if(err){
-                console.error("<<checkSend:查询短信配置信息出错，[errMessage:%s]", err);
+                logger.error("<<checkSend:查询短信配置信息出错，[errMessage:%s]", err);
                 callback(err, false);
                 return;
             }
@@ -172,7 +173,7 @@ var smsService = {
                 fieldIn: ["mobilePhone", "deviceKey"]
             }, function(err, smsInfos){
                 if(err){
-                    console.error("<<checkSend:统计发送数量出错，", err);
+                    logger.error("<<checkSend:统计发送数量出错，", err);
                     callback(err, false);
                     return;
                 }
@@ -215,7 +216,7 @@ var smsService = {
         SmsInfo.findById(smsId ,function (err, smsInfo) {
             if(err || !smsInfo){
                 err = err || new Error("短信信息为空！");
-                console.error("重发短信失败：查询短信信息失败！", err);
+                logger.error("重发短信失败：查询短信信息失败！", err);
                 callback(APIUtil.APIResult(err, null, null));
                 return;
             }
@@ -254,7 +255,7 @@ var smsService = {
             validUntil : {$gte : new Date()}
         }}, function(err, smsInfo){
             if(err){
-                console.error("查询验证码信息失败！", err);
+                logger.error("查询验证码信息失败！", err);
                 callback(APIUtil.APIResult(err, null, null));
                 return;
             }
@@ -271,7 +272,7 @@ var smsService = {
             }, function(err){
                 if(err){
                     //更新验证码状态失败，不影响验证码校验，仅打印错误日志。
-                    console.error("更新验证码状态失败, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + error);
+                    logger.error("更新验证码状态失败, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + error);
                 }
                 callback(APIUtil.APIResult(null, true, null));
             })

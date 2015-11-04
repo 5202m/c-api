@@ -3,6 +3,7 @@
  * author:Dick.guo
  * date:2015/8/4
  */
+var logger =require("../../resources/logConf").getLogger("replyAPI");
 var express = require('express');
 var router = express.Router();
 var ReplyService = require('../../service/replyService.js');
@@ -34,7 +35,7 @@ router.post('/add', function(req, res){
     if(!loc_reply.memberId
         || !loc_reply.topicId
         || !loc_reply.content){
-        console.error("reply information is invalid! ", loc_reply);
+        logger.error("reply information is invalid! ", loc_reply);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -42,13 +43,13 @@ router.post('/add', function(req, res){
         || typeof loc_reply.topicId !== "string"
         || typeof loc_reply.content !== "string"
         || isNaN(loc_reply.type)){
-        console.error("reply information is invalid! ", loc_reply);
+        logger.error("reply information is invalid! ", loc_reply);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
 
     if(loc_reply.type !== 1 && loc_reply.type !== 2){
-        console.error("reply information is invalid! ", loc_reply);
+        logger.error("reply information is invalid! ", loc_reply);
         res.json(APIUtil.APIResult("code_2003", null, null));
         return;
     }

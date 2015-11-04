@@ -10,6 +10,7 @@
  *     提供API相关操作的方法
  * </p>
  */
+var logger = require('../resources/logConf').getLogger("APIUtil");
 var HTTP = require("http");
 var URL = require("url");
 var Constant = require('../constant/constant.js');
@@ -42,7 +43,7 @@ var TestRequest = function(url, param, method, callback){
 //测试接口工具(原型)--初始化
 TestRequest.prototype.init = function(){
     if(typeof this.url !== "string" || this.url === ""){
-        console.error("url is error: " + this.url);
+        logger.error("url is error: " + this.url);
         throw new Error("url is error: " + this.url);
     }
 
@@ -59,10 +60,10 @@ TestRequest.prototype.init = function(){
     if(typeof this.callback !== "function"){
         this.callback = function(error, data){
             if(error){
-                console.error(error);
+            	logger.error(error);
                 throw error;
             }else{
-                console.log("[RESULT]: ", data);
+            	logger.info("[RESULT]: ", data);
             }
         }
     }
@@ -227,7 +228,7 @@ var APIResult = function(error, data, page){
             loc_result.errmsg = "未知错误";
         }
     }
-    //console.info("[APIResult] %s", JSON.stringify(loc_result));
+    //logger.info("[APIResult] %s", JSON.stringify(loc_result));
 
     return loc_result;
 };
@@ -299,7 +300,7 @@ var DBFind = function(schema, options, callback){
             callback(null, data);
         });
     }catch(err){
-        console.error(err);
+    	logger.error(err);
         callback(err, null);
     }
 };
@@ -486,12 +487,12 @@ var DBPage = function(schema, options, callback){
                     callback(null, data, loc_page);
                 });
             }catch(err){
-                console.error(err);
+            	logger.error(err);
                 callback(err, null, null);
             }
         });
     }catch(err){
-        console.error(err);
+    	logger.error(err);
         callback(err, null, null);
     }
 };
@@ -547,7 +548,7 @@ var DBFindOne = function(schema, options, callback){
             callback(null, data);
         });
     }catch(err){
-        console.error(err);
+    	logger.error(err);
         callback(err, null);
     }
 };
@@ -574,7 +575,7 @@ var logRequestInfo = function(req, fileName){
     fileName = !fileName ? "" : fileName;
     var loc_method = req.method;
     var loc_params = "POST" === loc_method ? JSON.stringify(req.body) : JSON.stringify(req.query);
-    console.info("[%s] ip=%s, method=%s, url=%s, param=%s", fileName, CommonJS.getClientIp(req), loc_method, req.originalUrl, loc_params);
+    logger.info("[%s] ip=%s, method=%s, url=%s, param=%s", fileName, CommonJS.getClientIp(req), loc_method, req.originalUrl, loc_params);
 };
 
 module.exports = {

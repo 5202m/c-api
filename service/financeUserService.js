@@ -10,6 +10,7 @@
  *     投资社区  账户服务类
  * </p>
  */
+var logger = require('../resources/logConf').getLogger("financeUserService");
 var Member = require('../models/member.js');
 var APIUtil = require('../util/APIUtil.js');
 var Utils = require('../util/Utils.js');
@@ -77,7 +78,7 @@ var financeUserService = {
     getInfo : function(memberId, callback){
         financeUserService.getMemberById(memberId, function(err, member){
             if(err){
-                console.error("查询账户信息失败!", err);
+                logger.error("查询账户信息失败!", err);
                 callback(APIUtil.APIResult("code_2010", null, null));
                 return;
             }
@@ -87,7 +88,7 @@ var financeUserService = {
                 var tempMember = financeUserService.convertInfo(member.toObject());
                 MemberBalanceService.find(member._id,function(err,data){
                     if(err){
-                        console.error("查询会员统计信息失败！", err);
+                        logger.error("查询会员统计信息失败！", err);
                         return;
                     }
                     tempMember.balance = data.balance;
@@ -130,7 +131,7 @@ var financeUserService = {
             fieldIn : financeUserService.queryFields
         }, function(err, member){
             if(err){
-                console.error("查询账户信息失败!", err);
+                logger.error("查询账户信息失败!", err);
                 callback(APIUtil.APIResult("code_2010", null, null));
                 return;
             }
@@ -141,7 +142,7 @@ var financeUserService = {
                 var tempMember = financeUserService.convertInfo(member.toObject());
                 MemberBalanceService.find(member._id,function(err,data){
                     if(err){
-                        console.error("查询会员统计信息失败！", err);
+                        logger.error("查询会员统计信息失败！", err);
                         return;
                     }
                     tempMember.balance = data.balance;
@@ -167,7 +168,7 @@ var financeUserService = {
             }
         }, function(err, member){
             if(err){
-                console.error("查询账户信息失败!", err);
+                logger.error("查询账户信息失败!", err);
                 callback(APIUtil.APIResult("code_2010", null, null));
                 return;
             }
@@ -199,7 +200,7 @@ var financeUserService = {
 
         APIUtil.DBFindOne(Member, {query : searchObj}, function(err, member){
             if(err){
-                console.error("查询账户信息失败!", err);
+                logger.error("查询账户信息失败!", err);
                 callback(APIUtil.APIResult("code_2010", null, null));
                 return;
             }
@@ -208,7 +209,7 @@ var financeUserService = {
             if(member && member._id){
                 //投资社区信息存在
                 if(member && member._id && member.loginPlatform && member.loginPlatform.financePlatForm  && member.loginPlatform.financePlatForm.isDeleted === 1){
-                    console.error("该手机号用户已经存在!", member._id);
+                    logger.error("该手机号用户已经存在!", member._id);
                     callback(APIUtil.APIResult("code_2027", null, null));
                     return;
                 }else{
@@ -244,18 +245,18 @@ var financeUserService = {
                         }
                     }, function(err, member) {
                         if (err) {
-                            console.error("更新用户信息失败！", err);
+                            logger.error("更新用户信息失败！", err);
                             callback(APIUtil.APIResult("code_2030", null, null));
                             return;
                         }
                         if (member === null) {
-                            console.error("更新用户信息失败，待更新用户信息不存在！", memberInfo);
+                            logger.error("更新用户信息失败，待更新用户信息不存在！", memberInfo);
                             callback(APIUtil.APIResult("code_2030", null, null));
                             return;
                         }
                         MemberBalanceService.rebuild(member._id.toString(), memberInfo.ip, function(err){
                             if(err){
-                                console.error("更新用户信息失败--注册资产信息失败: mobilePhone=%s！", memberInfo.mobilePhone, err);
+                                logger.error("更新用户信息失败--注册资产信息失败: mobilePhone=%s！", memberInfo.mobilePhone, err);
                                 callback(APIUtil.APIResult("code_2030", null, null));
                                 return;
                             }
@@ -304,17 +305,17 @@ var financeUserService = {
 
                 loc_member.save(function(err, loc_member){
                     if(err){
-                        console.error("新用户注册失败: mobilePhone=%s！", memberInfo.mobilePhone, err);
+                        logger.error("新用户注册失败: mobilePhone=%s！", memberInfo.mobilePhone, err);
                         callback(APIUtil.APIResult("code_2029", null, null));
                         return;
                     }
                     MemberBalanceService.rebuild(loc_member._id.toString(), memberInfo.ip, function(err){
                         if(err){
-                            console.error("新用户注册失败--注册资产信息失败: mobilePhone=%s！", memberInfo.mobilePhone, err);
+                            logger.error("新用户注册失败--注册资产信息失败: mobilePhone=%s！", memberInfo.mobilePhone, err);
                             callback(APIUtil.APIResult("code_2029", null, null));
                             return;
                         }
-                        console.info("新用户注册成功: memberId=%s！", loc_member._id);
+                        logger.info("新用户注册成功: memberId=%s！", loc_member._id);
                         callback(APIUtil.APIResult(null, {memberId : loc_member._id}, null));
                     });
                 });
@@ -339,7 +340,7 @@ var financeUserService = {
         };
         Member.findOneAndUpdate(loc_searchObj, {$push: {"loginPlatform.financePlatForm.attentions": attentionId }}, function(err){
             if (err) {
-                console.error("添加关注失败！", err);
+                logger.error("添加关注失败！", err);
                 callback(APIUtil.APIResult("code_2032", null, null));
                 return;
             }
@@ -354,7 +355,7 @@ var financeUserService = {
             };
             Member.findOneAndUpdate(loc_searchObj, {$push: {"loginPlatform.financePlatForm.beAttentions": memberId }}, function(err){
                 if (err) {
-                    console.error("添加关注失败！", err);
+                    logger.error("添加关注失败！", err);
                     callback(APIUtil.APIResult("code_2032", null, null));
                     return;
                 }
@@ -380,7 +381,7 @@ var financeUserService = {
         };
         Member.findOneAndUpdate(loc_searchObj, {$pull: {"loginPlatform.financePlatForm.attentions": attentionId }}, function(err){
             if (err) {
-                console.error("取消关注失败！", err);
+                logger.error("取消关注失败！", err);
                 callback(APIUtil.APIResult("code_2031", null, null));
                 return;
             }
@@ -395,7 +396,7 @@ var financeUserService = {
             };
             Member.findOneAndUpdate(loc_searchObj, {$pull: {"loginPlatform.financePlatForm.beAttentions": memberId }}, function(err, data){
                 if (err) {
-                    console.error("取消关注失败！", err);
+                    logger.error("取消关注失败！", err);
                     callback(APIUtil.APIResult("code_2031", null, null));
                     return;
                 }
@@ -415,7 +416,7 @@ var financeUserService = {
     getAttentionList : function(opType, memberId, pageLast, pageSize, callback){
         financeUserService.getMemberById(memberId, function(err, member){
             if (err) {
-                console.error("查询账户信息失败！", err);
+                logger.error("查询账户信息失败！", err);
                 callback("code_2010", null, null);
                 return;
             }
@@ -432,7 +433,7 @@ var financeUserService = {
             }
             financeUserService.getMemberInfoByMemberIds(loc_memberIds, function(err, members){
                 if (err) {
-                    console.error("查询关注/粉丝列表失败！", err);
+                    logger.error("查询关注/粉丝列表失败！", err);
                     callback("code_2010", null, null);
                     return;
                 }
@@ -573,17 +574,17 @@ var financeUserService = {
         var modifyFun = function(){
             financeUserService.modifyOne(searchObj, loc_updateObj, function(err, member) {
                 if (err) {
-                    console.error("更新用户信息失败！", err);
+                    logger.error("更新用户信息失败！", err);
                     callback(APIUtil.APIResult("code_2030", null, null));
                     return;
                 }
                 if (member === null) {
                     if(opType === 2){
-                        console.error("原密码输入错误！", memberInfo);
+                        logger.error("原密码输入错误！", memberInfo);
                         callback(APIUtil.APIResult("code_2056", null, null));
                         return;
                     }else{
-                        console.error("更新用户信息失败，待更新用户信息不存在！", memberInfo);
+                        logger.error("更新用户信息失败，待更新用户信息不存在！", memberInfo);
                         callback(APIUtil.APIResult("code_2030", null, null));
                         return;
                     }
@@ -602,12 +603,12 @@ var financeUserService = {
                 }
             }, function(err, member){
                 if (err) {
-                    console.error("查询用户信息失败！", err);
+                    logger.error("查询用户信息失败！", err);
                     callback(APIUtil.APIResult("code_2010", null, null));
                     return;
                 }
                 if(member){
-                    console.error("用户昵称不允许重复！", err);
+                    logger.error("用户昵称不允许重复！", err);
                     callback(APIUtil.APIResult("code_2036", null, null));
                     return;
                 }

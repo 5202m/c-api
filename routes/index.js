@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/6/30
  */
+var logger =require("../resources/logConf").getLogger("indexAPI");
 var express = require('express');
 var indexRouter = express.Router();
 indexRouter.get('/', function(req, res) {
@@ -61,7 +62,7 @@ exports.init = function(app){
             }else{
                 var ApiResult = require('../util/ApiResult');
                 var errorMessage = require('../util/errorMessage.js');
-                console.warn("check token fail->token:" + token);
+                logger.warn("check token fail->token:" + token);
                 if(req.path.indexOf('.xml')!=-1){
                     res.end(ApiResult.result(errorMessage.code_15,null,ApiResult.dataType.xml));
                 }else{

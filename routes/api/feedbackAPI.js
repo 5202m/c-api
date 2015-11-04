@@ -3,6 +3,7 @@
  * author:Gavin.guo
  * date:2015/7/20
  */
+var logger =require("../../resources/logConf").getLogger("feedbackAPI");
 var express = require('express');
 var router = express.Router();
 var feedbackService = require('../../service/feedbackService');
@@ -19,7 +20,7 @@ router.get('/list', function(req, res) {
 	var pageSize = req.query["pageSize"];
     if(!memberId){
         //缺少参数
-        console.error("memberId is invalid! ", memberId);
+        logger.error("memberId is invalid! ", memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
@@ -42,13 +43,13 @@ router.post('/add', function(req, res){
     };
     if(!feedback.memberId){
         //缺少参数
-        console.error("memberId is invalid! ", feedback.memberId);
+        logger.error("memberId is invalid! ", feedback.memberId);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
     if(!feedback.content){
         //缺少参数
-        console.error("content is invalid! ", feedback.content);
+        logger.error("content is invalid! ", feedback.content);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
