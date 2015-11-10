@@ -251,7 +251,7 @@ var smsService = {
             type : "AUTH_CODE",
             useType : useType,
             mobilePhone : mobilePhone,
-            status : 1,
+            content : authCode,
             validUntil : {$gte : new Date()}
         }}, function(err, smsInfo){
             if(err){
@@ -259,23 +259,31 @@ var smsService = {
                 callback(APIUtil.APIResult(err, null, null));
                 return;
             }
-            if(!smsInfo || smsInfo.content != authCode){
+            if(!smsInfo){
                 //验证失败
                 callback(APIUtil.APIResult(null, false, null));
                 return;
             }
-            smsInfo.update({
-                $set : {
-                    status : 3,
-                    useTime: new Date()
-                }
-            }, function(err){
-                if(err){
-                    //更新验证码状态失败，不影响验证码校验，仅打印错误日志。
-                    logger.error("更新验证码状态失败, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + error);
-                }
-                callback(APIUtil.APIResult(null, true, null));
-            })
+            if(smsInfo.status === 1){
+                smsInfo.update({
+                    $set : {
+                        status : 3,
+                        useTime: new Date()
+                    }
+                }, function(err){
+                    if(err){
+                        //更新验证码状态失败，不影响验证码校验，仅打印错误日志。
+                        logger.error("更新验证码状态失败, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + error);
+                    }
+                    callback(APIUtil.APIResult(null, true, null));
+                });
+            }else if(smsInfo.status === 3){
+                callback(APIUtil.APIResult("code_1006", false, null));
+            }else if(smsInfo.status === 4){
+                callback(APIUtil.APIResult("code_1007", false, null));
+            }else{
+                callback(APIUtil.APIResult(null, false, null));
+            }
         });
     },
 

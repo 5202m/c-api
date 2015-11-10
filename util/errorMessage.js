@@ -13,6 +13,8 @@ var errorMessage = {
     "code_1003" : {'errcode' : '1003', 'errmsg' : '目录不存在,请重新确认参数！'},
     "code_1004" : {'errcode' : '1004', 'errmsg' : '文件上传失败'},
     "code_1005" : {'errcode' : '1005', 'errmsg' : '短信发送受限，请联系客服！'},
+    "code_1006" : {'errcode' : '1006', 'errmsg' : '手机验证码已使用！'},
+    "code_1007" : {'errcode' : '1007', 'errmsg' : '手机验证码已失效，请使用最新的验证码！'},
     "code_2001" : {'errcode' : "2001", 'errmsg' : "缺少参数！"},
     "code_2002" : {'errcode' : "2002", 'errmsg' : "参数类型错误！"},
     "code_2003" : {'errcode' : "2003", 'errmsg' : "参数数据错误！"},
