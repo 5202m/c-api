@@ -22,45 +22,73 @@ var ObjectId = require('mongoose').Types.ObjectId;
 var smsService = {
     /**
      * 发送短信
-     * @param smsPara {{type,useType,mobilePhone,deviceKey,content,validTime}}
+     * @param smsPara {{type,useType,mobilePhone,deviceKey,content}}
      * @param withCheck  //是否需要校验，后台重发短信不需要校验
      * @param callback
      */
     send : function(smsPara, withCheck, callback){
-        if(withCheck){
-            smsService.checkSend({
-                type : smsPara.type,
-                useType : smsPara.useType,
-                mobilePhone : smsPara.mobilePhone,
-                deviceKey : smsPara.deviceKey
-            }, function(err, isPass){
+        //查询配置
+        APIUtil.DBFindOne(SmsConfig, {
+                query : {
+                    type : smsPara.type,
+                    useType : smsPara.useType,
+                    isDeleted : 1
+                }
+            }, function(err, smsConfig){
                 if(err){
+                    logger.error("<<send:查询短信配置信息出错，[errMessage:%s]", err);
                     callback(APIUtil.APIResult(err, null, null));
                     return;
                 }
-                if(!isPass){
-                    callback(APIUtil.APIResult("code_1005", null, null));
-                    return;
-                }
-                //发送短信
-                smsService.doSend(smsPara, function(err){
-                    if(err){
-                        callback(APIUtil.APIResult(err, null, null));
-                        return;
+
+                //有效时长
+                smsPara.validTime = 0;
+                if(smsPara.type === "AUTH_CODE"){
+                    if(!smsConfig || smsConfig.validTime <= 0){
+                        //默认一天
+                        smsPara.validTime = 86400000;
+                    }else{
+                        smsPara.validTime = smsConfig.validTime;
                     }
-                    callback(APIUtil.APIResult(null, smsPara.content, null));
-                });
-            });
-        }else{
-            //发送短信
-            smsService.doSend(smsPara, function(err){
-                if(err){
-                    callback(APIUtil.APIResult(err, null, null));
-                    return;
                 }
-                callback(APIUtil.APIResult(null, smsPara.content, null));
-            });
-        }
+
+                //验证次数
+                if(withCheck){
+                    smsService.checkSend({
+                        type : smsPara.type,
+                        useType : smsPara.useType,
+                        mobilePhone : smsPara.mobilePhone,
+                        deviceKey : smsPara.deviceKey
+                    }, smsConfig, function(err, isPass){
+                        if(err){
+                            callback(APIUtil.APIResult(err, null, null));
+                            return;
+                        }
+                        if(!isPass){
+                            callback(APIUtil.APIResult("code_1005", null, null));
+                            return;
+                        }
+                        //发送短信
+                        smsService.doSend(smsPara, function(err){
+                            if(err){
+                                callback(APIUtil.APIResult(err, null, null));
+                                return;
+                            }
+                            callback(APIUtil.APIResult(null, smsPara.content, null));
+                        });
+                    });
+                }else{
+                    //发送短信
+                    smsService.doSend(smsPara, function(err){
+                        if(err){
+                            callback(APIUtil.APIResult(err, null, null));
+                            return;
+                        }
+                        callback(APIUtil.APIResult(null, smsPara.content, null));
+                    });
+                }
+            }
+        );
     },
 
     /**
@@ -86,9 +114,12 @@ var smsService = {
             status : 0,
             cntFlag : 1,
             sendTime : loc_currDate,
-            validUntil : new Date(loc_currDate.getTime() + smsPara.validTime),
+            validUntil : null,
             useTime : null
         };
+        if(smsPara.validTime > 0){
+            loc_smsInfo.validUntil = new Date(loc_currDate.getTime() + smsPara.validTime);
+        }
         request(smsUrl, function (error, response, data) {
             var loc_result = null;
             if (!error && response.statusCode == 200 && common.isValid(data)) {
@@ -134,76 +165,64 @@ var smsService = {
     /**
      * 检查是否允许发送短信
      * @param smsInfoObj {{type,useType,mobilePhone,deviceKey}}
+     * @param smsConfig
      * @param callback (isPass:boolean)
      */
-    checkSend : function(smsInfoObj, callback){
-        APIUtil.DBFindOne(SmsConfig, {
-            query : {
-                type : smsInfoObj.type,
-                useType : smsInfoObj.useType,
-                isDeleted : 1
-            }
-        }, function(err, smsConfig){
+    checkSend : function(smsInfoObj, smsConfig, callback){
+        if(!smsConfig || smsConfig.status !== 1 || smsConfig.cnt < 0){
+            callback(null, true);
+            return;
+        }
+        var loc_startDate = smsService.getStartByCycle(new Date(), smsConfig.cycle);
+        var loc_query = {
+            cntFlag : 1,
+            type : smsInfoObj.type,
+            useType : smsInfoObj.useType,
+            sendTime : {$gte : loc_startDate}
+        };
+        if(smsInfoObj.deviceKey){
+            loc_query["$or"] = [
+                {mobilePhone : smsInfoObj.mobilePhone},
+                {deviceKey   : smsInfoObj.deviceKey}
+            ];
+        }else{
+            loc_query.mobilePhone = smsInfoObj.mobilePhone;
+        }
+        APIUtil.DBFind(SmsInfo, {
+            query : loc_query,
+            fieldIn: ["mobilePhone", "deviceKey"]
+        }, function(err, smsInfos){
             if(err){
-                logger.error("<<checkSend:查询短信配置信息出错，[errMessage:%s]", err);
+                logger.error("<<checkSend:统计发送数量出错，", err);
                 callback(err, false);
                 return;
             }
-            if(!smsConfig || smsConfig.status !== 1 || smsConfig.cnt < 0){
-                callback(null, true);
+            var loc_cntMobile = 0;
+            var i, lenI = !smsInfos ? 0 : smsInfos.length;
+            for(i = 0; i < lenI; i++){
+                if(smsInfos[i].mobilePhone == smsInfoObj.mobilePhone){
+                    loc_cntMobile++;
+                }
+            }
+            //手机号数量限制
+            if(loc_cntMobile >= smsConfig.cnt){
+                callback(null, false);
                 return;
             }
-            var loc_startDate = smsService.getStartByCycle(new Date(), smsConfig.cycle);
-            var loc_query = {
-                cntFlag : 1,
-                type : smsInfoObj.type,
-                useType : smsInfoObj.useType,
-                sendTime : {$gte : loc_startDate}
-            };
             if(smsInfoObj.deviceKey){
-                loc_query["$or"] = [
-                    {mobilePhone : smsInfoObj.mobilePhone},
-                    {deviceKey   : smsInfoObj.deviceKey}
-                ];
-            }else{
-                loc_query.mobilePhone = smsInfoObj.mobilePhone;
-            }
-            APIUtil.DBFind(SmsInfo, {
-                query : loc_query,
-                fieldIn: ["mobilePhone", "deviceKey"]
-            }, function(err, smsInfos){
-                if(err){
-                    logger.error("<<checkSend:统计发送数量出错，", err);
-                    callback(err, false);
-                    return;
-                }
-                var loc_cntMobile = 0;
-                var i, lenI = !smsInfos ? 0 : smsInfos.length;
+                var loc_cntDeviceKey = 0;
                 for(i = 0; i < lenI; i++){
-                    if(smsInfos[i].mobilePhone == smsInfoObj.mobilePhone){
-                        loc_cntMobile++;
+                    if(smsInfos[i].deviceKey == smsInfoObj.deviceKey){
+                        loc_cntDeviceKey ++;
                     }
                 }
-                //手机号数量限制
-                if(loc_cntMobile >= smsConfig.cnt){
+                //设备KEY值数量限制
+                if(loc_cntDeviceKey >= smsConfig.cnt){
                     callback(null, false);
                     return;
                 }
-                if(smsInfoObj.deviceKey){
-                    var loc_cntDeviceKey = 0;
-                    for(i = 0; i < lenI; i++){
-                        if(smsInfos[i].deviceKey == smsInfoObj.deviceKey){
-                            loc_cntDeviceKey ++;
-                        }
-                    }
-                    //设备KEY值数量限制
-                    if(loc_cntDeviceKey >= smsConfig.cnt){
-                        callback(null, false);
-                        return;
-                    }
-                }
-                callback(null, true);
-            });
+            }
+            callback(null, true);
         });
     },
 
@@ -221,10 +240,12 @@ var smsService = {
                 return;
             }
             var loc_validTime = 0;
-            if(smsInfo.validUntil instanceof Date && smsInfo.sendTime instanceof Date){
-                loc_validTime = smsInfo.validUntil.getTime() - smsInfo.sendTime.getTime();
-            }else{
-                loc_validTime = 86400000; //24 * 60 * 60 * 1000
+            if(smsInfo.type === "AUTH_CODE"){
+                if(smsInfo.validUntil instanceof Date && smsInfo.sendTime instanceof Date){
+                    loc_validTime = smsInfo.validUntil.getTime() - smsInfo.sendTime.getTime();
+                }else{
+                    loc_validTime = 86400000; //24 * 60 * 60 * 1000
+                }
             }
             var loc_smsParam = {
                 type : smsInfo.type,

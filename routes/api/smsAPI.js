@@ -18,9 +18,9 @@ router.post('/send', function(req, res) {
         useType : req.body["useType"],         //应用点（参考后台数据字典）
         mobilePhone : req.body["mobilePhone"], //手机号、必输
         deviceKey : req.body["deviceKey"],     //设备key值，用于检查发送次数。如果是web页面使用IP，手机客户端使用MAC地址，不传则仅使用手机号作为key值
-        content : req.body["content"],         //短信内容，如果内容为空，则默认发送六位数字验证码
-        validTime : req.body["validTime"]      //（针对于验证码）有效时间（毫秒数），默认一天24*60*60*1000
+        content : req.body["content"]          //短信内容，如果内容为空，则默认发送六位数字验证码
     };
+
     if(common.isBlank(loc_smsParam.mobilePhone) || !common.isMobilePhone(loc_smsParam.mobilePhone) || common.isBlank(loc_smsParam.useType)){
         res.json(APIUtil.APIResult("code_1000", null, null));
         return;
@@ -36,16 +36,6 @@ router.post('/send', function(req, res) {
     }
     if(common.isBlank(loc_smsParam.deviceKey)){
         loc_smsParam.deviceKey = "";
-    }
-    //有效时长为空或无效，默认为一天
-    if(common.isBlank(loc_smsParam.validTime)){
-        loc_smsParam.validTime = 86400000; //24 * 60 * 60 * 1000
-    }else{
-        try{
-            loc_smsParam.validTime = parseInt(loc_smsParam.validTime, 10);
-        }catch(e){
-            loc_smsParam.validTime = 86400000; //24 * 60 * 60 * 1000
-        }
     }
 
     //发送短信
