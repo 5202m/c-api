@@ -1,0 +1,16 @@
+{
+  "apps": [{
+    "name": "pm_api",
+    "script": "bin/pm_api",
+    "cwd": "/web/pm_api",
+    "max_memory_restart": "500M",	
+    "exec_mode"  : "cluster",
+	"instances"  : 4,
+    "autorestart": true,
+    "node_args": [],
+    "args": [],
+    "env": {
+		"NODE_ENV": "production"
+    }
+  }]
+}
