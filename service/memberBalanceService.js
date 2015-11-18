@@ -219,13 +219,15 @@ var MemberBalanceService = {
                         }
                         var financePlatForm = data.loginPlatform.financePlatForm;
                         var memberBalanceTemp = {
-                            attentionCount : financePlatForm.attentions && financePlatForm.attentions.length > 0 ? financePlatForm.attentions.length : 0,
-                            beAttentionCount : financePlatForm.beAttentions && financePlatForm.beAttentions.length > 0 ? financePlatForm.beAttentions.length : 0,
-                            topicCount : financePlatForm.topicCount ? financePlatForm.topicCount : 0,
-                            replyCount : financePlatForm.replyCount ? financePlatForm.replyCount : 0,
-                            commentCount : financePlatForm.commentCount ? financePlatForm.commentCount : 0,
-                            shoutCount : financePlatForm.shoutCount ? financePlatForm.shoutCount : 0,
-                            beShoutCount : financePlatForm.beShoutCount ? financePlatForm.beShoutCount : 0
+                            $set : {
+                                attentionCount: financePlatForm.attentions && financePlatForm.attentions.length > 0 ? financePlatForm.attentions.length : 0,
+                                beAttentionCount: financePlatForm.beAttentions && financePlatForm.beAttentions.length > 0 ? financePlatForm.beAttentions.length : 0,
+                                topicCount: financePlatForm.topicCount ? financePlatForm.topicCount : 0,
+                                replyCount: financePlatForm.replyCount ? financePlatForm.replyCount : 0,
+                                commentCount: financePlatForm.commentCount ? financePlatForm.commentCount : 0,
+                                shoutCount: financePlatForm.shoutCount ? financePlatForm.shoutCount : 0,
+                                beShoutCount: financePlatForm.beShoutCount ? financePlatForm.beShoutCount : 0
+                            }
                         };
                         MemberBalanceService.modify(memberId,memberBalanceTemp,function(error){
                             callbackTmp(error);
