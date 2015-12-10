@@ -63,9 +63,9 @@ var chatService ={
      * 检查客户是否已经点赞
      * 已点赞返回false，否则返回true
      */
-    checkChatPraise:function(clientId,praiseId,callback){
+    checkChatPraise:function(clientId,praiseId,fromPlatform,callback){
         var cacheClient=require('../cache/cacheClient');
-        var key='chatPraise_'+clientId+'_'+praiseId;
+        var key='chatPraise_'+fromPlatform+'_'+clientId+'_'+praiseId;
         cacheClient.hgetall(key,function(err,result){
             if(!err && result){
                 callback(false);

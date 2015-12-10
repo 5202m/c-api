@@ -41,11 +41,11 @@ router.get(/^\/getMessageList(\.(json|xml))?$/, function(req, res) {
  * 已点赞返回false，否则返回true
  */
 router.post("/checkChatPraise", function(req, res) {
-    var clientId=req.body.clientId,praiseId=req.body.praiseId;
-    if(common.isBlank(clientId)||common.isBlank(praiseId)){
+    var clientId=req.body.clientId,praiseId=req.body.praiseId,fromPlatform=req.body.fromPlatform;
+    if(common.isBlank(clientId)||common.isBlank(praiseId)||common.isBlank(fromPlatform)){
         res.json({result:true});
     }else{
-        chatService.checkChatPraise(clientId,praiseId,function(isOK){
+        chatService.checkChatPraise(clientId,praiseId,fromPlatform,function(isOK){
             res.json({result:isOK});
         });
     }
