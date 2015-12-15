@@ -73,5 +73,36 @@ router.get('/getNewsInfoList', function(req, res) {
     }
 });
 
+/**
+ * 提取实盘直播
+ * @param platform
+ * @param dateStr
+ * @param lang
+ */
+router.get('/getBroadStrateList', function(req, res) {
+    var lang=req.query["lang"],platform=req.query["platform"],dateStr=req.query["dateStr"];
+    if(common.isBlank(lang)||common.isBlank(platform)||common.isBlank(dateStr)){//参数输入有误，则返回空结果
+        res.json(null);
+    }else{
+        var time=Date.now();
+        var md5 = crypto.createHash('md5');
+        var gwApiAuthorKey='',siteflg=0;
+        if("web24k"==platform){
+            gwApiAuthorKey='YHJK786sdbbmkyusd';//授权码
+            siteflg=1;
+        }
+        md5.update(gwApiAuthorKey+time);
+        var token=md5.digest('hex');
+        var param={token:token,platTypeKey:platform,timeStamp:time,lang:lang,datestr:dateStr,siteflg:siteflg};
+        request.post({strictSSL:false,url:(config.gwApiUrl+'/broadcast/index.json'),form:param}, function(error,response,data){
+            if(error){
+                logger.error("getBroadStrateList has error:"+error);
+                res.json(null);
+            }else{
+                res.json(data?JSON.parse(data):null);
+            }
+        });
+    }
+});
 
 module.exports = router;
