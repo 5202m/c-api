@@ -12,7 +12,11 @@ var chatService ={
      * 提取聊天信息
      */
     getMessagePage:function (params,callback){
-        var searchObj = {'toUser.talkStyle':0, groupType:'wechat',status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
+        var roomCode=params.roomCode;
+        if(common.isBlank(roomCode)){
+            roomCode='wechat';
+        }
+        var searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
         var currDate=new Date();
         if(common.isValid(params.userType)){
             searchObj.userType=params.userType;
