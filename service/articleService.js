@@ -34,7 +34,7 @@ var articleService = {
         }else{
             categoryIdArr.push(params.code);
         }
-        selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate";
+        selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate";
         if(commonJs.isBlank(params.lang)){
             if("1"==params.hasContent){
                 selectField+=" detailList";
@@ -87,7 +87,7 @@ var articleService = {
      * @param callback
      */
     getArticleInfo:function(id,callback){
-        article.findById(id,"categoryId platform mediaUrl mediaImgUrl linkUrl createDate detailList",function(err,row){
+        article.findById(id,"categoryId platform mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate detailList",function(err,row){
             callback(row);
         });
     },
