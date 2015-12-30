@@ -11,9 +11,9 @@ var config = {
     //图片等文件访问域名
     filesDomain: 'http://192.168.35.91:8090',
     uploadBasePath :'upload',
-    pmfilesRootPath : 'D:/workspaces/workspace4.4/pm_api',
+    pmfilesRootPath : '/web/pm_files',
     //FTP上传
-    uploadTempPath : "D:/workspaces/workspace4.4/pm_api",
+    uploadTempPath : "/web/pm_api",
     filesFtpHost : "192.168.35.91",
     filesFtpPort : 21,
     filesFtpUser : "pmmisftpuser",
