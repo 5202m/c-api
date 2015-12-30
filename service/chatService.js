@@ -1,9 +1,7 @@
 var logger = require('../resources/logConf').getLogger("chatService");
 var chatMessage = require('../models/chatMessage');//引入chatMessage数据模型
-var chatSyllabus = require('../models/chatSyllabus');//引入chatMessage数据模型
 var common = require('../util/common');//引入common类
 var ApiResult = require('../util/ApiResult');
-var APIUtil = require('../util/APIUtil');
 var async = require('async');//引入async
 /**
  * 聊天室相关信息服务类
@@ -80,29 +78,6 @@ var chatService ={
                 cacheClient.expire(key,24*3600);
                 callback(true);
             }
-        });
-    },
-
-    /**
-     * 查询聊天室课程安排
-     * @param groupType
-     * @param groupId
-     * @param callback
-     */
-    getSyllabus : function(groupType, groupId, callback){
-        groupId = groupId || "";
-        APIUtil.DBFindOne(chatSyllabus, {
-            query : {
-                groupType : groupType,
-                groupId : groupId
-            }
-        }, function(err, syllabus){
-            if(err){
-                logger.error("查询聊天室课程安排失败!", err);
-                callback(APIUtil.APIResult("code_10", null, null));
-                return;
-            }
-            callback(APIUtil.APIResult(null, syllabus, null));
         });
     }
 };

@@ -50,15 +50,4 @@ router.post("/checkChatPraise", function(req, res) {
         });
     }
 });
-
-/**
- * 查询聊天室课程安排
- */
-router.post("/getSyllabus", function(req, res){
-    var groupType = req.body.groupType;
-    var groupId = req.body.groupId;
-    chatService.getSyllabus(groupType, groupId, function(result){
-        res.json(result);
-    });
-});
 module.exports = router;
