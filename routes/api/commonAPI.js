@@ -23,15 +23,20 @@ router.get('/get24kPrice', function(req, res) {
             request(config.web24kPriceUrl,function(error, response, data){
                 if (!error && response.statusCode == 200 && common.isValid(data)) {
                     var parser = new xml2js.Parser({ explicitArray : false, ignoreAttrs : false,attrkey:'attr' });
-                    parser.parseString(data,function(err, result){
-                        if(err){
-                            logger.error("get24kPrice>>>error:"+err);
-                            result=null;
-                        }
-                        cacheClient.set("24kPrice",JSON.stringify(result));
-                        cacheClient.expire("24kPrice", 5);//5秒钟有效
-                        res.json(result);
-                    });
+                    try{
+                        parser.parseString(data,function(err, result){
+                            if(err){
+                                logger.error("get24kPrice>>>error:"+err);
+                                result=null;
+                            }
+                            cacheClient.set("24kPrice",JSON.stringify(result));
+                            cacheClient.expire("24kPrice", 5);//5秒钟有效
+                            res.json(result);
+                        });
+                    }catch(e){
+                        logger.error("get24kPrice has error:"+e);
+                        res.json(null);
+                    }
                 }else{
                     logger.error("get24kPrice has error:"+error);
                     res.json(null);
@@ -67,7 +72,12 @@ router.get('/getNewsInfoList', function(req, res) {
                 logger.error("getNewsInfoList has error:"+error);
                 res.json(null);
             }else{
-                res.json(data?JSON.parse(data):null);
+                try {
+                    res.json(data ? JSON.parse(data) : null);
+                }catch(e){
+                    logger.error("getNewsInfoList has error:"+e);
+                    res.json(null);
+                }
             }
         });
     }
@@ -99,7 +109,12 @@ router.get('/getBroadStrateList', function(req, res) {
                 logger.error("getBroadStrateList has error:"+error);
                 res.json(null);
             }else{
-                res.json(data?JSON.parse(data):null);
+                try{
+                    res.json(data?JSON.parse(data):null);
+                }catch(e){
+                    logger.error("getBroadStrateList has error:"+e);
+                    res.json(null);
+                }
             }
         });
     }
