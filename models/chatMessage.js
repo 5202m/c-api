@@ -29,4 +29,5 @@ var mongoose = require('mongoose')
       createDate:Date, //创建日期
       valid:{type:Number, default:1}//是否有效，1为有效，0为无效
     });
-module.exports =mongoose.model('chatMessage',chatMessageSchema,"chatMessage");
+var key="chatMessage_"+new Date().getFullYear();
+module.exports =mongoose.model(key,chatMessageSchema,key);
