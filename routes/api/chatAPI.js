@@ -8,7 +8,7 @@ var router = express.Router();
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
-var SyllabusService = require('../../service/SyllabusService');
+var SyllabusService = require('../../service/syllabusService');
 var APIUtil = require('../../util/APIUtil'); 	 	            //引入API工具类js
 var ApiResult = require('../../util/ApiResult');
 /**
