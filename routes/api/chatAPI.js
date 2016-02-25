@@ -8,6 +8,8 @@ var router = express.Router();
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
+var SyllabusService = require('../../service/SyllabusService');
+var APIUtil = require('../../util/APIUtil'); 	 	            //引入API工具类js
 var ApiResult = require('../../util/ApiResult');
 /**
  * 获取聊天信息
@@ -49,5 +51,22 @@ router.post("/checkChatPraise", function(req, res) {
             res.json({result:isOK});
         });
     }
+});
+
+/**
+ * 获取指定日期课程安排
+ */
+router.get("/getCourse", function(req, res) {
+    var loc_groupType = req.query["groupType"];
+    var loc_groupId = req.query["groupId"] || "";
+    if(common.isBlank(loc_groupType)){
+        res.json(APIUtil.APIResult("code_1000", null, null));
+        return;
+    }
+
+    //查询课程安排
+    SyllabusService.getCourse(loc_groupType, loc_groupId, new Date(), function(apiResult){
+        res.json(apiResult);
+    });
 });
 module.exports = router;
