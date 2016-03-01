@@ -46,9 +46,13 @@ var articleService = {
             if("1"==params.hasContent){
                 selectField+=" detailList.$";
             }else{
-                selectField+=" detailList.title detailList.author detailList.remark detailList.tag detailList.lang";
+                selectField+=" detailList.title detailList.author detailList.authorId detailList.remark detailList.tag detailList.lang";
             }
-            searchObj = {valid:1,platform:commonJs.getSplitMatchReg(params.platform),categoryId:{$in:categoryIdArr},'detailList' : {$elemMatch:{lang:params.lang}},status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
+            var deList={lang:params.lang};
+            if(commonJs.isValid(params.authorId)){
+                deList.authorId=params.authorId;
+            }
+            searchObj = {valid:1,platform:commonJs.getSplitMatchReg(params.platform),categoryId:{$in:categoryIdArr},'detailList' : {$elemMatch:deList},status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
         }
         var from = (params.pageNo-1) * params.pageSize;
         var orderByJsonObj={createDate: 'desc' };

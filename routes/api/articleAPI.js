@@ -18,6 +18,7 @@ var ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
  */
 router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
     var params={};
+        params.authorId = req.query["authorId"];
         params.code = req.query["code"];
         params.platform = req.query["platform"];
         params.lang =req.query["lang"];
