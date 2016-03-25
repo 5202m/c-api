@@ -32,6 +32,7 @@ var collectRoutes = require("./api/collectAPI.js");                           //
 var pushRoutes = require("./api/pushAPI.js");                                 //推送消息 API路由
 var appVersionRoutes = require("./api/appVersionAPI.js");                     //APP版本 API路由
 var chatRoutes = require('./api/chatAPI');
+var zxFinanceRoutes = require('./api/zxFinanceAPI');                          //财经数据 API路由
 
 /**
  * 初始化入口
@@ -80,7 +81,8 @@ exports.init = function(app){
     apiRoutes.use("/chat", chatRoutes);
     apiRoutes.use("/message", pushRoutes);
     apiRoutes.use("/upload/", uploadRoutes);
-    
+    apiRoutes.use("/zxFinanceData", zxFinanceRoutes);
+
     financeApiRoutes.use("/product/", productAPIRoutes);
     financeApiRoutes.use("/account/", financeUserAPIRoutes);
     financeApiRoutes.use("/trade/", tradeAPIRoutes);
