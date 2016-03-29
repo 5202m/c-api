@@ -6,6 +6,7 @@
 var express = require('express');
 var router = express.Router();
 var ZxFinanceService = require('../../service/zxFinanceService.js');
+var ApiResult = require('../../util/ApiResult.js');
 
 /**
  * 财经数据列表
@@ -28,20 +29,11 @@ router.get('/list', function(req, res) {
     }
 
     if(loc_msg != null){
-        res.json({
-            ret_code:"1",
-            ret_msg : loc_msg
-        });
+        res.json(ApiResult.result(loc_msg, null));
     }else{
         loc_param.dataTypeCon = parseInt(loc_param.dataTypeCon, 10);
         ZxFinanceService.getFinanceData(loc_param.releaseTime, loc_param.dataTypeCon, function(err, data){
-            res.json({
-                ret_code : "0",
-                ret_msg  : "成功",
-                financeEvent : data.financeEvent,
-                financeVacation : data.financeVacation,
-                financeData : data.financeData
-            });
+            res.json(ApiResult.result(null, data));
         });
     }
 });
@@ -66,24 +58,13 @@ router.get('/history', function(req, res) {
     }
 
     if(loc_msg != null){
-        res.json({
-            ret_code:"1",
-            ret_msg : loc_msg
-        });
+        res.json(ApiResult.result(loc_msg, null));
     }else{
         ZxFinanceService.getFinanceDataHis(loc_param.basicIndexId, loc_param.startTime, loc_param.endTime, function(err, data){
             if(err || !data){
-                res.json({
-                    ret_code:"1",
-                    ret_msg : "财经数据不存在[" + loc_param.basicIndexId + "]"
-                });
+                res.json(ApiResult.result("财经数据不存在[" + loc_param.basicIndexId + "]", null));
             }else{
-                res.json({
-                    ret_code:"0",
-                    ret_msg : "成功",
-                    detail : data.detail,
-                    history : data.history
-                });
+                res.json(ApiResult.result(null, data));
             }
         });
     }
@@ -96,28 +77,15 @@ router.get('/detail', function(req, res) {
     var loc_dataId = req.query["dataId"];//财经日历编号
 
     if(!loc_dataId){
-        res.json({
-            ret_code:"1",
-            ret_msg : "缺少参数[dataId]"
-        });
+        res.json(ApiResult.result("缺少参数[dataId]", null));
     }else if(!/^[0-9a-fA-F]{24}$/.test(loc_dataId)) {
-        res.json({
-            ret_code:"1",
-            ret_msg : "参数错误[" + loc_dataId + "]"
-        });
+        res.json(ApiResult.result("参数错误[" + loc_dataId + "]", null));
     }else{
         ZxFinanceService.getFinanceDataDetail(loc_dataId, function(err, data){
             if(err || !data){
-                res.json({
-                    ret_code:"1",
-                    ret_msg : "财经数据不存在[" + loc_dataId + "]"
-                });
+                res.json(ApiResult.result("财经数据不存在[" + loc_dataId + "]", null));
             }else{
-                res.json({
-                    ret_code:"0",
-                    ret_msg : "成功",
-                    detail : data
-                });
+                res.json(ApiResult.result(null, data));
             }
         });
     }

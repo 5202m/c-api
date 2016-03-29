@@ -11,6 +11,7 @@ var chatService = require('../../service/chatService');
 var SyllabusService = require('../../service/syllabusService');
 var APIUtil = require('../../util/APIUtil'); 	 	            //引入API工具类js
 var ApiResult = require('../../util/ApiResult');
+var constant = require('../../constant/constant');
 /**
  * 获取聊天信息
  */
@@ -57,11 +58,10 @@ router.post("/checkChatPraise", function(req, res) {
  * 获取指定日期课程安排
  */
 router.get("/getCourse", function(req, res) {
-    var loc_groupType = req.query["groupType"];
-    var loc_groupId = req.query["groupId"] || "";
-    if(common.isBlank(loc_groupType)){
-        res.json(APIUtil.APIResult("code_1000", null, null));
-        return;
+    var loc_groupType = req.query["groupType"] || constant.defStudioGroup.groupType;
+    var loc_groupId = req.query["groupId"];
+    if(!loc_groupId && loc_groupType == constant.defStudioGroup.groupType){
+        loc_groupId = constant.defStudioGroup.groupId;
     }
 
     //查询课程安排

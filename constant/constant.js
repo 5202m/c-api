@@ -10,6 +10,10 @@ var constant = {
     FileDirectory : {
         pic : {code : 'pic', description: '图片' },
         video : {code : 'video', description: '视频' }
+    },
+    defStudioGroup : {
+        groupType : "studio",
+        groupId : "studio_market"
     }
 };
 

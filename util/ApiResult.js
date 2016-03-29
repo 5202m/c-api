@@ -2,7 +2,7 @@
  * api结果返回集合
  * @param error
  * @param data
- * @param dataType 返回的数据类型
+ * @param [dataType] 返回的数据类型
  * @returns {{result: number}}
  * create by alan.wu
  * 2014-8-13
