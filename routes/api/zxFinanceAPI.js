@@ -46,9 +46,8 @@ router.get('/list', function(req, res) {
     }
 });
 
-
 /**
- * 财经数据列表
+ * 财经历史数据
  */
 router.get('/history', function(req, res) {
     var loc_param = {
@@ -84,6 +83,40 @@ router.get('/history', function(req, res) {
                     ret_msg : "成功",
                     detail : data.detail,
                     history : data.history
+                });
+            }
+        });
+    }
+});
+
+/**
+ * 财经详情数据
+ */
+router.get('/detail', function(req, res) {
+    var loc_dataId = req.query["dataId"];//财经日历编号
+
+    if(!loc_dataId){
+        res.json({
+            ret_code:"1",
+            ret_msg : "缺少参数[dataId]"
+        });
+    }else if(!/^[0-9a-fA-F]{24}$/.test(loc_dataId)) {
+        res.json({
+            ret_code:"1",
+            ret_msg : "参数错误[" + loc_dataId + "]"
+        });
+    }else{
+        ZxFinanceService.getFinanceDataDetail(loc_dataId, function(err, data){
+            if(err || !data){
+                res.json({
+                    ret_code:"1",
+                    ret_msg : "财经数据不存在[" + loc_dataId + "]"
+                });
+            }else{
+                res.json({
+                    ret_code:"0",
+                    ret_msg : "成功",
+                    detail : data
                 });
             }
         });

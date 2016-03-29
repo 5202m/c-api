@@ -221,6 +221,34 @@ var zxFinanceService = {
             }
             callback(null, loc_result);
         });
+    },
+
+    /**
+     * 获取财经日历详情数据
+     * @param dataId 财经日历编号
+     * @param callback (err, data)
+     */
+    getFinanceDataDetail : function(dataId, callback){
+        var loc_query = {
+            _id : dataId,
+            valid : 1
+        };
+
+        APIUtil.DBFindOne(ZxFinanceData, {
+            query : loc_query,
+            fieldEx : ['createDate','createUser','createIp','updateDate','updateUser','updateIp']
+        }, function(err, data){
+            if(err){
+                logger.error("<<getFinanceDataDetail:查询财经日历详情数据信息出错，[errMessage:%s]", err);
+                callback(null, null);
+                return;
+            }
+            if(!data){
+                callback(null, null);
+                return;
+            }
+            callback(null, data.toObject());
+        });
     }
 };
 
