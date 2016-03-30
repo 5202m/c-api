@@ -11,7 +11,7 @@ var chatService = require('../../service/chatService');
 var SyllabusService = require('../../service/syllabusService');
 var APIUtil = require('../../util/APIUtil'); 	 	            //引入API工具类js
 var ApiResult = require('../../util/ApiResult');
-var constant = require('../../constant/constant');
+var config = require('../../resources/config');
 /**
  * 获取聊天信息
  */
@@ -63,12 +63,12 @@ router.get("/getCourse", function(req, res) {
         groupType : req.query["groupType"],
         groupId : req.query["groupId"]
     };
-    var isInitDef = /^(app|webui)$/i.test(loc_params.platform);
+    var isInitDef = common.containSplitStr(config.studioThirdUsed.platfrom, loc_params.platform);
     if(!loc_params.groupType && isInitDef){
-        loc_params.groupType = constant.defStudioGroup.groupType;
+        loc_params.groupType = config.studioThirdUsed.groupType;
     }
-    if(!loc_params.groupId && loc_params.groupType == constant.defStudioGroup.groupType && isInitDef){
-        loc_params.groupId = constant.defStudioGroup.groupId;
+    if(!loc_params.groupId && loc_params.groupType == config.studioThirdUsed.groupType && isInitDef){
+        loc_params.groupId = config.studioThirdUsed.roomId;
     }
     if(!loc_params.groupType){
         res.json(APIUtil.APIResult("code_1000", null, null));
