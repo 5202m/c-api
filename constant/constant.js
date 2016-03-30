@@ -13,7 +13,7 @@ var constant = {
     },
     defStudioGroup : {
         groupType : "studio",
-        groupId : "studio_5"
+        groupId : "studio_market"//studio_5
     }
 };
 

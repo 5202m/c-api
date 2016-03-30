@@ -58,14 +58,24 @@ router.post("/checkChatPraise", function(req, res) {
  * 获取指定日期课程安排
  */
 router.get("/getCourse", function(req, res) {
-    var loc_groupType = req.query["groupType"] || constant.defStudioGroup.groupType;
-    var loc_groupId = req.query["groupId"];
-    if(!loc_groupId && loc_groupType == constant.defStudioGroup.groupType){
-        loc_groupId = constant.defStudioGroup.groupId;
+    var loc_params = {
+        platform : req.query["platform"],
+        groupType : req.query["groupType"],
+        groupId : req.query["groupId"]
+    };
+    var isInitDef = /^(app|webui)$/i.test(loc_params.platform);
+    if(!loc_params.groupType && isInitDef){
+        loc_params.groupType = constant.defStudioGroup.groupType;
     }
-
+    if(!loc_params.groupId && loc_params.groupType == constant.defStudioGroup.groupType && isInitDef){
+        loc_params.groupId = constant.defStudioGroup.groupId;
+    }
+    if(!loc_params.groupType){
+        res.json(APIUtil.APIResult("code_1000", null, null));
+        return;
+    }
     //查询课程安排
-    SyllabusService.getCourse(loc_groupType, loc_groupId, new Date(), function(apiResult){
+    SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), function(apiResult){
         res.json(apiResult);
     });
 });
