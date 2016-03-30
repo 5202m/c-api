@@ -160,7 +160,7 @@ var zxFinanceService = {
             valid : 1
         };
         if(startTime || endTime){
-            loc_query.date = {$gte : startTime, $lte : endTime};
+            loc_query.date = {};
             if(startTime){
                 loc_query.date.$gte = startTime;
             }
