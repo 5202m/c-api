@@ -104,7 +104,7 @@ var zxFinanceService = {
                             importanceLevel : loc_data.importanceLevel,
                             dataType        : loc_data.dataType,
                             description     : loc_data.description,
-                            dataStatus      : (!loc_data.explanation || !loc_data.influence || !loc_data.statisticMethod) ? 2 : 1
+                            dataStatus      : (!loc_data.explanation || !loc_data.influence) ? 2 : 1
                         });
                     }
                     callbackTmp(null, loc_datas);
