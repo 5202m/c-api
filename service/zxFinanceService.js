@@ -103,7 +103,8 @@ var zxFinanceService = {
                             time            : loc_data.time,
                             importanceLevel : loc_data.importanceLevel,
                             dataType        : loc_data.dataType,
-                            description     : loc_data.description
+                            description     : loc_data.description,
+                            dataStatus      : (!loc_data.explanation || !loc_data.influence || !loc_data.statisticMethod) ? 2 : 1
                         });
                     }
                     callbackTmp(null, loc_datas);
@@ -209,6 +210,7 @@ var zxFinanceService = {
                     };
                 }
                 loc_result.history.push({
+                    dataId          : loc_data._id.toString(),
                     predictValue    : loc_data.predictValue,
                     lastValue       : loc_data.lastValue,
                     value           : loc_data.value,
