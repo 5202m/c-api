@@ -40,7 +40,7 @@ var zxFinanceService = {
         }
         APIUtil.DBFind(ZxFinanceData, {
             query : loc_query,
-            sortAsc : ["time"]
+            sortAsc : ["time", "country"]
         }, function(err, datas){
             if(err){
                 Logger.error("<<getDataList:查询财经日历信息出错，[errMessage:%s]", err);
@@ -85,7 +85,7 @@ var zxFinanceService = {
 
         APIUtil.DBFind(ZxFinanceEvent, {
             query : loc_query,
-            sortAsc : ["time"]
+            sortAsc : ["time", "country"]
         }, function(err, events){
             if(err){
                 Logger.error("<<getEventList:查询财经事件信息出错，[errMessage:%s]", err);
