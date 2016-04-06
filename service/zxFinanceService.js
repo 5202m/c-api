@@ -730,7 +730,7 @@ var zxFinanceService = {
             dbData.statisticMethod = apiDetail.statisticMethod;
             dbData.explanation     = apiDetail.explanation;
             dbData.influence       = apiDetail.influence;
-            dbData.nextPublishTime = apiDetail.nextPublishTime;
+            dbData.nextPublishTime = apiDetail.nextpublishTime;
         }
         return dbData;
     },
