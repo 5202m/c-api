@@ -154,7 +154,7 @@ var taskService = {
 
         var ruleAfter = new Schedule.RecurrenceRule();
         ruleAfter.hour=hourAfter;
-        ruleAfter.minute=1;
+        ruleAfter.minute=5;
         ruleAfter.second=0;
         Schedule.scheduleJob(ruleAfter, function(){
             logger.info("【定时任务】财经日历:每1小时更新后15天数据信息!");
@@ -203,7 +203,7 @@ var taskService = {
 
         var ruleBefore = new Schedule.RecurrenceRule();
         ruleBefore.hour=hourBefore;
-        ruleBefore.minute=1;
+        ruleBefore.minute=9;
         ruleBefore.second=0;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】财经事件:每2小时更新前15天数据信息!");
@@ -214,7 +214,7 @@ var taskService = {
 
         var ruleAfter = new Schedule.RecurrenceRule();
         ruleAfter.hour=hourAfter;
-        ruleAfter.minute=1;
+        ruleAfter.minute=13;
         ruleAfter.second=0;
         Schedule.scheduleJob(ruleAfter, function(){
             logger.info("【定时任务】财经事件:每1小时更新后15天数据信息!");

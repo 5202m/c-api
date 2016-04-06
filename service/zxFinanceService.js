@@ -602,8 +602,8 @@ var zxFinanceService = {
             description = "WH_ZX_U_U_U";//默认是外汇正向
         }
         //计算前值、预期值、公布值
-        var numRegExp = /^[+-]?\\d+(\\.\\d+)?$/;
-        var strRegExp = /[^0-9\\-\\.]/g;
+        var numRegExp = /^[+-]?\d+(\.\d+)?$/;
+        var strRegExp = /[^0-9\-\.]/g;
         var predictValue = null;	//预期值
         var lastValue = null;     //前值
         var value = null;         //公布值
