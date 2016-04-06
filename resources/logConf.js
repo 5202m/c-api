@@ -21,9 +21,12 @@ exports.initConfig = function(appName){
                     filename: 'logs/pm_task.log',
                     pattern: "_yyyy-MM-dd",//日期文件格式
                     alwaysIncludePattern: true  //当天的日志文件名是否加上日期
-
                 }
             ],
+            levels : {
+                "taskService" : log4js.levels.DEBUG
+                //"[all]" : log4js.levels.WARN
+            },
             replaceConsole: true   //替换console.log
         });
     }else{
