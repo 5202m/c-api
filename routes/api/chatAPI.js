@@ -8,10 +8,8 @@ var router = express.Router();
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
-var SyllabusService = require('../../service/syllabusService');
-var APIUtil = require('../../util/APIUtil'); 	 	            //引入API工具类js
 var ApiResult = require('../../util/ApiResult');
-var config = require('../../resources/config');
+
 /**
  * 获取聊天信息
  */
@@ -52,31 +50,5 @@ router.post("/checkChatPraise", function(req, res) {
             res.json({result:isOK});
         });
     }
-});
-
-/**
- * 获取指定日期课程安排
- */
-router.get("/getCourse", function(req, res) {
-    var loc_params = {
-        platform : req.query["platform"],
-        groupType : req.query["groupType"],
-        groupId : req.query["groupId"]
-    };
-    var isInitDef = common.containSplitStr(config.studioThirdUsed.platfrom, loc_params.platform);
-    if(!loc_params.groupType && isInitDef){
-        loc_params.groupType = config.studioThirdUsed.groupType;
-    }
-    if(!loc_params.groupId && loc_params.groupType == config.studioThirdUsed.groupType && isInitDef){
-        loc_params.groupId = config.studioThirdUsed.roomId;
-    }
-    if(!loc_params.groupType){
-        res.json(APIUtil.APIResult("code_1000", null, null));
-        return;
-    }
-    //查询课程安排
-    SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), function(apiResult){
-        res.json(apiResult);
-    });
 });
 module.exports = router;

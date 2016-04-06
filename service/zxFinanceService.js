@@ -230,9 +230,9 @@ var zxFinanceService = {
                 }
                 loc_result.history.push({
                     dataId          : loc_data._id.toString(),
-                    predictValue    : loc_data.predictValue,
-                    lastValue       : loc_data.lastValue,
-                    value           : loc_data.value,
+                    predictValue    : Common.trim(loc_data.predictValue),
+                    lastValue       : Common.trim(loc_data.lastValue),
+                    value           : Common.trim(loc_data.value),
                     year            : loc_data.year,
                     date            : loc_data.date,
                     time            : loc_data.time,
@@ -268,7 +268,11 @@ var zxFinanceService = {
                 callback(null, null);
                 return;
             }
-            callback(null, data.toObject());
+            data = data.toObject();
+            data.predictValue = Common.trim(data.predictValue);
+            data.lastValue = Common.trim(data.lastValue);
+            data.value = Common.trim(data.value);
+            callback(null, data);
         });
     },
 

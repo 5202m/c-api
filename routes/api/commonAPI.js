@@ -10,6 +10,10 @@ var crypto=require('crypto');//提取加密模块
 var xml2js = require('xml2js');
 var common = require('../../util/common'); //引入公共的js
 var logger = require('../../resources/logConf').getLogger('commonAPI');
+var SyllabusService = require('../../service/syllabusService');
+var ApiResult = require('../../util/ApiResult');
+var errorMessage = require('../../util/errorMessage.js');
+
 /**
  * 提取24k报价数据
  * 先在缓存服务器中提取，没有则到24k链接中提取
@@ -120,4 +124,29 @@ router.get('/getBroadStrateList', function(req, res) {
     }
 });
 
+/**
+ * 获取指定日期课程安排
+ */
+router.get("/getCourse", function(req, res) {
+    var loc_params = {
+        platform : req.query["platform"],
+        groupType : req.query["groupType"],
+        groupId : req.query["groupId"]
+    };
+    var isInitDef = common.containSplitStr(config.studioThirdUsed.platfrom, loc_params.platform);
+    if(!loc_params.groupType && isInitDef){
+        loc_params.groupType = config.studioThirdUsed.groupType;
+    }
+    if(!loc_params.groupId && loc_params.groupType == config.studioThirdUsed.groupType && isInitDef){
+        loc_params.groupId = config.studioThirdUsed.roomId;
+    }
+    if(!loc_params.groupType){
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+        return;
+    }
+    //查询课程安排
+    SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), function(apiResult){
+        res.json(apiResult);
+    });
+});
 module.exports = router;

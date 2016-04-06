@@ -1,6 +1,8 @@
 var chatSyllabus = require('../models/chatSyllabus');//引入chatSyllabus数据模型
 var logger=require('../resources/logConf').getLogger('syllabusService');//引入log4js
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
+var ApiResult = require('../util/ApiResult');
+var errorMessage = require('../util/errorMessage.js');
 
 /**
  * 课程安排服务类
@@ -29,10 +31,10 @@ var syllabusService = {
         }, function(err, row){
             if(err){
                 logger.error("查询聊天室课程安排失败!", err);
-                callback(APIUtil.APIResult(err, null, null));
+                callback(ApiResult.result("查询聊天室课程安排失败!", null));
                 return;
             }
-            callback(APIUtil.APIResult(null, !row ? null : row.courses, null));
+            callback(ApiResult.result(null, !row ? null : row.courses));
         });
     },
 
@@ -56,7 +58,7 @@ var syllabusService = {
         }, function(err, row){
             if(err){
                 logger.error("查询聊天室课程安排失败!", err);
-                callback(APIUtil.APIResult(err, null, null));
+                callback(ApiResult.result("查询聊天室课程安排失败!", null));
                 return;
             }
             var loc_courseJSON = !row ? null : row.courses;
@@ -88,7 +90,7 @@ var syllabusService = {
                     }
                 }
             }
-            callback(APIUtil.APIResult(null, loc_dayIndex == -1 ? null : loc_result, null));
+            callback(ApiResult.result(null, loc_dayIndex == -1 ? null : loc_result));
         });
     }
 };
