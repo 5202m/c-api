@@ -3,6 +3,8 @@ var Schedule = require("node-schedule");//引入定时器
 var tokenService=require("../service/tokenService");//引入tokenService
 var QuotationService = require("../service/quotationService.js");//引入quotationService
 var MemberBalanceService = require("../service/memberBalanceService.js");//引入quotationService
+var ZxFinanceService = require("../service/zxFinanceService.js");//引入zxFinanceService
+var Utils = require('../util/Utils'); //引入工具类js
 
 /** 任务服务类
  * Created by Alan.wu on 2015/3/4.
@@ -13,9 +15,12 @@ var taskService = {
      */
     start:function(){
         logger.info("系统启动==>加载定时任务配置！");
-        this.autoClearQuotationPredict();//清理行情预测数据，将数据转移到历史表
-        this.autoUpdateMemberBalance();  //自动更新会员统计的相关字段
-        this.autoStatisticMemberRank();//自动统计会员收益率排名
+        //this.autoDestoryToken();//自动注销过期的token值
+        //this.autoClearQuotationPredict();//清理行情预测数据，将数据转移到历史表
+        //this.autoUpdateMemberBalance();  //自动更新会员统计的相关字段
+        //this.autoStatisticMemberRank();  //自动统计会员收益率排名
+        this.autoFinanceData();  //财经日历
+        this.autoFinanceEvent(); //财经事件
     },
     /**
      * 自动注销过期的token值
@@ -25,8 +30,8 @@ var taskService = {
          rule.hour=1;
          rule.minute=0;
          rule.second=0;
-         var j = Schedule.scheduleJob(rule, function(){
-             logger.info("系统开始自动执行任务==>每天凌晨1点自动注销过期的token值!");
+         Schedule.scheduleJob(rule, function(){
+             logger.info("【定时任务】每天凌晨1点自动注销过期的token值!");
              tokenService.destroyToken(new Date(),function(isOk){
                  if(isOk){
                      logger.info("自动注销过期的token值==》执行成功！");
@@ -46,7 +51,7 @@ var taskService = {
         rule.minute=0;
         rule.second=0;
         Schedule.scheduleJob(rule, function(){
-            logger.info("系统开始自动执行任务==>每天0点自动清理行情预测数据(将数据转移到历史表)!");
+            logger.info("【定时任务】每天0点自动清理行情预测数据(将数据转移到历史表)!");
             QuotationService.clearPredict(function(err, cnt){
                 if(err){
                     logger.error("自动清理行情预测数据==>执行失败！", err);
@@ -66,7 +71,7 @@ var taskService = {
         rule.minute=30;
         rule.second=0;
         Schedule.scheduleJob(rule, function(){
-            logger.info("系统开始自动执行任务==>每天23点30自动更新会员统计信息!");
+            logger.info("【定时任务】每天23点30自动更新会员统计信息!");
             MemberBalanceService.updateMemberBalance(function(result){
                 if(result){
                     logger.info("成功更新会员统计信息！");
@@ -88,7 +93,7 @@ var taskService = {
         rule.minute=10;
         rule.second=0;
         Schedule.scheduleJob(rule, function(){
-            logger.info("系统开始自动执行任务==>每月01日 00:10:00自动统计会员收益率排名!");
+            logger.info("【定时任务】每月01日 00:10:00自动统计会员收益率排名!");
             MemberBalanceService.rankStatistic(function(err, cnt){
                 if(err){
                     logger.error("自动统计会员收益率排名==>执行失败！", err);
@@ -97,8 +102,129 @@ var taskService = {
                 }
             });
         });
+    },
+
+    /**
+     * 财经日历——定时从金汇接口更新财经日历数据
+     */
+    autoFinanceData : function(){
+        var minToday = [];
+        var i;
+        for(i = 0; i < 60; i+=2){
+            minToday.push(i);
+        }
+        var hourBefore = [];
+        var hourAfter = [];
+        for(i = 0; i < 24; i+=2){
+            hourBefore.push(i);
+            hourAfter.push(i);
+            hourAfter.push(i+1);
+        }
+        var format = "yyyy-MM-dd";
+        var today = new Date();
+        var dateToday = [Utils.dateFormat(today, format)];
+        var dateBefore = [];
+        var dateAfter = [];
+        today = today.getTime();
+        for(i = 1; i <= 15; i++){
+            dateBefore.push(Utils.dateFormat(today - i * 86400000, format));
+            dateAfter.push(Utils.dateFormat(today + (16 - i) * 86400000, format));
+        }
+
+        var ruleToday = new Schedule.RecurrenceRule();
+        ruleToday.minute=minToday;
+        ruleToday.second=0;
+        Schedule.scheduleJob(ruleToday, function(){
+            logger.info("【定时任务】财经日历:每2分钟更新当天数据!");
+            ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
+                logger.debug("【定时任务】财经日历更新当天数据" + (isOK ? "成功" : "失败"))
+            });
+        });
+
+        var ruleBefore = new Schedule.RecurrenceRule();
+        ruleBefore.hour=hourBefore;
+        ruleBefore.minute=1;
+        ruleBefore.second=0;
+        Schedule.scheduleJob(ruleBefore, function(){
+            logger.info("【定时任务】财经日历:每2小时更新前15天数据信息!");
+            ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
+                logger.debug("【定时任务】财经日历更新前15天数据" + (isOK ? "成功" : "失败"))
+            });
+        });
+
+        var ruleAfter = new Schedule.RecurrenceRule();
+        ruleAfter.hour=hourAfter;
+        ruleAfter.minute=1;
+        ruleAfter.second=0;
+        Schedule.scheduleJob(ruleAfter, function(){
+            logger.info("【定时任务】财经日历:每1小时更新后15天数据信息!");
+            ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
+                logger.debug("【定时任务】财经日历更新后15天数据" + (isOK ? "成功" : "失败"))
+            });
+        });
+    },
+
+    /**
+     * 财经事件——定时从金汇接口更新财经事件数据
+     */
+    autoFinanceEvent : function(){
+        var minToday = [];
+        var i;
+        for(i = 0; i < 60; i+=2){
+            minToday.push(i);
+        }
+        var hourBefore = [];
+        var hourAfter = [];
+        for(i = 0; i < 24; i+=2){
+            hourBefore.push(i);
+            hourAfter.push(i);
+            hourAfter.push(i+1);
+        }
+        var format = "yyyy-MM-dd";
+        var today = new Date();
+        var dateToday = [Utils.dateFormat(today, format)];
+        var dateBefore = [];
+        var dateAfter = [];
+        today = today.getTime();
+        for(i = 1; i <= 15; i++){
+            dateBefore.push(Utils.dateFormat(today - i * 86400000, format));
+            dateAfter.push(Utils.dateFormat(today + (16 - i) * 86400000, format));
+        }
+
+        var ruleToday = new Schedule.RecurrenceRule();
+        ruleToday.minute=minToday;
+        ruleToday.second=0;
+        Schedule.scheduleJob(ruleToday, function(){
+            logger.info("【定时任务】财经事件:每2分钟更新当天数据!");
+            ZxFinanceService.importEventFromFxGold(dateToday,function(isOK){
+                logger.debug("【定时任务】财经事件更新当天数据" + (isOK ? "成功" : "失败"))
+            });
+        });
+
+        var ruleBefore = new Schedule.RecurrenceRule();
+        ruleBefore.hour=hourBefore;
+        ruleBefore.minute=1;
+        ruleBefore.second=0;
+        Schedule.scheduleJob(ruleBefore, function(){
+            logger.info("【定时任务】财经事件:每2小时更新前15天数据信息!");
+            ZxFinanceService.importEventFromFxGold(dateToday,function(isOK){
+                logger.debug("【定时任务】财经事件更新前15天数据" + (isOK ? "成功" : "失败"))
+            });
+        });
+
+        var ruleAfter = new Schedule.RecurrenceRule();
+        ruleAfter.hour=hourAfter;
+        ruleAfter.minute=1;
+        ruleAfter.second=0;
+        Schedule.scheduleJob(ruleAfter, function(){
+            logger.info("【定时任务】财经事件:每1小时更新后15天数据信息!");
+            ZxFinanceService.importEventFromFxGold(dateToday,function(isOK){
+                logger.debug("【定时任务】财经事件更新后15天数据" + (isOK ? "成功" : "失败"))
+            });
+        });
     }
 };
+
 //导出服务类
 module.exports =taskService;
 
