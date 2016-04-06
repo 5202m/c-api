@@ -19,6 +19,7 @@ var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
 var Request = require('request');
 var Config=require('../resources/config.js');
 var Utils = require('../util/Utils');
+var Common = require('../util/common');
 
 var zxFinanceService = {
     /**
@@ -114,9 +115,9 @@ var zxFinanceService = {
                             name            : loc_data.name,
                             country         : loc_data.country,
                             basicIndexId    : loc_data.basicIndexId,
-                            predictValue    : loc_data.predictValue,
-                            lastValue       : loc_data.lastValue,
-                            value           : loc_data.value,
+                            predictValue    : Common.trim(loc_data.predictValue),
+                            lastValue       : Common.trim(loc_data.lastValue),
+                            value           : Common.trim(loc_data.value),
                             date            : loc_data.date,
                             time            : loc_data.time,
                             importanceLevel : loc_data.importanceLevel,
