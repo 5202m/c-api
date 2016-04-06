@@ -730,7 +730,11 @@ var zxFinanceService = {
             dbData.statisticMethod = apiDetail.statisticMethod;
             dbData.explanation     = apiDetail.explanation;
             dbData.influence       = apiDetail.influence;
-            dbData.nextPublishTime = apiDetail.nextpublishTime;
+            if(apiDetail.newestDataPoint
+                && apiDetail.newestDataPoint.publishTime
+                && (dbData.date + " " + dbData.time + ".0") == apiDetail.newestDataPoint.publishTime){
+                dbData.nextPublishTime = apiDetail.nextpublishTime;
+            }
         }
         return dbData;
     },
