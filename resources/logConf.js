@@ -24,8 +24,8 @@ exports.initConfig = function(appName){
                 }
             ],
             levels : {
-                "taskService" : log4js.levels.DEBUG
-                //"[all]" : log4js.levels.WARN
+                "taskService" : log4js.levels.INFO
+                //"[all]" : log4js.levels.INFO
             },
             replaceConsole: true   //替换console.log
         });
