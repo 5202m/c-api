@@ -147,7 +147,7 @@ var taskService = {
         ruleBefore.second=0;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】财经日历:每2小时更新前15天数据信息!");
-            ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
+            ZxFinanceService.importDataFromFxGold(dateBefore,function(isOK){
                 logger.debug("【定时任务】财经日历更新前15天数据" + (isOK ? "成功" : "失败"))
             });
         });
@@ -158,7 +158,7 @@ var taskService = {
         ruleAfter.second=0;
         Schedule.scheduleJob(ruleAfter, function(){
             logger.info("【定时任务】财经日历:每1小时更新后15天数据信息!");
-            ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
+            ZxFinanceService.importDataFromFxGold(dateAfter,function(isOK){
                 logger.debug("【定时任务】财经日历更新后15天数据" + (isOK ? "成功" : "失败"))
             });
         });
@@ -207,7 +207,7 @@ var taskService = {
         ruleBefore.second=0;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】财经事件:每2小时更新前15天数据信息!");
-            ZxFinanceService.importEventFromFxGold(dateToday,function(isOK){
+            ZxFinanceService.importEventFromFxGold(dateBefore,function(isOK){
                 logger.debug("【定时任务】财经事件更新前15天数据" + (isOK ? "成功" : "失败"))
             });
         });
@@ -218,7 +218,7 @@ var taskService = {
         ruleAfter.second=0;
         Schedule.scheduleJob(ruleAfter, function(){
             logger.info("【定时任务】财经事件:每1小时更新后15天数据信息!");
-            ZxFinanceService.importEventFromFxGold(dateToday,function(isOK){
+            ZxFinanceService.importEventFromFxGold(dateAfter,function(isOK){
                 logger.debug("【定时任务】财经事件更新后15天数据" + (isOK ? "成功" : "失败"))
             });
         });
