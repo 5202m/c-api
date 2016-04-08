@@ -4,7 +4,7 @@
  */
 var config = {
     studioThirdUsed:{//第三方引用直播间默认房间
-        platfrom:'webui,app',
+        platfrom:'webui,app,pc',
         groupType:'studio',
         roomId:'studio_market'
     },
