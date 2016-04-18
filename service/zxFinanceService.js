@@ -408,16 +408,14 @@ var zxFinanceService = {
     /**
      * 查找单个财经日历
      * @param basicIndexId 指标编号
-     * @param period 周期
-     * @param year 年
+     * @param date 发布日期
      * @param callback
      */
-    findData : function(basicIndexId, period, year, callback){
+    findData : function(basicIndexId, date, callback){
         APIUtil.DBFindOne(ZxFinanceData, {
             query : {
                 basicIndexId : basicIndexId,
-                period : period,
-                year : year
+                date : date
             }
         }, function(err, data){
             if(err || !data){
@@ -784,7 +782,7 @@ var zxFinanceService = {
             var detailsCache = {};
             var currDate = new Date();
             Async.forEach(apiDatas, function(apiData, callbackEach){
-                zxFinanceService.findData(apiData.basicIndexId, apiData.period, apiData.year, function(dbData){
+                zxFinanceService.findData(apiData.basicIndexId, apiData.date, function(dbData){
                     if(detailsCache.hasOwnProperty(apiData.basicIndexId)){
                         //财经详情数据已经缓存
                         var apiDetail = detailsCache[apiData.basicIndexId];
