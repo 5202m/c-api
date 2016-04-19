@@ -120,22 +120,13 @@ var taskService = {
             hourAfter.push(i);
             hourAfter.push(i+1);
         }
-        var format = "yyyy-MM-dd";
-        var today = new Date();
-        var dateToday = [Utils.dateFormat(today, format)];
-        var dateBefore = [];
-        var dateAfter = [];
-        today = today.getTime();
-        for(i = 1; i <= 15; i++){
-            dateBefore.push(Utils.dateFormat(today - i * 86400000, format));
-            dateAfter.push(Utils.dateFormat(today + (16 - i) * 86400000, format));
-        }
 
         var ruleToday = new Schedule.RecurrenceRule();
         ruleToday.minute=minToday;
         ruleToday.second=0;
         Schedule.scheduleJob(ruleToday, function(){
             logger.info("【定时任务】财经日历:每2分钟更新当天数据!");
+            var dateToday = [Utils.dateFormat(new Date(), "yyyy-MM-dd")];
             ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
                 logger.debug("【定时任务】财经日历更新当天数据" + (isOK ? "成功" : "失败"))
             });
@@ -147,6 +138,11 @@ var taskService = {
         ruleBefore.second=0;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】财经日历:每2小时更新前15天数据信息!");
+            var today = new Date().getTime();
+            var dateBefore = [];
+            for(var i = 1; i <= 15; i++){
+                dateBefore.push(Utils.dateFormat(today - i * 86400000, "yyyy-MM-dd"));
+            }
             ZxFinanceService.importDataFromFxGold(dateBefore,function(isOK){
                 logger.debug("【定时任务】财经日历更新前15天数据" + (isOK ? "成功" : "失败"))
             });
@@ -158,6 +154,11 @@ var taskService = {
         ruleAfter.second=0;
         Schedule.scheduleJob(ruleAfter, function(){
             logger.info("【定时任务】财经日历:每1小时更新后15天数据信息!");
+            var today = new Date().getTime();
+            var dateAfter = [];
+            for(var i = 1; i <= 15; i++){
+                dateAfter.push(Utils.dateFormat(today + (16 - i) * 86400000, "yyyy-MM-dd"));
+            }
             ZxFinanceService.importDataFromFxGold(dateAfter,function(isOK){
                 logger.debug("【定时任务】财经日历更新后15天数据" + (isOK ? "成功" : "失败"))
             });
@@ -180,22 +181,13 @@ var taskService = {
             hourAfter.push(i);
             hourAfter.push(i+1);
         }
-        var format = "yyyy-MM-dd";
-        var today = new Date();
-        var dateToday = [Utils.dateFormat(today, format)];
-        var dateBefore = [];
-        var dateAfter = [];
-        today = today.getTime();
-        for(i = 1; i <= 15; i++){
-            dateBefore.push(Utils.dateFormat(today - i * 86400000, format));
-            dateAfter.push(Utils.dateFormat(today + (16 - i) * 86400000, format));
-        }
 
         var ruleToday = new Schedule.RecurrenceRule();
         ruleToday.minute=minToday;
         ruleToday.second=0;
         Schedule.scheduleJob(ruleToday, function(){
             logger.info("【定时任务】财经事件:每2分钟更新当天数据!");
+            var dateToday = [Utils.dateFormat(new Date(), "yyyy-MM-dd")];
             ZxFinanceService.importEventFromFxGold(dateToday,function(isOK){
                 logger.debug("【定时任务】财经事件更新当天数据" + (isOK ? "成功" : "失败"))
             });
@@ -207,6 +199,11 @@ var taskService = {
         ruleBefore.second=0;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】财经事件:每2小时更新前15天数据信息!");
+            var today = new Date().getTime();
+            var dateBefore = [];
+            for(var i = 1; i <= 15; i++){
+                dateBefore.push(Utils.dateFormat(today - i * 86400000, "yyyy-MM-dd"));
+            }
             ZxFinanceService.importEventFromFxGold(dateBefore,function(isOK){
                 logger.debug("【定时任务】财经事件更新前15天数据" + (isOK ? "成功" : "失败"))
             });
@@ -218,6 +215,11 @@ var taskService = {
         ruleAfter.second=0;
         Schedule.scheduleJob(ruleAfter, function(){
             logger.info("【定时任务】财经事件:每1小时更新后15天数据信息!");
+            var today = new Date().getTime();
+            var dateAfter = [];
+            for(var i = 1; i <= 15; i++){
+                dateAfter.push(Utils.dateFormat(today + (16 - i) * 86400000, "yyyy-MM-dd"));
+            }
             ZxFinanceService.importEventFromFxGold(dateAfter,function(isOK){
                 logger.debug("【定时任务】财经事件更新后15天数据" + (isOK ? "成功" : "失败"))
             });

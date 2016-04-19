@@ -177,6 +177,23 @@ var common = {
      */
     isMobilePhone:function(val){
         return /(^[0-9]{11})$|(^86(-){0,3}[0-9]{11})$/.test(val);
+    },
+
+    /**
+     * 在数组中查找匹配对象下标
+     * @param arr
+     * @param key
+     * @param compareFn
+     */
+    searchIndexArray : function(arr, key, compareFn){
+        var item = null;
+        for(var i = 0, lenI = !arr ? 0 : arr.length; i < lenI; i++){
+            item = arr[i];
+            if(compareFn(item, key) == true){
+                return i;
+            }
+        }
+        return -1;
     }
 };
 

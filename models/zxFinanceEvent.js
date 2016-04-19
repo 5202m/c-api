@@ -25,10 +25,10 @@ var ZxFinanceEventSchema = new Schema({
     title : {type : String, index : true}, // 事件标题
     link : String, // 事件链接
     date : {type : String, index : true}, // 事件日期 yyyy-MM-dd
-    time : {type : String, index : true}, // 事件时间 HH:mm:ss
+    time : String, // 事件时间 HH:mm:ss
     importanceLevel : Number, // 重要指数
     dataType : {type : Number, index : true},// 是否有效(0：所有 1：外汇 2：贵金属 )
-    valid : Number,// 是否有效(0：无效 1：有效 )
+    valid : Number,// 是否有效(0：无效 1：有效 2：金汇删除)
     createUser : String,
     createIp : String,
     createDate : {type : Date, default : new Date()},
