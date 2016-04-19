@@ -308,6 +308,8 @@ var zxFinanceService = {
                     result = data.data instanceof Array ? data.data : [];
                 }catch(e){
                     Logger.warn("IndexEventApi error[URL=" + this.uri.href + "]：" + e);
+                    callback(e, null);
+                    return;
                 }
             }
             callback(null, result);
@@ -338,6 +340,8 @@ var zxFinanceService = {
                     result = (data.data instanceof Array && data.data.length > 0) ? data.data[0] : null;
                 }catch(e){
                     Logger.warn("IndexEventDetailApi error[URL=" + this.uri.href + "]：" + e);
+                    callback(e, null);
+                    return;
                 }
             }
             callback(result);
