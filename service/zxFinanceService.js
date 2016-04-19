@@ -292,13 +292,13 @@ var zxFinanceService = {
     getDataFromFxGold : function(date, callback){
         if(!date){
             Logger.warn("IndexEventApi error: date为空!");
-            callback([]);
+            callback(true, null);
             return;
         }
         Request.get(zxFinanceService.formatUrl("/IndexEventApi?date=" + date), function(err, res, data){
             if(err){
                 Logger.warn("IndexEventApi error[URL=" + this.uri.href + "]：" + err);
-                callback([]);
+                callback(err, null);
                 return;
             }
             var result = [];
@@ -310,7 +310,7 @@ var zxFinanceService = {
                     Logger.warn("IndexEventApi error[URL=" + this.uri.href + "]：" + e);
                 }
             }
-            callback(result);
+            callback(null, result);
         });
     },
 
@@ -352,13 +352,13 @@ var zxFinanceService = {
     getEventFromFxGold : function(date, callback){
         if(!date){
             Logger.warn("FinanceEventApi error: date为空!");
-            callback([]);
+            callback(true, null);
             return;
         }
         Request.get(zxFinanceService.formatUrl("/FinanceEventApi?date=" + date), function(err, res, data){
             if(err){
                 Logger.warn("FinanceEventApi error[URL=" + this.uri.href + "]：" + err);
-                callback([]);
+                callback(err, null);
                 return;
             }
             var result = [];
@@ -370,7 +370,7 @@ var zxFinanceService = {
                     Logger.warn("FinanceEventApi error[URL=" + this.uri.href + "]：" + e);
                 }
             }
-            callback(result);
+            callback(null, result);
         });
     },
 
@@ -787,9 +787,7 @@ var zxFinanceService = {
             Async.parallel({
                 api : function(cbFn){
                     //从接口获取当日财经大事
-                    zxFinanceService.getDataFromFxGold(dateTmp, function(datasApi){
-                        cbFn(null, datasApi);
-                    });
+                    zxFinanceService.getDataFromFxGold(dateTmp, cbFn);
                 },
                 db : function(cbFn){
                     //从数据库获取当日财经大事
@@ -938,9 +936,7 @@ var zxFinanceService = {
             Async.parallel({
                 api : function(cbFn){
                     //从接口获取当日财经大事
-                    zxFinanceService.getEventFromFxGold(dateTmp, function(eventsApi){
-                        cbFn(null, eventsApi);
-                    });
+                    zxFinanceService.getEventFromFxGold(dateTmp, cbFn);
                 },
                 db : function(cbFn){
                     //从数据库获取当日财经大事
