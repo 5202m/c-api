@@ -291,13 +291,14 @@ var zxFinanceService = {
      */
     getDataFromFxGold : function(date, callback){
         if(!date){
-            Logger.warn("IndexEventApi error: date为空!");
+            Logger.warn("business-source/data error: date为空!");
             callback(true, null);
             return;
         }
-        Request.get(zxFinanceService.formatUrl("/IndexEventApi?date=" + date), function(err, res, data){
+        date = date.replace(/\-/g, "");
+        Request.get(zxFinanceService.formatUrl(":8080/business-source/data/" + date), function(err, res, data){
             if(err){
-                Logger.warn("IndexEventApi error[URL=" + this.uri.href + "]：" + err);
+                Logger.warn("business-source/data error[URL=" + this.uri.href + "]：" + err);
                 callback(err, null);
                 return;
             }
@@ -305,9 +306,9 @@ var zxFinanceService = {
             if(data){
                 try{
                     data = JSON.parse(data);
-                    result = data.data instanceof Array ? data.data : [];
+                    result = data instanceof Array ? data : [];
                 }catch(e){
-                    Logger.warn("IndexEventApi error[URL=" + this.uri.href + "]：" + e);
+                    Logger.warn("business-source/data error[URL=" + this.uri.href + "]：" + e);
                     callback(e, null);
                     return;
                 }
@@ -712,12 +713,20 @@ var zxFinanceService = {
      * 通过API数据刷新财经日历数据
      * @param dbData
      * @param apiData
-     * @param apiDetail
      * @returns {*}
      */
-    refreshData : function(dbData, apiData, apiDetail){
+    refreshData : function(dbData, apiData){
         if(!dbData){
             dbData = {};
+        }
+        var year = 0, date = "", time = "";
+        if(apiData.publishTime){
+            date = apiData.publishTime.substring(0, 10);
+            time = apiData.publishTime.substring(11, 19);
+            year = parseInt(date.substring(0, 4), 10);
+            if(isNaN(year)){
+                year = 0;
+            }
         }
         dbData.name         = apiData.name;
         dbData.country      = apiData.country;
@@ -727,28 +736,21 @@ var zxFinanceService = {
         dbData.predictValue = apiData.predictValue;
         dbData.lastValue    = apiData.lastValue;
         dbData.value        = apiData.value;
-        dbData.year         = apiData.year;
-        dbData.positiveItem = apiData.positiveItem;
-        dbData.negativeItem = apiData.negativeItem;
-        dbData.level        = apiData.level;
-        dbData.url          = apiData.url;
-        dbData.date         = apiData.date;
-        dbData.time         = apiData.time;
-
-        if(apiDetail){
-            dbData.unit            = apiDetail.unit;
-            dbData.interpretation  = apiDetail.interpretation;
-            dbData.publishOrg      = apiDetail.publishOrganization;
-            dbData.publishFrequncy = apiDetail.publishFrequncy;
-            dbData.statisticMethod = apiDetail.statisticMethod;
-            dbData.explanation     = apiDetail.explanation;
-            dbData.influence       = apiDetail.influence;
-            if(apiDetail.newestDataPoint
-                && apiDetail.newestDataPoint.publishTime
-                && (dbData.date + " " + dbData.time + ".0") == apiDetail.newestDataPoint.publishTime){
-                dbData.nextPublishTime = apiDetail.nextpublishTime;
-            }
-        }
+        dbData.year         = year;
+        dbData.positiveItem = "";
+        dbData.negativeItem = "";
+        dbData.level        = "";
+        dbData.url          = "";
+        dbData.date         = date;
+        dbData.time         = time;
+        dbData.unit            = apiData.unit;
+        dbData.interpretation  = apiData.reasonforlook;
+        dbData.publishOrg      = apiData.publishOrganization;
+        dbData.publishFrequncy = apiData.publishFrequncy;
+        dbData.statisticMethod = apiData.statisticMethod;
+        dbData.explanation     = apiData.explanation;
+        dbData.influence       = apiData.influence;
+        dbData.nextPublishTime = apiData.nextPublishTime;
         return dbData;
     },
 
@@ -803,116 +805,107 @@ var zxFinanceService = {
                     callbackTmp(null);
                     return;
                 }
-                Async.map(results.api, function(dataApiMap, cbMap){
-                    zxFinanceService.getDetailFromFxGold(dataApiMap.basicIndexId, function(apiDetail){
-                        cbMap(null, apiDetail);
-                    });
-                }, function(err, detailsApi){
-                    if(err){
-                        Logger.error("importDataFromFxGold << 从api获取详情数据出错： " + err);
+                var compareFn = function(dataDb, dataApi){
+                    return dataDb
+                        && dataDb.basicIndexId == dataApi.basicIndexId;
+                };
+                var i, lenI, dataApi, dataDbIndex, dataDb;
+                var newDatas = [];
+                var currDate = new Date();
+                for(i = 0, lenI = !results.api ? 0 : results.api.length; i < lenI; i++){
+                    dataApi = results.api[i];
+                    dataDbIndex = Common.searchIndexArray(results.db, dataApi, compareFn);
+                    if(dataDbIndex == -1){
+                        //接口新数据
+                        dataDb = zxFinanceService.refreshData(null, dataApi);
+                        dataDb.createDate = currDate;
+                        dataDb.updateDate = currDate;
+                        newDatas.push(dataDb);
+                    }else{
+                        dataDb = results.db[dataDbIndex];
+                        results.db[dataDbIndex] = null; //标记已经处理
+                        dataDb = zxFinanceService.refreshData(dataDb, dataApi);
+                        //数据更新的直接用现有数据更新描述，不需要查询配置信息，因为配置更新的时候会更新所有数据
+                        dataDb.description = zxFinanceService.getDescription(dataDb);
+                        dataDb.updateDate = currDate;
+                        if(dataDb.valid == 2){
+                            //金汇数据接口删除数据后，valid为2; 重新添加数据后，valid再次修正为1
+                            dataDb.valid = 1;
+                        }
+                        dataDb.save(function(err){
+                            if(err){
+                                Logger.error("importDataFromFxGold <<1<< 保存财经数据出错: " + err);
+                            }
+                        });
                     }
-                    var compareFn = function(dataDb, dataApi){
-                        return dataDb
-                            && dataDb.basicIndexId == dataApi.basicIndexId;
-                    };
-                    var i, lenI, dataApi, dataDbIndex, dataDb;
-                    var newDatas = [];
-                    var currDate = new Date();
-                    for(i = 0, lenI = !results.api ? 0 : results.api.length; i < lenI; i++){
-                        dataApi = results.api[i];
-                        dataDbIndex = Common.searchIndexArray(results.db, dataApi, compareFn);
-                        if(dataDbIndex == -1){
-                            //接口新数据
-                            dataDb = zxFinanceService.refreshData(null, dataApi, detailsApi[i]);
-                            dataDb.createDate = currDate;
-                            dataDb.updateDate = currDate;
-                            newDatas.push(dataDb);
+                }
+                //针对所有未处理数据库中的财经数据，状态标记
+                for(i = 0, lenI = !results.db ? 0 : results.db.length; i < lenI; i++){
+                    dataDb = results.db[i];
+                    if(dataDb && dataDb.valid == 1){
+                        //金汇接口删除数据，valid设置为2，但是针对于mis设置无效数据，则不修改该值
+                        dataDb.valid = 2;
+                        dataDb.updateDate = currDate;
+                        dataDb.save(function(err){
+                            if(err){
+                                Logger.error("importDataFromFxGold <<2<< 保存财经数据出错: " + err);
+                            }
+                        });
+                    }
+                }
+                //批量保存新增财经数据
+                if(newDatas.length == 0){
+                    callbackTmp(null);
+                    return;
+                }
+                zxFinanceService.getDataConfigs(newDatas, function(configs){
+                    var newConfigs = [];
+                    var configTmp = null;
+                    var description = null;
+                    var newDataTmp = null;
+                    for(var i = 0, lenI = newDatas.length; i < lenI; i++){
+                        newDataTmp = newDatas[i];
+                        if(configs.hasOwnProperty(newDataTmp.basicIndexId)){
+                            configTmp = configs[newDataTmp.basicIndexId];
+                            description = configTmp.description;
+                            description = description.replace(/,/g, "_U_U_U,") + "_U_U_U";
+                            newDataTmp.importanceLevel = configTmp.importanceLevel;
+                            newDataTmp.description     = description;
+                            newDataTmp.description     = zxFinanceService.getDescription(newDataTmp);
+                            newDataTmp.valid           = configTmp.valid;
+                            newDataTmp.dataType        = configTmp.dataType;
                         }else{
-                            dataDb = results.db[dataDbIndex];
-                            results.db[dataDbIndex] = null; //标记已经处理
-                            dataDb = zxFinanceService.refreshData(dataDb, dataApi, detailsApi[i]);
-                            //数据更新的直接用现有数据更新描述，不需要查询配置信息，因为配置更新的时候会更新所有数据
-                            dataDb.description = zxFinanceService.getDescription(dataDb);
-                            dataDb.updateDate = currDate;
-                            if(dataDb.valid == 2){
-                                //金汇数据接口删除数据后，valid为2; 重新添加数据后，valid再次修正为1
-                                dataDb.valid = 1;
-                            }
-                            dataDb.save(function(err){
-                                if(err){
-                                    Logger.error("importDataFromFxGold <<1<< 保存财经数据出错: " + err);
-                                }
-                            });
-                        }
-                    }
-                    //针对所有未处理数据库中的财经数据，状态标记
-                    for(i = 0, lenI = !results.db ? 0 : results.db.length; i < lenI; i++){
-                        dataDb = results.db[i];
-                        if(dataDb && dataDb.valid == 1){
-                            //金汇接口删除数据，valid设置为2，但是针对于mis设置无效数据，则不修改该值
-                            dataDb.valid = 2;
-                            dataDb.updateDate = currDate;
-                            dataDb.save(function(err){
-                                if(err){
-                                    Logger.error("importDataFromFxGold <<2<< 保存财经数据出错: " + err);
-                                }
-                            });
-                        }
-                    }
-                    //批量保存新增财经数据
-                    if(newDatas.length == 0){
-                        callbackTmp(null);
-                        return;
-                    }
-                    zxFinanceService.getDataConfigs(newDatas, function(configs){
-                        var newConfigs = [];
-                        var configTmp = null;
-                        var description = null;
-                        var newDataTmp = null;
-                        for(var i = 0, lenI = newDatas.length; i < lenI; i++){
-                            newDataTmp = newDatas[i];
-                            if(configs.hasOwnProperty(newDataTmp.basicIndexId)){
-                                configTmp = configs[newDataTmp.basicIndexId];
-                                description = configTmp.description;
-                                description = description.replace(/,/g, "_U_U_U,") + "_U_U_U";
-                                newDataTmp.importanceLevel = configTmp.importanceLevel;
-                                newDataTmp.description     = description;
-                                newDataTmp.description     = zxFinanceService.getDescription(newDataTmp);
-                                newDataTmp.valid           = configTmp.valid;
-                                newDataTmp.dataType        = configTmp.dataType;
-                            }else{
-                                newDataTmp.importanceLevel = zxFinanceService.getDefImportanceLevel(newDataTmp.importance); //默认重要等级
-                                newDataTmp.dataType = 0; //默认数据类型
-                                newDataTmp.valid = 1; //默认有效性
-                                newDataTmp.description = zxFinanceService.getDescription(newDataTmp);
+                            newDataTmp.importanceLevel = zxFinanceService.getDefImportanceLevel(newDataTmp.importance); //默认重要等级
+                            newDataTmp.dataType = 0; //默认数据类型
+                            newDataTmp.valid = 1; //默认有效性
+                            newDataTmp.description = zxFinanceService.getDescription(newDataTmp);
 
-                                //不存在配置，自动新增一个默认配置
-                                configTmp = {};
-                                configTmp._id             = newDataTmp.basicIndexId;
-                                configTmp.country         = newDataTmp.country;
-                                configTmp.createDate      = currDate;
-                                configTmp.dataType        = newDataTmp.dataType;
-                                configTmp.description     = "WH_ZX"; //默认是外汇正向
-                                configTmp.importanceLevel = newDataTmp.importanceLevel;
-                                configTmp.name            = newDataTmp.name;
-                                configTmp.updateDate      = currDate;
-                                configTmp.valid           = newDataTmp.valid;
-                                newConfigs.push(configTmp);
-                                configs[configTmp._id] = configTmp;
-                            }
+                            //不存在配置，自动新增一个默认配置
+                            configTmp = {};
+                            configTmp._id             = newDataTmp.basicIndexId;
+                            configTmp.country         = newDataTmp.country;
+                            configTmp.createDate      = currDate;
+                            configTmp.dataType        = newDataTmp.dataType;
+                            configTmp.description     = "WH_ZX"; //默认是外汇正向
+                            configTmp.importanceLevel = newDataTmp.importanceLevel;
+                            configTmp.name            = newDataTmp.name;
+                            configTmp.updateDate      = currDate;
+                            configTmp.valid           = newDataTmp.valid;
+                            newConfigs.push(configTmp);
+                            configs[configTmp._id] = configTmp;
                         }
-                        //批量保存配置信息
-                        zxFinanceService.saveDataCfgs(newConfigs, function(errCfgs){
-                            if(errCfgs){
-                                Logger.error("importDataFromFxGold <<批量保存财经数据配置出错: " + errCfgs);
+                    }
+                    //批量保存配置信息
+                    zxFinanceService.saveDataCfgs(newConfigs, function(errCfgs){
+                        if(errCfgs){
+                            Logger.error("importDataFromFxGold <<批量保存财经数据配置出错: " + errCfgs);
+                        }
+                        //批量保存财经数据
+                        zxFinanceService.saveDatas(newDatas, function(errDatas){
+                            if(errDatas){
+                                Logger.error("importDataFromFxGold <<批量保存财经数据出错: " + err);
                             }
-                            //批量保存财经数据
-                            zxFinanceService.saveDatas(newDatas, function(errDatas){
-                                if(errDatas){
-                                    Logger.error("importDataFromFxGold <<批量保存财经数据出错: " + err);
-                                }
-                                callbackTmp(null);
-                            });
+                            callbackTmp(null);
                         });
                     });
                 });
