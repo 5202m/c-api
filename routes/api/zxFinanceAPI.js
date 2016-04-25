@@ -7,6 +7,7 @@ var express = require('express');
 var router = express.Router();
 var ZxFinanceService = require('../../service/zxFinanceService.js');
 var ApiResult = require('../../util/ApiResult.js');
+var Logger = require('../../resources/logConf').getLogger("zxFinanceAPI");
 
 /**
  * 财经数据列表
@@ -88,6 +89,35 @@ router.get('/detail', function(req, res) {
                 res.json(ApiResult.result(null, data));
             }
         });
+    }
+});
+
+/**
+ * 手动更新数据：预防异常情况
+ */
+router.get('/refresh', function(req, res) {
+    var loc_params = {
+        type : req.query["type"],  //类型 event、data
+        date : req.query["date"]   //日期 yyyy-MM-dd
+    };
+    if(loc_params.type != "event" && loc_params.type != "data"){
+        res.json(ApiResult.result("参数错误[type]:" + loc_params.type, null));
+    }else if(!/^\d{4}-\d{2}-\d{2}$/.test(loc_params.date)) {
+        res.json(ApiResult.result("参数错误[date]:" + loc_params.date, null));
+    }else{
+        if(loc_params.type == "event"){
+            ZxFinanceService.importEventFromFxGold([loc_params.date], function(isOK){
+                var msg = "手动更新财经事件‘" + loc_params.date + "’数据" + (isOK ? "成功" : "失败");
+                Logger.debug(msg);
+                res.json(ApiResult.result(null, msg));
+            });
+        }else if(loc_params.type == "data"){
+            ZxFinanceService.importDataFromFxGold([loc_params.date], function(isOK){
+                var msg = "手动更新财经数据‘" + loc_params.date + "’数据" + (isOK ? "成功" : "失败");
+                Logger.debug(msg);
+                res.json(ApiResult.result(null, msg));
+            });
+        }
     }
 });
 
