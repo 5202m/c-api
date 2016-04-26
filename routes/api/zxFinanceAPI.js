@@ -108,13 +108,13 @@ router.get('/refresh', function(req, res) {
         if(loc_params.type == "event"){
             ZxFinanceService.importEventFromFxGold([loc_params.date], function(isOK){
                 var msg = "手动更新财经事件‘" + loc_params.date + "’数据" + (isOK ? "成功" : "失败");
-                Logger.debug(msg);
+                Logger.info(msg);
                 res.json(ApiResult.result(null, msg));
             });
         }else if(loc_params.type == "data"){
             ZxFinanceService.importDataFromFxGold([loc_params.date], function(isOK){
                 var msg = "手动更新财经数据‘" + loc_params.date + "’数据" + (isOK ? "成功" : "失败");
-                Logger.debug(msg);
+                Logger.info(msg);
                 res.json(ApiResult.result(null, msg));
             });
         }
