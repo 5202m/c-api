@@ -108,24 +108,29 @@ var taskService = {
      * 财经日历——定时从金汇接口更新财经日历数据
      */
     autoFinanceData : function(){
-        var minToday = [];
-        var i;
-        for(i = 0; i < 60; i+=2){
-            minToday.push(i);
-        }
         var hourBefore = [];
         var hourAfter = [];
-        for(i = 0; i < 24; i+=2){
+        for(var i = 0; i < 24; i+=2){
             hourBefore.push(i);
             hourAfter.push(i);
             hourAfter.push(i+1);
         }
 
+        var ruleSpecial = new Schedule.RecurrenceRule();
+        ruleSpecial.minute=[0,29,30,59];
+        ruleSpecial.second=[5,15,25,35,45,55];
+        Schedule.scheduleJob(ruleSpecial, function(){
+            logger.info("【定时任务】财经日历:特殊时间段（半点、整点）每10秒更新当天数据!");
+            var dateToday = [Utils.dateFormat(new Date(), "yyyy-MM-dd")];
+            ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
+                logger.debug("【定时任务】财经日历更新当天数据" + (isOK ? "成功" : "失败"));
+            });
+        });
+
         var ruleToday = new Schedule.RecurrenceRule();
-        ruleToday.minute=minToday;
         ruleToday.second=0;
         Schedule.scheduleJob(ruleToday, function(){
-            logger.info("【定时任务】财经日历:每2分钟更新当天数据!");
+            logger.info("【定时任务】财经日历:每1分钟更新当天数据!");
             var dateToday = [Utils.dateFormat(new Date(), "yyyy-MM-dd")];
             ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
                 logger.debug("【定时任务】财经日历更新当天数据" + (isOK ? "成功" : "失败"));
@@ -135,7 +140,7 @@ var taskService = {
         var ruleBefore = new Schedule.RecurrenceRule();
         ruleBefore.hour=hourBefore;
         ruleBefore.minute=1;
-        ruleBefore.second=0;
+        ruleBefore.second=30;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】财经日历:每2小时更新前15天数据信息!");
             var today = new Date().getTime();
@@ -151,7 +156,7 @@ var taskService = {
         var ruleAfter = new Schedule.RecurrenceRule();
         ruleAfter.hour=hourAfter;
         ruleAfter.minute=5;
-        ruleAfter.second=0;
+        ruleAfter.second=30;
         Schedule.scheduleJob(ruleAfter, function(){
             logger.info("【定时任务】财经日历:每1小时更新后15天数据信息!");
             var today = new Date().getTime();
@@ -184,7 +189,7 @@ var taskService = {
 
         var ruleToday = new Schedule.RecurrenceRule();
         ruleToday.minute=minToday;
-        ruleToday.second=0;
+        ruleToday.second=5;
         Schedule.scheduleJob(ruleToday, function(){
             logger.info("【定时任务】财经事件:每2分钟更新当天数据!");
             var dateToday = [Utils.dateFormat(new Date(), "yyyy-MM-dd")];
@@ -196,7 +201,7 @@ var taskService = {
         var ruleBefore = new Schedule.RecurrenceRule();
         ruleBefore.hour=hourBefore;
         ruleBefore.minute=9;
-        ruleBefore.second=0;
+        ruleBefore.second=30;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】财经事件:每2小时更新前15天数据信息!");
             var today = new Date().getTime();
@@ -212,7 +217,7 @@ var taskService = {
         var ruleAfter = new Schedule.RecurrenceRule();
         ruleAfter.hour=hourAfter;
         ruleAfter.minute=13;
-        ruleAfter.second=0;
+        ruleAfter.second=30;
         Schedule.scheduleJob(ruleAfter, function(){
             logger.info("【定时任务】财经事件:每1小时更新后15天数据信息!");
             var today = new Date().getTime();
