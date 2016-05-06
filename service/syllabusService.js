@@ -91,7 +91,7 @@ var syllabusService = {
                     }
                 }
             }
-            callback(ApiResult.result(null, loc_dayIndex == -1 ? null : loc_result));
+            callback(ApiResult.result(null, loc_dayIndex == -1 ? [] : loc_result));
         });
     }
 };
