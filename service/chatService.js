@@ -16,7 +16,18 @@ var chatService ={
         if(common.isBlank(roomCode)){
             roomCode='wechat';
         }
-        var searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
+        var searchObj=null;
+        if(roomCode=='studio'){
+            searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text'};
+            var lastTm=params.lastPublishTime;
+            if(common.isValid(lastTm)){
+                params.pageNo=1;
+                params.pageSize=10000;
+                searchObj.publishTime = { "$gt":lastTm};
+            }
+        }else{
+            searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
+        }
         var currDate=new Date();
         if(common.isValid(params.userType)){
             searchObj.userType=params.userType;
@@ -43,7 +54,7 @@ var chatService ={
                                 var dataList=[],row=null,newRow=null;
                                 for(var i in infos){
                                     row=infos[i];
-                                    newRow={avatar:row.avatar,userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:row.publishTime.replace(/_.+/,"")};
+                                    newRow={avatar:row.avatar,userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:(roomCode=='studio'?row.publishTime:row.publishTime.replace(/_.+/,""))};
                                     if(common.isValid(row.toUser.userId) && common.isValid(row.toUser.question)){
                                         newRow.questionInfo={nickname:row.toUser.nickname,question:row.toUser.question};
                                     }
