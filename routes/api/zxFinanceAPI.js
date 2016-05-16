@@ -33,7 +33,7 @@ router.get('/list', function(req, res) {
         res.json(ApiResult.result(loc_msg, null));
     }else{
         loc_param.dataTypeCon = parseInt(loc_param.dataTypeCon, 10);
-        ZxFinanceService.getFinanceData(loc_param.releaseTime, loc_param.dataTypeCon, function(err, data){
+        ZxFinanceService.getFinanceDataCache(loc_param.releaseTime, loc_param.dataTypeCon, function(err, data){
             res.json(ApiResult.result(null, data));
         });
     }
@@ -61,7 +61,7 @@ router.get('/history', function(req, res) {
     if(loc_msg != null){
         res.json(ApiResult.result(loc_msg, null));
     }else{
-        ZxFinanceService.getFinanceDataHis(loc_param.basicIndexId, loc_param.startTime, loc_param.endTime, function(err, data){
+        ZxFinanceService.getFinanceDataHisCache(loc_param.basicIndexId, loc_param.startTime, loc_param.endTime, function(err, data){
             if(err || !data){
                 res.json(ApiResult.result("财经数据不存在[" + loc_param.basicIndexId + "]", null));
             }else{
@@ -82,7 +82,7 @@ router.get('/detail', function(req, res) {
     }else if(!/^[0-9a-fA-F]{24}$/.test(loc_dataId)) {
         res.json(ApiResult.result("参数错误[" + loc_dataId + "]", null));
     }else{
-        ZxFinanceService.getFinanceDataDetail(loc_dataId, function(err, data){
+        ZxFinanceService.getFinanceDataDetailCache(loc_dataId, function(err, data){
             if(err || !data){
                 res.json(ApiResult.result("财经数据不存在[" + loc_dataId + "]", null));
             }else{

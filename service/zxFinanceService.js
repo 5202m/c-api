@@ -20,6 +20,7 @@ var Request = require('request');
 var Config=require('../resources/config.js');
 var Utils = require('../util/Utils');
 var Common = require('../util/common');
+var CacheClient=require('../cache/cacheClient');
 
 var zxFinanceService = {
     /**
@@ -97,6 +98,34 @@ var zxFinanceService = {
     },
 
     /**
+     * 从缓存中获取财经数据：财经日历 + 财经事件 + 假期预告
+     */
+    getFinanceDataCache : function(date, dataType, callback){
+        var today = Utils.dateFormat(new Date(), "yyyy-MM-dd");
+        if(today == date){//当日数据不做缓存
+            zxFinanceService.getFinanceData(date, dataType, callback);
+        }else{
+            var cacheKey = "FinanceData:" + date + "_" + dataType;
+            CacheClient.get(cacheKey, function(err, financeData){
+                if(err){
+                    Logger.error("<<getFinanceDataCache:查询财经数据缓存信息出错，[errMessage:%s]", err);
+                }
+                if(financeData){
+                    callback(null, JSON.parse(financeData));
+                }else{
+                    zxFinanceService.getFinanceData(date, dataType, function(errDb, financeDataDb){
+                        if(!errDb){
+                            CacheClient.set(cacheKey, JSON.stringify(financeDataDb));
+                            CacheClient.expire(cacheKey,4);//一个小时有效
+                        }
+                        callback(errDb, financeDataDb);
+                    });
+                }
+            });
+        }
+    },
+
+    /**
      * 获取财经数据：财经日历 + 财经事件 + 假期预告
      * @param date
      * @param dataType
@@ -165,6 +194,34 @@ var zxFinanceService = {
                 financeData:results.datas
             });
         });
+    },
+
+    /**
+     * 从缓存获取财经日历历史数据
+     */
+    getFinanceDataHisCache : function(basicIndexId, startTime, endTime, callback){
+        var today = Utils.dateFormat(new Date(), "yyyy-MM-dd");
+        if(today == startTime || today == endTime){//当日数据不做缓存
+            zxFinanceService.getFinanceDataHis(basicIndexId, startTime, endTime, callback);
+        }else{
+            var cacheKey = "FinanceDataHis:" + basicIndexId + "_" + (startTime || "") + "_" + (endTime || "");
+            CacheClient.get(cacheKey, function(err, financeDataHis){
+                if(err){
+                    Logger.error("<<getFinanceDataHisCache:查询财经日历历史数据缓存信息出错，[errMessage:%s]", err);
+                }
+                if(financeDataHis){
+                    callback(null, JSON.parse(financeDataHis));
+                }else{
+                    zxFinanceService.getFinanceDataHis(basicIndexId, startTime, endTime, function(errDb, financeDataHisDb){
+                        if(!errDb){
+                            CacheClient.set(cacheKey, JSON.stringify(financeDataHisDb));
+                            CacheClient.expire(cacheKey,3600);//一个小时有效
+                        }
+                        callback(errDb, financeDataHisDb);
+                    });
+                }
+            });
+        }
     },
 
     /**
@@ -241,6 +298,32 @@ var zxFinanceService = {
                 });
             }
             callback(null, loc_result);
+        });
+    },
+
+    /**
+     * 从缓存获取财经日历详情数据
+     */
+    getFinanceDataDetailCache : function(dataId, callback){
+        var cacheKey = "FinanceDataDetailCache:" + dataId;
+        CacheClient.get(cacheKey, function(err, financeDataDetail){
+            if(err){
+                Logger.error("<<getFinanceDataDetailCache:查询财经日历详情数据缓存信息出错，[errMessage:%s]", err);
+            }
+            if(financeDataDetail){
+                callback(null, JSON.parse(financeDataDetail));
+            }else{
+                zxFinanceService.getFinanceDataDetail(dataId, function(errDb, financeDataDetailDb){
+                    if(!errDb){
+                        var today = Utils.dateFormat(new Date(), "yyyy-MM-dd");
+                        if(financeDataDetailDb.date != today){//当前公布的指标不缓存
+                            CacheClient.set(cacheKey, JSON.stringify(financeDataDetailDb));
+                            CacheClient.expire(cacheKey,3600);//一个小时有效
+                        }
+                    }
+                    callback(errDb, financeDataDetailDb);
+                });
+            }
         });
     },
 

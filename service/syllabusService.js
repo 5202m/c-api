@@ -81,7 +81,7 @@ var syllabusService = {
                         loc_timeBucket = loc_courses.timeBuckets[i];
                         if(loc_timeBucket.course[loc_dayIndex].status == 1
                             && loc_timeBucket.course[loc_dayIndex].lecturer
-                            && loc_timeBucket.course[loc_dayIndex].lecturer != "金道贵金属"){
+                            && loc_timeBucket.course[loc_dayIndex].courseType != 2){
                             loc_result.push({
                                 startTime : loc_timeBucket.startTime,
                                 endTime : loc_timeBucket.endTime,
