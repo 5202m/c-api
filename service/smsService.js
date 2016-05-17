@@ -298,6 +298,8 @@ var smsService = {
                     }
                     callback(APIUtil.APIResult(null, true, null));
                 });
+            }else if(smsInfo.status === 2){
+                callback(APIUtil.APIResult(null, true, null));
             }else if(smsInfo.status === 3){
                 callback(APIUtil.APIResult("code_1006", false, null));
             }else if(smsInfo.status === 4){
