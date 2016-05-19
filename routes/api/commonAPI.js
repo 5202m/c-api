@@ -131,11 +131,15 @@ router.get("/getCourse", function(req, res) {
     var loc_params = {
         platform : req.query["platform"],
         groupType : req.query["groupType"],
-        groupId : req.query["groupId"]
+        groupId : req.query["groupId"],
+        single : req.query["single"] == "1"
     };
     var isInitDef = common.containSplitStr(config.studioThirdUsed.platfrom, loc_params.platform);
     if(!loc_params.groupType && isInitDef){
         loc_params.groupType = config.studioThirdUsed.groupType;
+    }
+    if(loc_params.platform == config.studioThirdUsed.web24k){
+        loc_params.single = true;
     }
     if(!loc_params.groupId && loc_params.groupType == config.studioThirdUsed.groupType && isInitDef){
         loc_params.groupId = config.studioThirdUsed.roomId;
@@ -145,7 +149,7 @@ router.get("/getCourse", function(req, res) {
         return;
     }
     //查询课程安排
-    SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), function(apiResult){
+    SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), loc_params.single, function(apiResult){
         res.json(apiResult);
     });
 });

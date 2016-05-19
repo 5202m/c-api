@@ -5,6 +5,8 @@
 var config = {
     studioThirdUsed:{//第三方引用直播间默认房间
         platfrom:'webui,app,pc,web24k',
+        webui:'webui',
+        web24k:'web24k',
         groupType:'studio',
         roomId:'studio_teach'
     },
