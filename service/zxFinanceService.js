@@ -379,7 +379,7 @@ var zxFinanceService = {
             return;
         }
         date = date.replace(/\-/g, "");
-        Request.get(zxFinanceService.formatUrl(":8080/business-source/data/" + date), function(err, res, data){
+        Request.get(zxFinanceService.formatUrl("/business-source/data/" + date), function(err, res, data){
             if(err){
                 Logger.warn("business-source/data error[URL=" + this.uri.href + "]：" + err);
                 callback(err, null);
