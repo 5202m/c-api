@@ -3,6 +3,7 @@ var chatMessage = require('../models/chatMessage');//引入chatMessage数据模�
 var common = require('../util/common');//引入common类
 var ApiResult = require('../util/ApiResult');
 var async = require('async');//引入async
+var config = require('../resources/config');
 /**
  * 聊天室相关信息服务类
  * author Alan.wu
@@ -16,9 +17,9 @@ var chatService ={
         if(common.isBlank(roomCode)){
             roomCode='wechat';
         }
-        var searchObj=null;
+        var searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text'};
         if(roomCode=='studio'){
-            searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text'};
+            searchObj.groupId=config.studioThirdUsed.roomId;
             var lastTm=params.lastPublishTime;
             if(common.isValid(lastTm)){
                 params.pageNo=1;
@@ -26,7 +27,7 @@ var chatService ={
                 searchObj.publishTime = { "$gt":lastTm};
             }
         }else{
-            searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text',userType:{'$in':[0,2]}};
+            searchObj.userType={'$in':[0,2]};
         }
         var currDate=new Date();
         if(common.isValid(params.userType)){
@@ -54,9 +55,15 @@ var chatService ={
                                 var dataList=[],row=null,newRow=null;
                                 for(var i in infos){
                                     row=infos[i];
-                                    newRow={avatar:row.avatar,userType:row.userType,nickname:row.nickname,content:row.content.value,publishTime:(roomCode=='studio'?row.publishTime:row.publishTime.replace(/_.+/,""))};
-                                    if(common.isValid(row.toUser.userId) && common.isValid(row.toUser.question)){
-                                        newRow.questionInfo={nickname:row.toUser.nickname,question:row.toUser.question};
+                                    newRow={avatar:row.avatar,userType:row.userType,nickname:row.nickname,content:row.content.value};
+                                    if(roomCode=='studio'){
+                                        newRow.toUser=row.toUser;
+                                        newRow.publishTime=row.publishTime;
+                                    }else{
+                                        newRow.publishTime=row.publishTime.replace(/_.+/,"");
+                                        if(common.isValid(row.toUser.userId) && common.isValid(row.toUser.question)){
+                                            newRow.questionInfo={nickname:row.toUser.nickname,question:row.toUser.question};
+                                        }
                                     }
                                     dataList.push(newRow);
                                 }
