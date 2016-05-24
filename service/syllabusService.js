@@ -134,8 +134,8 @@ var syllabusService = {
             return [];
         }
         var days=coursesObj.days,timeBuckets=coursesObj.timeBuckets;
-        var currDay = currDate.getDay() + 6 % 7;
-        var currTime = Utils.dateFormat(currDate, 'HH:mm');
+        var currDay = (currDate.getDay() + 6) % 7;
+        var currTime = Utils.dateFormat(currDate, 'hh:mm');
         var tmBk=null;
         var courseObj=null;
         var i = 0, k = 0, tmpDay = 0;
@@ -143,7 +143,7 @@ var syllabusService = {
             if(days[i].status==0){
                 continue;
             }
-            tmpDay = days[i].day + 6 % 7;
+            tmpDay = (days[i].day + 6) % 7;
             if(tmpDay > currDay){
                 for(k in timeBuckets){
                     tmBk=timeBuckets[k];
@@ -173,7 +173,7 @@ var syllabusService = {
             if(days[i].status==0){
                 continue;
             }
-            tmpDay = days[i].day + 6 % 7;
+            tmpDay = (days[i].day + 6) % 7;
             for(k in timeBuckets){
                 tmBk=timeBuckets[k];
                 courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate);
@@ -203,8 +203,8 @@ var syllabusService = {
         if(courseTmp && courseTmp.length>dayIndex){
             var course = courseTmp[dayIndex];
             if(syllabusService.isValidCourse(course)){
-                var loc_day = coursesObj.days[dayIndex].day + 6 % 7;
-                var loc_currDay = currDate.getDay() + 6 % 7;
+                var loc_day = (coursesObj.days[dayIndex].day + 6) % 7;
+                var loc_currDay = (currDate.getDay() + 6) % 7;
                 if(loc_day < loc_currDay){
                     loc_day = loc_day + 7;
                 }
