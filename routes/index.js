@@ -56,6 +56,9 @@ exports.init = function(app){
     
     //授权处理
     apiRoutes.all(/\/chat\/getMessage/, function(req, res, next) {//拦截token授权接口
+        if("studio" == req.query["roomCode"]){//直播间聊天记录不校验token
+            next();
+        }
         var token=req.query.token||req.body.token;
         require("../service/tokenService").verifyToken(token,function(isOK){
             if(isOK){
