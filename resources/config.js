@@ -1,4 +1,4 @@
-/**
+﻿/**
  *
  * Created by Alan.wu on 2015/4/18.
  */
@@ -13,7 +13,7 @@ var config = {
     uploadBasePath :'upload',
     pmfilesRootPath : '/web/pm_files',
     //FTP上传
-    uploadTempPath : "/web/pm_api",
+    uploadTempPath : "/web/pm_api/upload",
     filesFtpHost : "192.168.35.91",
     filesFtpPort : 21,
     filesFtpUser : "pmmisftpuser",
