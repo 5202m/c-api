@@ -4,6 +4,7 @@ var common = require('../util/common');//引入common类
 var ApiResult = require('../util/ApiResult');
 var async = require('async');//引入async
 var config = require('../resources/config');
+var constant = require('../constant/constant');
 /**
  * 聊天室相关信息服务类
  * author Alan.wu
@@ -15,11 +16,12 @@ var chatService ={
     getMessagePage:function (params,callback){
         var roomCode=params.roomCode;
         if(common.isBlank(roomCode)){
-            roomCode='wechat';
+            roomCode = constant.studioGroupType.wechat;
         }
         var searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text'};
-        if(roomCode=='studio'){
-            searchObj.groupId=config.studioThirdUsed.roomId;
+        var isStudio = (roomCode==constant.studioGroupType.studio || roomCode==constant.studioGroupType.fxstudio);
+        if(isStudio){
+            searchObj.groupId=constant.studioDefRoom[roomCode];
             var lastTm=params.lastPublishTime;
             if(common.isValid(lastTm)){
                 params.pageNo=1;
@@ -56,7 +58,7 @@ var chatService ={
                                 for(var i in infos){
                                     row=infos[i];
                                     newRow={avatar:row.avatar,userType:row.userType,nickname:row.nickname,content:row.content.value};
-                                    if(roomCode=='studio'){
+                                    if(isStudio){
                                         newRow.toUser=row.toUser;
                                         newRow.publishTime=row.publishTime;
                                     }else{

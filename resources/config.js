@@ -3,13 +3,6 @@
  * Created by Alan.wu on 2015/4/18.
  */
 var config = {
-    studioThirdUsed:{//第三方引用直播间默认房间
-        platfrom:'webui,app,pc,web24k',
-        webui:'webui',
-        web24k:'web24k',
-        groupType:'studio',
-        roomId:'studio_teach'
-    },
     redisUrlObj:{ host: '192.168.35.236', port: 6379 },				//链接redis缓存客户端连接
     webUiUrl:'http://192.168.9.72:5555/webui_login_token.ucs',//webUI对应token地址
     web24kPriceUrl:'http://www.24k.hk/public/datas/24k_price.xml',

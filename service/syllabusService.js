@@ -71,11 +71,11 @@ var syllabusService = {
                 var loc_courses = JSON.parse(rowTmp.courses);
                 var loc_day = today.getDay();
                 if(single){//获取下次课程安排
-                    loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, today);
+                    loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, today, false);
                     if((!loc_result || loc_result.length == 0) && rows.length > 1){
                         rowTmp = rows[1];
                         loc_courses = JSON.parse(rowTmp.courses);
-                        loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, rowTmp.publishStart);
+                        loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, rowTmp.publishStart, true);
                     }
                 }else if(rowTmp.publishStart.getTime() <= today.getTime()){//获取全天课程安排
                     loc_result = syllabusService.getCourseByDay(loc_courses, loc_day);
@@ -126,10 +126,11 @@ var syllabusService = {
      * 提取下节课课程数据
      * @param coursesObj 课程表数据
      * @param publishEnd 发布结束时间
-     * @param currDate 当前日期
+     * @param currDate   当前日期
+     * @param isNext     是否下次课程
      * @returns {*}
      */
-    getCourseSingle:function(coursesObj, publishEnd, currDate){
+    getCourseSingle:function(coursesObj, publishEnd, currDate, isNext){
         if(!coursesObj||!coursesObj.days||!coursesObj.timeBuckets){
             return [];
         }
@@ -147,7 +148,7 @@ var syllabusService = {
             if(tmpDay > currDay){
                 for(k in timeBuckets){
                     tmBk=timeBuckets[k];
-                    courseObj=syllabusService.getCourseObj(coursesObj, i, k, currDate);
+                    courseObj=syllabusService.getCourseObj(coursesObj, i, k, currDate, true);
                     if(courseObj){
                         return [courseObj];
                     }
@@ -158,9 +159,9 @@ var syllabusService = {
                     if(tmBk.endTime <= currTime){
                         continue;
                     }else if(tmBk.startTime<=currTime && tmBk.endTime>currTime){
-                        courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate);
+                        courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, isNext || false);
                     }else{ //tmBk.startTime>currTime
-                        courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate);
+                        courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, true);
                     }
                     if(courseObj){
                         return [courseObj];
@@ -176,7 +177,7 @@ var syllabusService = {
             tmpDay = (days[i].day + 6) % 7;
             for(k in timeBuckets){
                 tmBk=timeBuckets[k];
-                courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate);
+                courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, true);
                 if(courseObj){
                     if(!publishEnd || publishEnd.getTime() >= courseObj.date){
                         return [courseObj];
@@ -195,9 +196,10 @@ var syllabusService = {
      * @param dayIndex   星期索引
      * @param timeIndex  时间段索引
      * @param currDate   当前时间
+     * @param isNext   是否下次课程
      * @returns {*}
      */
-    getCourseObj : function(coursesObj, dayIndex, timeIndex, currDate){
+    getCourseObj : function(coursesObj, dayIndex, timeIndex, currDate, isNext){
         var tmBkTmp = coursesObj.timeBuckets[timeIndex];
         var courseTmp = tmBkTmp.course;
         if(courseTmp && courseTmp.length>dayIndex){
@@ -213,6 +215,7 @@ var syllabusService = {
                 course.date = loc_courseDate.getTime() + (loc_day - loc_currDay) * 86400000;
                 course.startTime = tmBkTmp.startTime;
                 course.endTime = tmBkTmp.endTime;
+                course.isNext = isNext;
                 return course;
             }
         }else{

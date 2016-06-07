@@ -10,6 +10,57 @@ var constant = {
     FileDirectory : {
         pic : {code : 'pic', description: '图片' },
         video : {code : 'video', description: '视频' }
+    },
+    studioGroupType:{
+        wechat : "wechat",  //pm微解盘
+        fxchat : "fxchat",  //fx微解盘
+        studio : "studio",  //pm直播间
+        fxstudio:"fxstudio" //fx直播间
+    },
+    studioDefRoom:{
+        studio : "studio_teach",  //pm直播间
+        fxstudio:"fxstudio_11" //fx直播间
+    },
+    studioThirdUsed:{//第三方引用直播间默认房间
+        pm : {
+            web24k : {       //PM官网
+                groupType : "studio",    //房间组别
+                roomId : "studio_teach", //房间ID
+                singleCourse : true      //是否只取一次课，用于课程安排接口
+            },
+            webui : {       //webui
+                groupType : "studio",    //房间组别
+                roomId : "studio_teach", //房间ID
+                singleCourse : false     //是否只取一次课，用于课程安排接口
+            },
+            app : {         //APP Android+IOS
+                groupType : "studio",    //房间组别
+                roomId : "studio_teach", //房间ID
+                singleCourse : false     //是否只取一次课，用于课程安排接口
+            },
+            pc : {          //PC ui
+                groupType : "studio",    //房间组别
+                roomId : "studio_teach", //房间ID
+                singleCourse : false     //是否只取一次课，用于课程安排接口
+            }
+        },
+        fx : {
+            gwfx : {        //FX官网
+                groupType : "fxstudio",  //房间组别
+                roomId : "fxstudio_11",  //房间ID
+                singleCourse : true      //是否只取一次课，用于课程安排接口
+            }
+        },
+        hx : {
+
+        },
+        getConfig : function(type, platform){
+            type = type || "pm";
+            if(this.hasOwnProperty(type) && this[type].hasOwnProperty(platform)){
+                return this[type][platform];
+            }
+            return null;
+        }
     }
 };
 

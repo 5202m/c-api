@@ -5,6 +5,7 @@
  */
 var router =  require('express').Router();
 var request = require('request');
+var constant = require('../../constant/constant');//引入常量
 var config = require('../../resources/config');//引入配置
 var crypto=require('crypto');//提取加密模块
 var xml2js = require('xml2js');
@@ -129,20 +130,17 @@ router.get('/getBroadStrateList', function(req, res) {
  */
 router.get("/getCourse", function(req, res) {
     var loc_params = {
+        type : req.query["type"],
         platform : req.query["platform"],
         groupType : req.query["groupType"],
         groupId : req.query["groupId"],
         single : req.query["single"] == "1"
     };
-    var isInitDef = common.containSplitStr(config.studioThirdUsed.platfrom, loc_params.platform);
-    if(!loc_params.groupType && isInitDef){
-        loc_params.groupType = config.studioThirdUsed.groupType;
-    }
-    if(loc_params.platform == config.studioThirdUsed.web24k){
-        loc_params.single = true;
-    }
-    if(!loc_params.groupId && loc_params.groupType == config.studioThirdUsed.groupType && isInitDef){
-        loc_params.groupId = config.studioThirdUsed.roomId;
+    var cfg = constant.studioThirdUsed.getConfig(loc_params.type, loc_params.platform);
+    if(cfg){
+        loc_params.groupType = cfg.groupType;
+        loc_params.groupId = cfg.roomId;
+        loc_params.single = cfg.singleCourse;
     }
     if(!loc_params.groupType){
         res.json(ApiResult.result(errorMessage.code_1000, null));

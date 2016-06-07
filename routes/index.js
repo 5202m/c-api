@@ -4,6 +4,7 @@
  * date:2015/6/30
  */
 var logger =require("../resources/logConf").getLogger("indexAPI");
+var constant =require("../constant/constant");
 var express = require('express');
 var indexRouter = express.Router();
 indexRouter.get('/', function(req, res) {
@@ -56,7 +57,8 @@ exports.init = function(app){
     
     //授权处理
     apiRoutes.all(/\/chat\/getMessage/, function(req, res, next) {//拦截token授权接口
-        if("studio" == req.query["roomCode"]){//直播间聊天记录不校验token
+    	var roomCode = req.query["roomCode"];
+        if(constant.studioGroupType.studio == roomCode){//直播间聊天记录不校验token(webui特例)
             next();
             return;
         }
