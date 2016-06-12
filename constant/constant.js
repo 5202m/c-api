@@ -49,6 +49,11 @@ var constant = {
                 groupType : "fxstudio",  //房间组别
                 roomId : "fxstudio_11",  //房间ID
                 singleCourse : true      //是否只取一次课，用于课程安排接口
+            },
+            webui : {       //webui
+                groupType : "fxstudio",    //房间组别
+                roomId : "fxstudio_11",    //房间ID
+                singleCourse : false       //是否只取一次课，用于课程安排接口
             }
         },
         hx : {
