@@ -27,7 +27,7 @@ var IteratorUtil = require('../../util/IteratorUtil.js');
 /**
  * 文件上传
  */
-router.post('/upload', function (req, res) {
+router.post('/uploadFile', function (req, res) {
     APIUtil.logRequestInfo(req, "uploadAPI");
     var form = new Formidable.IncomingForm();
     form.encoding = 'utf-8';

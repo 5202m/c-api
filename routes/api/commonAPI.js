@@ -10,8 +10,10 @@ var config = require('../../resources/config');//引入配置
 var crypto=require('crypto');//提取加密模块
 var xml2js = require('xml2js');
 var common = require('../../util/common'); //引入公共的js
+var Utils = require('../../util/Utils'); //引入工具类js
 var logger = require('../../resources/logConf').getLogger('commonAPI');
 var SyllabusService = require('../../service/syllabusService');
+var EmailService = require('../../service/emailService');
 var ApiResult = require('../../util/ApiResult');
 var errorMessage = require('../../util/errorMessage.js');
 
@@ -151,4 +153,120 @@ router.get("/getCourse", function(req, res) {
         res.json(apiResult);
     });
 });
+
+/**
+ * 发送电子邮件
+ */
+router.post("/email", function(req, res) {
+    var loc_params = {
+        key : req.body["key"],
+        data : req.body["data"]
+    };
+    if(typeof loc_params.data == "string"){
+        try{
+            loc_params.data = JSON.parse(loc_params.data);
+        }catch(e){
+            logger.warn("parse JSON data error!" + e);
+        }
+    }
+    if(!loc_params.data){
+        loc_params.data = {};
+    }
+    if(!loc_params.data.date){
+        loc_params.data.date = Utils.dateFormat(new Date(), "yyyy-MM-dd hh:mm:ss");
+    }
+
+    EmailService.send(loc_params.key, loc_params.data, function(result){
+        res.json(result);
+    });
+});
+
+/**
+ * 提取24kCFTC持仓比例数据
+ */
+router.get('/get24kCftc', function(req, res) {
+    var limit = req.query['limit'] ? req.query['limit'] : 0; //默认只取最新的一条持仓比例数据
+    request(config.web24k + '/cftc.xml', function(error, response, data){
+        if (!error && response.statusCode == 200 && common.isValid(data)) {
+            var parser = new xml2js.Parser({ explicitArray : false, ignoreAttrs : false, attrkey: 'attr' });
+            try{
+                parser.parseString(data, function(err, result){
+                    if(err){
+                        logger.error("get24kCftc>>>error:"+err);
+                        result=null;
+                    }
+                    //res.json(result);
+                    if(limit == 0){
+                        //只取第一条数据并返回组成新的json数组
+                        var size = result.cftc.column.length;
+                        var json = {};
+                        var jsonData = [];
+                        for(var i = 0; i < size; i++){
+                            //json.name = result.cftc.column[i].attr.name;
+                            //json.item = result.cftc.column[i].item[0].attr;
+                            json[result.cftc.column[i].attr.name] = result.cftc.column[i].item[0].attr;
+                            json[result.cftc.column[i].attr.name].name = result.cftc.column[i].attr.name;
+                            //jsonData.push(json);
+                        }
+                        res.json(json);
+                    }
+                    else{
+                        //返回请求到的全部转换为json的数据
+                        res.json(result);
+                    }
+                });
+            }catch(e){
+                logger.error("get24kCftc has error:" + e);
+                res.json(null);
+            }
+        }else{
+            logger.error("get24kCftc has error:" + error);
+            res.json(null);
+        }
+    });
+});
+
+/**
+ * 获取新闻快讯
+ */
+router.get('/getInformation', function(req, res){
+    var cacheClient = require('../../cache/cacheClient');
+    /*var date = new Date();//如需设置过期时间，则需要加入日期作为key的一部分
+     var key = "fx678_information"+date.getUTCFullYear()+(date.getUTCMonth()+1)+date.getUTCDate();*/
+    var key = "fx678_information";
+    cacheClient.get(key, function(err, result){
+        if(err){
+            logger.error("getInformationCache fail:" + err);
+            res.json({isOK:false, data:null});
+        }
+        else if(!result){
+            request(config.fx678ApiUrl + "/union/jdgjs/news/flash.xml", function(error, data){
+                if (!error && common.isValid(data.body)) {
+                    var parser = new xml2js.Parser({ explicitArray : false, ignoreAttrs : false, attrkey: 'attr' });
+                    try{
+                        parser.parseString(data.body, function(parseError, result){
+                            if(parseError){
+                                logger.error("getInformation for fx678 parser>>>error:"+parseError);
+                                res.json({isOK:false, data:null});
+                            }
+                            cacheClient.set(key, JSON.stringify(result));
+                            cacheClient.expire(key, 5*60);//设置有效时间
+                            res.json({isOK:true, data:result});
+                        });
+                    }catch(e){
+                        logger.error("getInformation for fx678 has error:" + e);
+                        res.json({isOK:false, data:null});
+                    }
+                }else{
+                    logger.error("getInformation for fx678 has error:" + err);
+                    res.json({isOK:false, data:null});
+                }
+            });
+        }
+        else{
+            res.json({isOK:true, data:JSON.parse(result)});//获取的结果是字符串，需要转为json对象
+        }
+    });
+});
+
 module.exports = router;

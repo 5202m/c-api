@@ -1,4 +1,4 @@
-﻿/**
+/**
  *
  * Created by Alan.wu on 2015/4/18.
  */
@@ -24,7 +24,9 @@ var config = {
     dbUserName:'pmmisuser',
     dbUserPWD:'pmmispwd123',
     messagePush : {appKey:'c139eac92b28b05be7d54d95',masterSecret:'bf11c36cdc35a7b52ee1131e'}, //消息推送
-    fxgoldApiUrl: "http://api.fxgold.com"  //金汇财经接口
+    fxgoldApiUrl: "http://api.fxgold.com",  //金汇财经接口
+    web24k: "http://www.24k.hk/public/datas", //24k数据公用host前缀
+    fx678ApiUrl:"http://unews.fx678.com"
 };
 //导出常量类
 module.exports =config;

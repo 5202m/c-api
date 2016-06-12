@@ -23,8 +23,12 @@ var mongoose = require('mongoose')
             title: String ,         /**标题*/
             content:String,         /**内容*/
             tag:String,     		/**标签*/
-            author:String, 			/**作者头像昵称，分号分隔*/
-            authorId:String, 		/**作者Id*/
+            authorInfo:{
+            	userId:String, 		/**作者Id*/
+            	name:String, 		/**作者名字*/
+            	avatar:String, 		/**作者头像*/
+            	position:String    /**作者职称*/
+            },
             remark:String 			/**简介*/
         }]
     });
