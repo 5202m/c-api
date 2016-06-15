@@ -143,6 +143,16 @@ var common = {
         return eval('/^'+val+'|,'+val+'$|,'+val+',/g');
     },
     /**
+     * 提取md5加密密文
+     * @param val
+     * @returns {*}
+     */
+    getMD5:function(val){
+        var md5 = require('crypto').createHash('md5');
+        md5.update(val);
+        return md5.digest('hex');
+    },
+    /**
      * 过滤内容，将HTML标签过滤，并且截取前150个字符。
      * @param content
      * @returns {string}

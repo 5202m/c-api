@@ -11,8 +11,8 @@
  * </p>
  */
 var logger = require('../resources/logConf').getLogger("smsService");
-var common = require('../util/common');
-var request = require('request');
+var Common = require('../util/common');
+var Request = require('request');
 var config = require('../resources/config');
 var SmsInfo = require('../models/smsInfo.js');
 var SmsConfig = require('../models/smsConfig.js');
@@ -97,12 +97,6 @@ var smsService = {
      * @param callback
      */
     doSend : function(smsPara, callback){
-        var smsUrl = config.smsUrl;
-        if (smsPara.type === "AUTH_CODE") {
-            smsUrl = smsUrl + "/sms_send.ucs?type=AUTH_CODE" + "&PHONE=" + smsPara.mobilePhone + "&CODE=" + smsPara.content;
-        } else {    //如果传入内容，则按内容输出
-            smsUrl = smsUrl + "/sms_send_common.ucs?phone=" + smsPara.mobilePhone + "&content=" + smsPara.content;
-        }
         var loc_currDate = new Date();
         var loc_smsInfo = {
             _id : new ObjectId(),
@@ -120,45 +114,103 @@ var smsService = {
         if(smsPara.validTime > 0){
             loc_smsInfo.validUntil = new Date(loc_currDate.getTime() + smsPara.validTime);
         }
-        request(smsUrl, function (error, response, data) {
-            var loc_result = null;
-            if (!error && response.statusCode == 200 && common.isValid(data)) {
-                loc_smsInfo.status = 1;
-            } else {
-                logger.error("smsAPI[" + smsUrl + "]->sendSms has error:" + error);
-                loc_result = new Error("发送短信失败！");
-                loc_smsInfo.status = 2;
-            }
-            //保存短信发送记录信息
-            new SmsInfo(loc_smsInfo).save(function(err){
-                if (err) {
-                    //保存信息失败，不影响短信发送，仅打印错误日志。
-                    logger.error("保存短信记录错误, smsInfo=[" + JSON.stringify(loc_smsInfo) + "] error：" + err);
-                }
-
-                //如果是验证码，并且发送成功，需要将同一个手机号、同类型、同应用点之前发送成功的验证码设置失效
-                if(loc_smsInfo.type === "AUTH_CODE" && loc_smsInfo.status == 1){
-                    SmsInfo.update({
-                        _id : {$ne : loc_smsInfo._id},
-                        type : loc_smsInfo.type,
-                        useType : loc_smsInfo.useType,
-                        mobilePhone : loc_smsInfo.mobilePhone,
-                        status : 1
-                    },{
-                        $set : {status : 4}
-                    },{
-                        multi : true
-                    }, function(err){
-                        if (err) {
-                            //更新短信状态错误失败，不影响短信发送，仅打印错误日志。
-                            logger.error("更新短信状态错误, smsInfo=[" + JSON.stringify(loc_smsInfo) + "] error：" + error);
+        var smsUrl = null;
+        if(/^fxstudio/.test(smsPara.useType)){ //FX发送短信
+            var smsCfg = config.smsCfgFX;
+            var timestamp = new Date().getTime();
+            Request.post(smsCfg.url, function(error, response, data){
+                var loc_result = null;
+                if (!error && response.statusCode == 200 && Common.isValid(data)) {
+                    try{
+                        data = JSON.parse(data);
+                        if(data.code == "SUCCESS" && data.result && data.result.code == "OK"){
+                            loc_smsInfo.status = 1;
+                        }else{
+                            logger.error("smsAPI[" + smsCfg.url + "]->sendSms has error:" + (data.result && data.result.result));
+                            loc_result = new Error("发送短信失败:" + (data.result && data.result.result));
+                            loc_smsInfo.status = 2;
                         }
-                        callback(loc_result);
-                    });
-                }else{
-                    callback(loc_result);
+                    }catch(e){
+                        logger.error("smsAPI[" + smsCfg.url + "]->sendSms has error:" + e);
+                        loc_result = new Error("发送短信失败！");
+                        loc_smsInfo.status = 2;
+                    }
+
+                } else {
+                    logger.error("smsAPI[" + smsCfg.url + "]->sendSms has error:" + error);
+                    loc_result = new Error("发送短信失败！");
+                    loc_smsInfo.status = 2;
                 }
+                //保存短信发送记录信息
+                smsService.saveSmsInfo(loc_smsInfo, function(){
+                    callback(loc_result);
+                });
+            }).form({
+                userId : smsCfg.userId,
+                type : smsCfg.type,
+                phone : smsPara.mobilePhone,
+                content : smsPara.content,
+                timestamp : timestamp,
+                signature : Common.getMD5(smsPara.content + "&" + smsPara.mobilePhone + "&" + timestamp + "&" + smsCfg.type + "&" + smsCfg.userId + "&" + smsCfg.userKey)
             });
+        }else{ //PM发送短信
+            smsUrl = config.smsUrl;
+            if (smsPara.type === "AUTH_CODE") {
+                smsUrl = smsUrl + "/sms_send.ucs?type=AUTH_CODE" + "&PHONE=" + smsPara.mobilePhone + "&CODE=" + smsPara.content;
+            } else {    //如果传入内容，则按内容输出
+                smsUrl = smsUrl + "/sms_send_common.ucs?phone=" + smsPara.mobilePhone + "&content=" + smsPara.content;
+            }
+            Request(smsUrl, function (error, response, data) {
+                var loc_result = null;
+                if (!error && response.statusCode == 200 && Common.isValid(data)) {
+                    loc_smsInfo.status = 1;
+                } else {
+                    logger.error("smsAPI[" + smsUrl + "]->sendSms has error:" + error);
+                    loc_result = new Error("发送短信失败！");
+                    loc_smsInfo.status = 2;
+                }
+                //保存短信发送记录信息
+                smsService.saveSmsInfo(loc_smsInfo, function(){
+                    callback(loc_result);
+                });
+            });
+        }
+    },
+
+    /**
+     * 保存短信信息（验证码）
+     * @param smsInfo
+     * @param callback
+     */
+    saveSmsInfo : function(smsInfo, callback){
+        new SmsInfo(smsInfo).save(function(err){
+            if (err) {
+                //保存信息失败，不影响短信发送，仅打印错误日志。
+                logger.error("保存短信记录错误, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + err);
+            }
+
+            //如果是验证码，并且发送成功，需要将同一个手机号、同类型、同应用点之前发送成功的验证码设置失效
+            if(smsInfo.type === "AUTH_CODE" && smsInfo.status == 1){
+                SmsInfo.update({
+                    _id : {$ne : smsInfo._id},
+                    type : smsInfo.type,
+                    useType : smsInfo.useType,
+                    mobilePhone : smsInfo.mobilePhone,
+                    status : 1
+                },{
+                    $set : {status : 4}
+                },{
+                    multi : true
+                }, function(err){
+                    if (err) {
+                        //更新短信状态错误失败，不影响短信发送，仅打印错误日志。
+                        logger.error("更新短信状态错误, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + error);
+                    }
+                    callback();
+                });
+            }else{
+                callback();
+            }
         });
     },
 
