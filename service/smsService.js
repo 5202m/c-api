@@ -13,7 +13,7 @@
 var logger = require('../resources/logConf').getLogger("smsService");
 var Common = require('../util/common');
 var Request = require('request');
-var config = require('../resources/config');
+var Config = require('../resources/config');
 var SmsInfo = require('../models/smsInfo.js');
 var SmsConfig = require('../models/smsConfig.js');
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
@@ -114,67 +114,47 @@ var smsService = {
         if(smsPara.validTime > 0){
             loc_smsInfo.validUntil = new Date(loc_currDate.getTime() + smsPara.validTime);
         }
-        var smsUrl = null;
-        if(/^fxstudio/.test(smsPara.useType)){ //FX发送短信
-            var smsCfg = config.smsCfgFX;
-            var timestamp = new Date().getTime();
-            Request.post(smsCfg.url, function(error, response, data){
-                var loc_result = null;
-                if (!error && response.statusCode == 200 && Common.isValid(data)) {
-                    try{
-                        data = JSON.parse(data);
-                        if(data.code == "SUCCESS" && data.result && data.result.code == "OK"){
-                            loc_smsInfo.status = 1;
-                        }else{
-                            logger.error("smsAPI[" + smsCfg.url + "]->sendSms has error:" + (data.result && data.result.result));
-                            loc_result = new Error("发送短信失败:" + (data.result && data.result.result));
-                            loc_smsInfo.status = 2;
-                        }
-                    }catch(e){
-                        logger.error("smsAPI[" + smsCfg.url + "]->sendSms has error:" + e);
-                        loc_result = new Error("发送短信失败！");
-                        loc_smsInfo.status = 2;
-                    }
-
-                } else {
-                    logger.error("smsAPI[" + smsCfg.url + "]->sendSms has error:" + error);
-                    loc_result = new Error("发送短信失败！");
-                    loc_smsInfo.status = 2;
-                }
-                //保存短信发送记录信息
-                smsService.saveSmsInfo(loc_smsInfo, function(){
-                    callback(loc_result);
-                });
-            }).form({
-                userId : smsCfg.userId,
-                type : smsCfg.type,
-                phone : smsPara.mobilePhone,
-                content : smsPara.content,
-                timestamp : timestamp,
-                signature : Common.getMD5(smsPara.content + "&" + smsPara.mobilePhone + "&" + timestamp + "&" + smsCfg.type + "&" + smsCfg.userId + "&" + smsCfg.userKey)
-            });
-        }else{ //PM发送短信
-            smsUrl = config.smsUrl;
-            if (smsPara.type === "AUTH_CODE") {
-                smsUrl = smsUrl + "/sms_send.ucs?type=AUTH_CODE" + "&PHONE=" + smsPara.mobilePhone + "&CODE=" + smsPara.content;
-            } else {    //如果传入内容，则按内容输出
-                smsUrl = smsUrl + "/sms_send_common.ucs?phone=" + smsPara.mobilePhone + "&content=" + smsPara.content;
+        var smsUrl = this.getMsgUrl(smsPara.useType, smsPara.type, smsPara.mobilePhone, smsPara.content);
+        Request(smsUrl, function (error, response, data) {
+            var loc_result = null;
+            if (!error && response.statusCode == 200 && Common.isValid(data)) {
+                loc_smsInfo.status = 1;
+            } else {
+                logger.error("smsAPI[" + smsUrl + "]->sendSms has error:" + error);
+                loc_result = new Error("发送短信失败！");
+                loc_smsInfo.status = 2;
             }
-            Request(smsUrl, function (error, response, data) {
-                var loc_result = null;
-                if (!error && response.statusCode == 200 && Common.isValid(data)) {
-                    loc_smsInfo.status = 1;
-                } else {
-                    logger.error("smsAPI[" + smsUrl + "]->sendSms has error:" + error);
-                    loc_result = new Error("发送短信失败！");
-                    loc_smsInfo.status = 2;
-                }
-                //保存短信发送记录信息
-                smsService.saveSmsInfo(loc_smsInfo, function(){
-                    callback(loc_result);
-                });
+            //保存短信发送记录信息
+            smsService.saveSmsInfo(loc_smsInfo, function(){
+                callback(loc_result);
             });
+        });
+    },
+
+    /**
+     * 获取发送短信url
+     * @param useType studio*、fxstudio*、hxstudio*
+     * @param type NORMAL、AUTH_CODE
+     * @param phone 手机号码，eg:13043427001
+     * @param content
+     */
+    getMsgUrl : function(useType, type, phone, content){
+        var smsUrl = null;
+        var isAuthCode = (type == "AUTH_CODE");
+        if(/^fxstudio/.test(useType)){ //FX
+            smsUrl = Config.smsUrl.fx;
+            if(isAuthCode){
+                content = "您本次的验证码为: " + content + ",如有疑问请联系客服:4006010516(国内)或(00852)81099928 (香港)";
+            }
+        }else{ //PM(默认)
+            smsUrl = Config.smsUrl.pm;
+            if(isAuthCode){
+                content = "您本次的验证码为: " + content + ",如有疑问请联系客服:400 082 9279或400 600 5138";
+            }
         }
+        smsUrl = smsUrl.replace(/\$\{phone}/, phone);
+        smsUrl = smsUrl.replace(/\$\{content}/, content);
+        return smsUrl;
     },
 
     /**

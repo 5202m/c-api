@@ -7,8 +7,11 @@ var config = {
     webUiUrl:'http://192.168.9.72:5555/webui_login_token.ucs',//webUI对应token地址
     web24kPriceUrl:'http://www.24k.hk/public/datas/24k_price.xml',
     gwApiUrl:'https://192.168.35.236:8443/GwAPI_SIT/restweb',//gwApi地址
-    smsUrl : 'http://192.168.35.136:5555',                  //短信地址
-    smsCfgFX : {url : 'http://192.168.35.99:8080/Goldoffice_message_api/RESTful/message/sendSms', type:"others", userId: "FX_GTS2", userKey: "a1cbdc9b-c306-4ade-ba9f-025f9ebacc08"},                //FX短信配置
+    smsUrl : {
+        pm : 'http://192.168.35.86:4448/SMS_Channel_Send.ucs?phone=${phone}&content=${content}&catalog=others&platform=24K',
+        fx : 'http://192.168.75.27:4447/SMS_Channel_Send.ucs?phone=${phone}&content=${content}&catalog=others&platform=FX&country=China',
+        hx : 'http://192.168.75.27:4467/SMS_Channel_Send.ucs?phone=${phone}&content=${content}&catalog=others&platform=HX'
+    },
     //图片等文件访问域名
     filesDomain: 'http://192.168.35.91:8090',
     uploadBasePath :'upload',
