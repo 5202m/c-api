@@ -144,12 +144,12 @@ var smsService = {
         if(/^fxstudio/.test(useType)){ //FX
             smsUrl = Config.smsUrl.fx;
             if(isAuthCode){
-                content = "您本次的验证码为: " + content + ",如有疑问请联系客服:4006010516(国内)或(00852)81099928 (香港)";
+                content = "您本次的验证码为: " + content + ",如有疑问请联系客服:400 082 9279或400 600 5138";
             }
         }else{ //PM(默认)
             smsUrl = Config.smsUrl.pm;
             if(isAuthCode){
-                content = "您本次的验证码为: " + content + ",如有疑问请联系客服:400 082 9279或400 600 5138";
+                content = "您本次的验证码为: " + content + ",如有疑问请联系客服:4006010516(国内)或(00852)81099928 (香港)";
             }
         }
         smsUrl = smsUrl.replace(/\$\{phone}/, phone);
