@@ -153,7 +153,7 @@ var smsService = {
             }
         }
         smsUrl = smsUrl.replace(/\$\{phone}/, phone);
-        smsUrl = smsUrl.replace(/\$\{content}/, content);
+        smsUrl = smsUrl.replace(/\$\{content}/, encodeURIComponent(content));
         return smsUrl;
     },
 
