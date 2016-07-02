@@ -5,6 +5,7 @@
  */
 var logger = require('../resources/logConf').getLogger("articleService");
 var article = require('../models/article');          //引入article数据模型
+var IdSeqManager = require('../constant/IdSeqManager.js');  //引入序号生成器js
 var category = require('../models/category');   //引入category数据模型
 var ApiResult = require('../util/ApiResult');
 var commonJs = require('../util/common');       //引入公共的js
@@ -91,6 +92,40 @@ var articleService = {
         article.findById(id,"categoryId platform mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate detailList",function(err,row){
             callback(row);
         });
+    },
+    
+    /**
+     * 添加文章
+     * @param articleParam
+     * @param callback
+     */
+    addArticle: function(articleParam, callback){
+        IdSeqManager.Article.getNextSeqId(function(err, articleId){
+            var loc_timeNow = new Date();
+            var loc_article = new article({
+                _id: articleId,
+                categoryId: articleParam.categoryId,
+                status: articleParam.status,
+                platform: articleParam.platform,
+                createDate: loc_timeNow,
+                publishStartDate: articleParam.publishStartDate,
+                publishEndDate: articleParam.publishEndDate,
+                valid: articleParam.valid,
+                sequence: articleParam.sequence,
+                mediaUrl: articleParam.mediaUrl,
+                mediaImgUrl: articleParam.mediaImgUrl,
+                linkUrl: articleParam.linkUrl,
+                detailList: articleParam.detailList
+            });
+            loc_article.save(function(err, result){
+                if(err){
+                    logger.error("保存文章失败！", err);
+                    callback({isOK:false, id:0, msg:err});
+                    return;
+                }
+                callback({isOK: true, id: result._id,msg:''});
+            });
+        }, true);
     }
 };
 

@@ -46,8 +46,24 @@ var getSeq = function(idSeq, callback){
     callback(null, loc_result);
 };
 
+/**
+ * 生成一个序列号
+ *  请注意此方法和pm_mis中com.gwghk.mis.common.dao.MongoDBBaseDao.getNextSeqId方法逻辑保持一致。
+ * @param idSeq '{_id : string, seq : number}'
+ * @param callback (err, seq)
+ */
+var getSeqOnly = function(idSeq, callback){
+    var loc_date = Utils.dateFormat(new Date(), "yyMMdd");
+    var jobNo = Utils.accMod(idSeq.seq, (CHAR_ARRAY.length * this.startNum));
+    var charArrayIndex = Utils.numToInt(Utils.accDiv(jobNo, this.startNum));
+    var loc_result = this.prefix
+        + charArrayIndex
+        + (Utils.accMod(jobNo, this.startNum + this.startNum)).toString().substring(1);
+    callback(null, loc_result);
+};
+
 /**获取下一个序列值*/
-IdSeq.prototype.getNextSeqId = function(callback){
+IdSeq.prototype.getNextSeqId = function(callback,isHasPrefix){
     var loc_this = this;
     IdSeqModel.findOneAndUpdate({'_id' : this.name}, {'$inc' : {'seq' : 1}}, {'new' : true}, function(err, idSeq){
         if(err){
@@ -55,7 +71,11 @@ IdSeq.prototype.getNextSeqId = function(callback){
             return;
         }
         if(idSeq != null){
-            getSeq.call(loc_this, idSeq, callback);
+            if(isHasPrefix){
+                getSeqOnly.call(loc_this, idSeq, callback);
+            }else{
+                getSeq.call(loc_this, idSeq, callback);
+            }
         }else{
             new IdSeqModel({
                 _id : loc_this.name,
@@ -65,7 +85,11 @@ IdSeq.prototype.getNextSeqId = function(callback){
                         callback(err, null);
                         return;
                     }
-                    getSeq.call(loc_this, idSeq, callback);
+                    if(isHasPrefix){
+                        getSeqOnly.call(loc_this, idSeq, callback);
+                    }else{
+                        getSeq.call(loc_this, idSeq, callback);
+                    }
                 });
         }
     });

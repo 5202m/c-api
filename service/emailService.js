@@ -50,6 +50,23 @@ var emailService = {
                 return "[FX直播间]专家邮箱:" + (data.email || "");
             },
             template : "email/fxstudio"
+        },
+        hxstudio : {
+            server :{
+                host: "smtp.qq.com",
+                secure: true,
+                port: 465,
+                auth: {
+                    user: "2807001686@qq.com",
+                    pass: "opkyukikffwfdfed"
+                }
+            },
+            from : "HX直播间<2807001686@qq.com>",
+            to : "jade.zhu@gwtsz.com",
+            subject: function(data){
+                return "[HX直播间]专家邮箱:" + (data.email || "");
+            },
+            template : "email/hxstudio"
         }
     },
     /**邮件发送器缓存*/

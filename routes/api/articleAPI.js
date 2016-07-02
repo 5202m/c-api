@@ -49,7 +49,7 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
 });
 
 /**
- * 根据栏目code-->提取文章咨询列表
+ * 通过id提取文档信息
  */
 router.get('/getArticleInfo', function(req, res) {
     var id= req.query["id"];
@@ -63,54 +63,42 @@ router.get('/getArticleInfo', function(req, res) {
 });
 
 /**
- * 获取文章列表
+ * 新增文档信息
  */
-router.get('/finance/list', function(req, res) {
+router.post('/add', function(req, res){
     APIUtil.logRequestInfo(req, "articleAPI");
-    var loc_code = req.query["code"];
-    var loc_pageLast = req.query["pageLast"];
-    var loc_pageSize = req.query["pageSize"];
-    if(!loc_code){
-        //缺少参数
-        logger.error("code is invalid! ", loc_code);
+    var param = req.body['data'];
+    if(typeof param == 'string'){
+        param = JSON.parse(param);
+    }
+    var loc_article = {
+        categoryId: param.category,
+        status: 1,
+        platform: param.platform,
+        publishStartDate: param.publishStartDate,
+        publishEndDate: param.publishEndDate,
+        valid: 1,
+        sequence: 1,
+        mediaUrl: param.mediaUrl,
+        mediaImgUrl: param.mediaImgUrl,
+        linkUrl: param.linkUrl,
+        detailList: param.detail
+    };
+    if(!loc_article.publishStartDate
+        || !loc_article.publishEndDate
+        || !loc_article.detailList){
+        logger.error("article is invalid! ", loc_article);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
-
-    articleService.getArticleListWithRely({
-        code : loc_code,
-        platform : "finance"
-    }, loc_pageLast, loc_pageSize, function(apiResult){
-        res.json(apiResult);
-    });
-});
-
-/**
- * 文章详情
- */
-router.get('/finance/detail', function(req, res){
-    APIUtil.logRequestInfo(req, "articleAPI");
-    var loc_articleId = req.query["articleId"];
-    if(!loc_articleId){
-        //缺少参数
-        logger.error("articleId is invalid! ", loc_articleId);
-        res.json(APIUtil.APIResult("code_2001", null, null));
-        return;
-    }
-    if(typeof loc_articleId !== "string"){
-        //参数类型错误
-        logger.error("articleId is invalid! ", loc_articleId);
+    if(typeof loc_article.publishStartDate !== "string"
+        || typeof loc_article.publishEndDate !== "string"
+        || typeof loc_article.detailList !== "object"){
+        logger.error("article is invalid! ", loc_article);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
-    var loc_pageLast = req.query["pageLast"];
-    var loc_pageSize = req.query["pageSize"];
-    var loc_opType = parseInt(req.query["opType"], 10);
-    if(loc_opType !== 2){
-        loc_opType = 1;
-    }
-
-    articleService.getArticleDetail(loc_opType, loc_articleId, loc_pageLast, loc_pageSize, function(apiResult){
+    articleService.addArticle(loc_article, function(apiResult){
         res.json(apiResult);
     });
 });
