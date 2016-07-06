@@ -163,33 +163,38 @@ var smsService = {
      * @param callback
      */
     saveSmsInfo : function(smsInfo, callback){
+        var isMulitVerifyCode = true ; //设置未使用的验证码一天内一直有效
         new SmsInfo(smsInfo).save(function(err){
             if (err) {
                 //保存信息失败，不影响短信发送，仅打印错误日志。
                 logger.error("保存短信记录错误, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + err);
             }
-
-            //如果是验证码，并且发送成功，需要将同一个手机号、同类型、同应用点之前发送成功的验证码设置失效
-            if(smsInfo.type === "AUTH_CODE" && smsInfo.status == 1){
-                SmsInfo.update({
-                    _id : {$ne : smsInfo._id},
-                    type : smsInfo.type,
-                    useType : smsInfo.useType,
-                    mobilePhone : smsInfo.mobilePhone,
-                    status : 1
-                },{
-                    $set : {status : 4}
-                },{
-                    multi : true
-                }, function(err){
-                    if (err) {
-                        //更新短信状态错误失败，不影响短信发送，仅打印错误日志。
-                        logger.error("更新短信状态错误, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + error);
-                    }
-                    callback();
-                });
-            }else{
+            // 允许一天内未使用的验证码
+            if(isMulitVerifyCode == true){
                 callback();
+            }else {
+                //如果是验证码，并且发送成功，需要将同一个手机号、同类型、同应用点之前发送成功的验证码设置失效
+                if (smsInfo.type === "AUTH_CODE" && smsInfo.status == 1) {
+                    SmsInfo.update({
+                        _id: {$ne: smsInfo._id},
+                        type: smsInfo.type,
+                        useType: smsInfo.useType,
+                        mobilePhone: smsInfo.mobilePhone,
+                        status: 1
+                    }, {
+                        $set: {status: 4}
+                    }, {
+                        multi: true
+                    }, function (err) {
+                        if (err) {
+                            //更新短信状态错误失败，不影响短信发送，仅打印错误日志。
+                            logger.error("更新短信状态错误, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + error);
+                        }
+                        callback();
+                    });
+                } else {
+                    callback();
+                }
             }
         });
     },
