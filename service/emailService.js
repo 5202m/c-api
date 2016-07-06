@@ -62,7 +62,7 @@ var emailService = {
                 }
             },
             from : "HX直播间<2807001686@qq.com>",
-            to : "jade.zhu@gwtsz.com",
+            to : "expert@hx9999.com",
             subject: function(data){
                 return "[HX直播间]专家邮箱:" + (data.email || "");
             },
