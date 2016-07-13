@@ -103,4 +103,23 @@ router.post('/add', function(req, res){
     });
 });
 
+/**
+ * 更新文章
+ */
+router.post('/modify',function(req, res){
+    APIUtil.logRequestInfo(req, "articleAPI");
+    var query = req.body['query'];
+    var updater = req.body['data'];
+    var field = req.body['field'];
+    if(typeof query == 'string'){
+        query = JSON.parse(query);
+    }
+    if(typeof updater == 'string'){
+        updater = JSON.parse(updater);
+    }
+    articleService.modifyArticle(query, field, updater, function(apiResult){
+        res.json(apiResult);
+    });
+});
+
 module.exports = router;

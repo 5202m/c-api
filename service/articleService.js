@@ -126,6 +126,33 @@ var articleService = {
                 callback({isOK: true, id: result._id,msg:''});
             });
         }, true);
+    },
+    /**
+     * 更新文章
+     * @param query
+     * @param field
+     * @param updater
+     * @param callback
+     */
+    modifyArticle: function(query, field, updater, callback){
+        article.find(query, field, function(err, row){
+            if(err){
+                logger.error("modifyArticle->fail!:"+err);
+                callback({isOK:false, msg:'更新失败'});
+            } else {
+                if (row) {
+                    article.findOneAndUpdate(query, updater, function(err1, row1){
+                        if (err1) {
+                            logger.error('modifyArticle=>fail!' + err1);
+                            callback({isOK: false, msg: '更新失败'});
+                        }
+                        callback({isOK:true, msg:''});
+                    });
+                }else {
+                    callback({isOk: false,  msg: '更新失败'});
+                }
+            }
+        });
     }
 };
 
