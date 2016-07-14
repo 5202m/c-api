@@ -248,6 +248,7 @@ router.get('/getInformation', function(req, res){
                             if(parseError){
                                 logger.error("getInformation for fx678 parser>>>error:"+parseError);
                                 res.json({isOK:false, data:null});
+                                return;
                             }
                             cacheClient.set(key, JSON.stringify(result));
                             cacheClient.expire(key, 5*60);//设置有效时间
