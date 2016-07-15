@@ -50,7 +50,7 @@ var uploadService = {
                             callbackIte(err, null);
                         }else{
                             //删除本地文件
-                            fs.unlink(file.path, function(err){
+                            FS.unlink(file.path, function(err){
                                 if(err){
                                     logger.warn("文件上传--删除临时文件失败:" + file.path);
                                 }
