@@ -1,4 +1,5 @@
 var chatSyllabus = require('../models/chatSyllabus');//引入chatSyllabus数据模型
+var boUser = require('../models/boUser');//引入boUser数据模型
 var logger=require('../resources/logConf').getLogger('syllabusService');//引入log4js
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
 var Utils = require('../util/Utils'); 	 	            //引入工具类js
@@ -77,6 +78,11 @@ var syllabusService = {
                         loc_courses = JSON.parse(rowTmp.courses);
                         loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, rowTmp.publishStart, true);
                     }
+                    //补充课程表信息（分析师头像）
+                    syllabusService.fillLecturerInfo(loc_result, function(courseArr){
+                        callback(ApiResult.result(null, courseArr));
+                    });
+                    return;
                 }else if(rowTmp.publishStart.getTime() <= today.getTime()){//获取全天课程安排
                     loc_result = syllabusService.getCourseByDay(loc_courses, loc_day);
                 }
@@ -222,7 +228,6 @@ var syllabusService = {
             return null;
         }
     },
-
     /**
      * 判断是都有效的课程
      * @param course
@@ -232,6 +237,40 @@ var syllabusService = {
             && course.status!=0
             && !Common.isBlank(course.lecturerId)
             && course.courseType != 2;
+    },
+    /**
+     * 填充讲师信息（只针对单一课程填充）
+     * @param courseArr
+     */
+    fillLecturerInfo : function(courseArr, callback){
+        if(!courseArr || courseArr.length != 1 || !courseArr[0].lecturerId){
+            callback(courseArr);
+            return;
+        }
+        var userNoArr = courseArr[0].lecturerId.split(",");
+        boUser.find({
+            'userNo':{$in : userNoArr},
+            'status':0,
+            'valid':1
+        }, "_id userNo userName avatar" , function(err, rows){
+            if(err || !rows || rows.length == 0){
+                courseArr[0].avatar = "";
+                callback(courseArr);
+                return;
+            }
+            var lecturerMap = {}, row, i, lenI;
+            for(i = 0,lenI = rows.length; i < lenI; i++){
+                row = rows[i];
+                lecturerMap[row.userNo] = row.toObject();
+            }
+            var avatarArr = [];
+            for(i = 0,lenI = userNoArr.length; i < lenI; i++){
+                row = lecturerMap[userNoArr[i]];
+                avatarArr.push((row && row.avatar) ? row.avatar : "");
+            }
+            courseArr[0].avatar = avatarArr.join(",");
+            callback(courseArr);
+        });
     }
 };
 //导出服务类
