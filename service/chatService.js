@@ -15,8 +15,9 @@ var chatService ={
      */
     getMessagePage:function (params,callback){
         var roomCode=params.roomCode;
-        if(common.isBlank(roomCode)){
-            roomCode = constant.studioGroupType.wechat;
+        var isNullCode=common.isBlank(roomCode);
+        if(isNullCode){
+            roomCode = constant.studioGroupType.studio;
         }
         var searchObj = {'toUser.talkStyle':0, groupType:roomCode,status:1,valid:1,'content.msgType':'text'};
         var isStudio = (roomCode==constant.studioGroupType.studio || roomCode==constant.studioGroupType.fxstudio);
@@ -58,7 +59,7 @@ var chatService ={
                                 for(var i in infos){
                                     row=infos[i];
                                     newRow={avatar:row.avatar,userType:row.userType,nickname:row.nickname,content:row.content.value};
-                                    if(isStudio){
+                                    if(isStudio && !isNullCode){
                                         newRow.toUser=row.toUser;
                                         newRow.publishTime=row.publishTime;
                                     }else{
