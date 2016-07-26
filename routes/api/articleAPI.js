@@ -14,6 +14,20 @@ var APIUtil = require('../../util/APIUtil'); 	 	   //引入API工具类js
 var ApiResult = require('../../util/ApiResult');       //引起聊天室工具类js
 
 /**
+ * 提取分组样式文档数据
+ */
+router.get('/getGoupArticles', function(req, res) {
+    var params={};
+    params.code = req.query["code"];
+    params.days = req.query["days"];
+    params.flag = req.query["flag"];
+    params.platform= req.query["platform"];
+    params.dateTime = req.query["dateTime"];
+    articleService.getArticleListByGroup(params,function(data){
+        res.json(data);
+    });
+});
+/**
  * 根据栏目code-->提取文章咨询列表
  */
 router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {

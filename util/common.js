@@ -204,6 +204,35 @@ var common = {
             }
         }
         return -1;
+    },
+    /**
+     * 对象数组排序
+     * @param key 对象的key值
+     * @param desc true 为降序，false升序
+     * @returns {Function}
+     */
+    arraySort:function(key,desc){
+       return function(a,b){
+        return desc? (a[key] < b[key]) : (a[key] > b[key]);
+       }
+    },
+    /**
+     * 格式化去日期（不含时间）
+     */
+    formatterDate : function(date,splitChar) {
+        if(!splitChar){
+            splitChar='-';
+        }
+        if(!(date instanceof Date)){
+            date=new Date(date);
+        }
+        var datetime = date.getFullYear()
+            + splitChar// "年"
+            + ((date.getMonth() + 1) >=10 ? (date.getMonth() + 1) : "0"
+            + (date.getMonth() + 1))
+            + splitChar// "月"
+            + (date.getDate() < 10 ? "0" + date.getDate() : date.getDate());
+        return datetime;
     }
 };
 
