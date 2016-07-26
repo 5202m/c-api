@@ -90,10 +90,8 @@ var articleService = {
      */
     getCountByDate:function(params,callback){
         var currDate=params.dateTime?new Date(params.dateTime):new Date();
-        var searchObj={status:1,valid:1,categoryId:params.code,platform:commonJs.getSplitMatchReg(params.platform)};
         var startTime=commonJs.formatterDate(currDate)+" 00:00:00";
-        searchObj.publishStartDate={"$lte":currDate,"$gte":new Date(startTime)};
-        article.find(searchObj).count(function(err,rowNum){
+        article.find({status:1,valid:1,categoryId:params.code,platform:commonJs.getSplitMatchReg(params.platform),publishStartDate:{"$lte":currDate,"$gt":new Date(startTime)}}).count(function(err,rowNum){
             callback({count:rowNum});
         });
     },
