@@ -84,51 +84,56 @@ var articleService = {
         );
     },
     /**
+     * 提取当前日期文档条数
+     * @param params
+     * @param callback
+     */
+    getCountByDate:function(params,callback){
+        var currDate=params.dateTime?new Date(params.dateTime):new Date();
+        var searchObj={status:1,valid:1,categoryId:params.code,platform:commonJs.getSplitMatchReg(params.platform)};
+        var startTime=commonJs.formatterDate(currDate)+" 00:00:00";
+        searchObj.publishStartDate={"$lte":currDate,"$gte":new Date(startTime)};
+        article.find(searchObj).count(function(err,rowNum){
+            callback({count:rowNum});
+        });
+    },
+    /**
      * 根据栏目code-->提取文章资讯列表
      * @param  code  栏目code
      * @param  lang  语言
      * @param  curPageNo 当前页数
      * @param  pageSize  每页显示条数
      */
-    getArticleListByGroup:function(params,callback){
-        var currDate=params.dateTime?new Date(params.dateTime):new Date();
-        var searchObj={categoryId:params.code,platform:commonJs.getSplitMatchReg(params.platform)};
-        if('1'==params.flag){//当前日期条数
-            var startTime=commonJs.formatterDate(currDate)+" 00:00:00";
-            searchObj.publishStartDate={"$lte":currDate,"$gte":new Date(startTime)};
-            article.find(searchObj).count(function(err,rowNum){
-                callback({count:rowNum});
+    getListByGroup:function(params,callback){
+        var searchObj={status:1,valid:1,categoryId:params.code,platform:commonJs.getSplitMatchReg(params.platform)};
+        var days=params.days||6;//默认前6天
+        var o = {};
+        o.map = function () {
+            var month=this.publishStartDate.getMonth()+1,date=this.publishStartDate.getDate();
+            month=month<10?'0'+month:month;
+            date=date<10?'0'+date:date;
+            emit((this.publishStartDate.getFullYear()+"-"+(month)+"-"+date),this.detailList);
+        };
+        o.query=searchObj;
+        o.reduce = function (k, doc) {
+            var list=[];
+            doc.forEach(function(row) {
+                list.push(row[0]);
             });
-        }else{
-            var days=params.days||6;//默认前6天
-            var o = {};
-            o.map = function () {
-                var month=this.publishStartDate.getMonth()+1,date=this.publishStartDate.getDate();
-                month=month<10?'0'+month:month;
-                date=date<10?'0'+date:date;
-                emit((this.publishStartDate.getFullYear()+"-"+(month)+"-"+date),this.detailList);
-            };
-            o.query=searchObj;
-            o.reduce = function (k, doc) {
-                var list=[];
-                doc.forEach(function(row) {
-                    list.push(row[0]);
+            return {count:doc.length,detailList:list};
+        };
+        o.out = { replace: 'detailList'};
+        o.verbose = false;
+        article.mapReduce(o, function (err, model, stats) {
+            model.find().sort({_id:'desc'}).limit(days).exec(function (err, docs) {
+                docs.forEach(function(row) {
+                    if(row.value.length==1){
+                        row.value={"count":1,"detailList":[row.value[0]]};
+                    }
                 });
-                return {count:doc.length,detailList:list};
-            };
-            o.out = { replace: 'detailList'};
-            o.verbose = false;
-            article.mapReduce(o, function (err, model, stats) {
-                model.find().sort({_id:'desc'}).limit(days).exec(function (err, docs) {
-                    docs.forEach(function(row) {
-                        if(row.value.length==1){
-                            row.value={"count":1,"detailList":[row.value[0]]};
-                        }
-                    });
-                    callback(docs);
-                });
+                callback(docs);
             });
-        }
+        });
     },
     /**
      * 提取文档信息

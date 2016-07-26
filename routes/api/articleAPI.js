@@ -17,16 +17,30 @@ var ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
  * 提取分组样式文档数据
  */
 router.get('/getGoupArticles', function(req, res) {
-    var params={};
-    params.code = req.query["code"];
-    params.days = req.query["days"];
-    params.flag = req.query["flag"];
-    params.platform= req.query["platform"];
-    params.dateTime = req.query["dateTime"];
-    articleService.getArticleListByGroup(params,function(data){
-        res.json(data);
-    });
+    var params={days:req.query["days"],code:req.query["code"],platform:req.query["platform"]};
+    if(commonJs.isBlank(params.code)||commonJs.isBlank(params.platform)){
+        res.json(null);
+    }else{
+        articleService.getListByGroup(params,function(data){
+            res.json(data);
+        });
+    }
 });
+
+/**
+ * 提取分组样式文档数据
+ */
+router.get('/getArticleCount', function(req, res) {
+    var params={code:req.query["code"],platform:req.query["platform"],dateTime:req.query["dateTime"]};
+    if(commonJs.isBlank(params.code)||commonJs.isBlank(params.platform)){
+        res.json(null);
+    }else{
+        articleService.getCountByDate(params,function(data){
+            res.json(data);
+        });
+    }
+});
+
 /**
  * 根据栏目code-->提取文章咨询列表
  */
