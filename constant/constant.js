@@ -57,7 +57,11 @@ var constant = {
             }
         },
         hx : {
-
+            webui : {       //webui
+                groupType : "hxstudio",    //房间组别
+                roomId : "hxstudio_26",    //房间ID
+                singleCourse : false       //是否只取一次课，用于课程安排接口
+            }
         },
         getConfig : function(type, platform){
             type = type || "pm";
