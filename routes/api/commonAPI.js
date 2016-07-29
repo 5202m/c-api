@@ -142,7 +142,7 @@ router.get("/getCourse", function(req, res) {
     if(cfg){
         loc_params.groupType = cfg.groupType;
         loc_params.groupId = cfg.roomId;
-        loc_params.flag = cfg.flag;
+        loc_params.flag = common.isValid(loc_params.flag)?loc_params.flag:cfg.flag;
     }
     if(!loc_params.groupType){
         res.json(ApiResult.result(errorMessage.code_1000, null));
