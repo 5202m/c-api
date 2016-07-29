@@ -26,41 +26,46 @@ var constant = {
             web24k : {       //PM官网
                 groupType : "studio",    //房间组别
                 roomId : "studio_teach", //房间ID
-                singleCourse : true      //是否只取一次课，用于课程安排接口
+                flag : 'S'      //是否只取一次课，用于课程安排接口
             },
             webui : {       //webui
                 groupType : "studio",    //房间组别
                 roomId : "studio_teach", //房间ID
-                singleCourse : false     //是否只取一次课，用于课程安排接口
+                flag : 'D'     //是否只取一次课，用于课程安排接口
             },
             app : {         //APP Android+IOS
                 groupType : "studio",    //房间组别
                 roomId : "studio_teach", //房间ID
-                singleCourse : false     //是否只取一次课，用于课程安排接口
+                flag : 'D'   //是否只取一次课，用于课程安排接口
             },
             pc : {          //PC ui
                 groupType : "studio",    //房间组别
                 roomId : "studio_teach", //房间ID
-                singleCourse : false     //是否只取一次课，用于课程安排接口
+                flag : 'D'     //是否只取一次课，用于课程安排接口
             }
         },
         fx : {
             gwfx : {        //FX官网
                 groupType : "fxstudio",  //房间组别
                 roomId : "fxstudio_11",  //房间ID
-                singleCourse : true      //是否只取一次课，用于课程安排接口
+                    flag : 'S'      //是否只取一次课，用于课程安排接口，一节课
+            },
+            uce : { //客户中心
+                groupType : "fxstudio",  //房间组别
+                roomId : "fxstudio_11",  //房间ID
+                flag : 'W'      //是否只取一次课，用于课程安排接口，一节课
             },
             webui : {       //webui
                 groupType : "fxstudio",    //房间组别
                 roomId : "fxstudio_11",    //房间ID
-                singleCourse : false       //是否只取一次课，用于课程安排接口
+                flag : 'W'       //是否只取一次课，用于课程安排接口,全天
             }
         },
         hx : {
             webui : {       //webui
                 groupType : "hxstudio",    //房间组别
                 roomId : "hxstudio_26",    //房间ID
-                singleCourse : false       //是否只取一次课，用于课程安排接口
+                flag : 'W' //是否只取一次课，用于课程安排接口
             }
         },
         getConfig : function(type, platform){

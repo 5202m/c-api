@@ -40,7 +40,23 @@ var syllabusService = {
             callback(ApiResult.result(null, !row ? null : row.courses));
         });
     },
-
+    /**
+     * 移除课程内容
+     * @param coursesObj
+     */
+    removeContext:function(coursesObj){
+        if(!coursesObj){
+            return;
+        }
+        var tmArr=coursesObj.timeBuckets,courseTmp=null;
+        for(var i in tmArr){
+            courseTmp=tmArr[i].course;
+            for(var k in courseTmp){
+                delete courseTmp[k].context;
+            }
+        }
+        return coursesObj;
+    },
     /**
      * 查询聊天室课程安排(指定日期课程安排)
      * @param groupType
@@ -49,7 +65,7 @@ var syllabusService = {
      * @param single
      * @param callback
      */
-    getCourse : function(groupType, groupId, today, single, callback){
+    getCourse : function(groupType, groupId, today, flag, callback){
         groupId = groupId || "";
         APIUtil.DBFind(chatSyllabus, {
             query : {
@@ -71,7 +87,7 @@ var syllabusService = {
             if(rowTmp){
                 var loc_courses = JSON.parse(rowTmp.courses);
                 var loc_day = today.getDay();
-                if(single){//获取下次课程安排
+                if(flag=='S'){//获取下次课程安排
                     loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, today, false);
                     if((!loc_result || loc_result.length == 0) && rows.length > 1){
                         rowTmp = rows[1];
@@ -83,8 +99,13 @@ var syllabusService = {
                         callback(ApiResult.result(null, courseArr));
                     });
                     return;
-                }else if(rowTmp.publishStart.getTime() <= today.getTime()){//获取全天课程安排
-                    loc_result = syllabusService.getCourseByDay(loc_courses, loc_day);
+                }else if(flag=='D'){
+                    if(rowTmp.publishStart.getTime() <= today.getTime()){//获取全天课程安排
+                        loc_result = syllabusService.getCourseByDay(loc_courses, loc_day);
+                    }
+                }else if(flag=='W'){
+                    loc_result=loc_courses;
+                    syllabusService.removeContext(loc_result);
                 }
             }
             callback(ApiResult.result(null, loc_result));
