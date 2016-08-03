@@ -20,7 +20,7 @@ var constant = {
     studioDefRoom:{
         studio : "studio_teach",  //pm直播间
         fxstudio:"fxstudio_11", //fx直播间
-        hxstudio:"hxstudio_26", //hx直播间
+        hxstudio:"hxstudio_26" //hx直播间
     },
     studioThirdUsed:{//第三方引用直播间默认房间
         pm : {
