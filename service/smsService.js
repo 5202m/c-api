@@ -222,47 +222,17 @@ var smsService = {
             useType : smsInfoObj.useType,
             sendTime : {$gte : loc_startDate}
         };
-        if(smsInfoObj.deviceKey){
-            loc_query["$or"] = [
-                {mobilePhone : smsInfoObj.mobilePhone},
-                {deviceKey   : smsInfoObj.deviceKey}
-            ];
-        }else{
-            loc_query.mobilePhone = smsInfoObj.mobilePhone;
-        }
-        APIUtil.DBFind(SmsInfo, {
-            query : loc_query,
-            fieldIn: ["mobilePhone", "deviceKey"]
-        }, function(err, smsInfos){
+        loc_query.mobilePhone = smsInfoObj.mobilePhone;
+        SmsInfo.count(loc_query, function(err, cnt){
             if(err){
                 logger.error("<<checkSend:统计发送数量出错，", err);
                 callback(err, false);
                 return;
             }
-            var loc_cntMobile = 0;
-            var i, lenI = !smsInfos ? 0 : smsInfos.length;
-            for(i = 0; i < lenI; i++){
-                if(smsInfos[i].mobilePhone == smsInfoObj.mobilePhone){
-                    loc_cntMobile++;
-                }
-            }
             //手机号数量限制
-            if(loc_cntMobile >= smsConfig.cnt){
+            if(cnt >= smsConfig.cnt){
                 callback(null, false);
                 return;
-            }
-            if(smsInfoObj.deviceKey){
-                var loc_cntDeviceKey = 0;
-                for(i = 0; i < lenI; i++){
-                    if(smsInfos[i].deviceKey == smsInfoObj.deviceKey){
-                        loc_cntDeviceKey ++;
-                    }
-                }
-                //设备KEY值数量限制
-                if(loc_cntDeviceKey >= smsConfig.cnt){
-                    callback(null, false);
-                    return;
-                }
             }
             callback(null, true);
         });
