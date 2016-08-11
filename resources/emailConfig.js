@@ -34,7 +34,7 @@ var emailConfig = {
                 }
             },
             from : "FX直播间<2807001686@qq.com>",
-            to : "370419450@qq.com",//"cs@gwfx.com",
+            to : "370419450@qq.com",//"expert@gwfx.com",
             subject: function(data){
                 return "[FX直播间]专家邮箱:" + (data.email || "");
             },
