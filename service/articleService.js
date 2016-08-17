@@ -16,21 +16,33 @@ var async = require('async');//引入async
  * 定义服务类
  */
 var articleService = {
-	/**
+    /**
      * 根据栏目code-->提取文章资讯列表
-     * @param  code  栏目code
-     * @param  lang  语言
-     * @param  curPageNo 当前页数
-     * @param  pageSize  每页显示条数
+     * @param params {{platform, code, isAll, lang, hasContent, authorId, orderByJsonStr, pageNo, pageSize, pageLess, pageKey}}
+     * @param callback
      */
     getArticlePage:function(params,callback){
-        var searchObj = {},selectField="";
-        var currDate=new Date();
-        var categoryIdArr=[];
+        var searchObj = {
+            valid:1,
+            platform:commonJs.getSplitMatchReg(params.platform),
+            status:1
+        },selectField="";
         if(params.code.indexOf(",")!=-1){
-            categoryIdArr=params.code.split(",");
+            searchObj.categoryId = {$in:params.code.split(",")};
         }else{
-            categoryIdArr.push(params.code);
+            searchObj.categoryId = params.code;
+        }
+        if(!params.isAll){
+            var currDate=new Date();
+            searchObj.publishStartDate = {"$lte":currDate};
+            searchObj.publishEndDate = {"$gte":currDate};
+        }
+        if(params.pageKey){
+            if(params.pageLess){
+                searchObj._id = {"$lt" : params.pageKey};
+            }else{
+                searchObj._id = {"$gt" : params.pageKey};
+            }
         }
         selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate";
         if(commonJs.isBlank(params.lang)){
@@ -39,7 +51,6 @@ var articleService = {
             }else{
                 selectField+=" detailList.title detailList.authorInfo detailList.remark detailList.tag detailList.lang";
             }
-            searchObj = {valid:1,platform:commonJs.getSplitMatchReg(params.platform),categoryId:{$in:categoryIdArr},status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
         }else{
             if("1"==params.hasContent){
                 selectField+=" detailList.$";
@@ -50,7 +61,7 @@ var articleService = {
             if(commonJs.isValid(params.authorId)){
                 deList["authorInfo.userId"] = params.authorId;
             }
-            searchObj = {valid:1,platform:commonJs.getSplitMatchReg(params.platform),categoryId:{$in:categoryIdArr},'detailList' : {$elemMatch:deList},status:1,publishStartDate:{"$lte":currDate},publishEndDate:{"$gte":currDate}};
+            searchObj.detailList = {$elemMatch:deList};
         }
         var from = (params.pageNo-1) * params.pageSize;
         var orderByJsonObj={createDate: 'desc' };
