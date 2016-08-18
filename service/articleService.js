@@ -44,7 +44,7 @@ var articleService = {
                 searchObj._id = {"$gt" : params.pageKey};
             }
         }
-        selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate";
+        selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate praise downloads";
         if(commonJs.isBlank(params.lang)){
             if("1"==params.hasContent){
                 selectField+=" detailList";
@@ -208,6 +208,52 @@ var articleService = {
                             callback({isOK: false, msg: '更新失败'});
                         }
                         callback({isOK:true, msg:''});
+                    });
+                }else {
+                    callback({isOk: false,  msg: '更新失败'});
+                }
+            }
+        });
+    },
+    /**
+     * 更新点赞数或下载次数
+     * @param query
+     * @param type
+     * @param callback
+     */
+    modifyPraiseOrDownloads: function(query, type, callback){
+        article.findOne(query, function(err, row){
+            if(err){
+                logger.error("modifyPraiseOrDownloads->fail!:"+err);
+                callback({isOK:false, msg:'更新失败'});
+            } else {
+                if (row) {
+                    if(type=='praise') {
+                        if(commonJs.isBlank(row.praise)){
+                            row.praise = 1;
+                        }else {
+                            row.praise += 1;
+                        }
+                    }else if(type=='downloads'){
+                        if(commonJs.isBlank(row.downloads)){
+                            row.downloads = 1;
+                        }else {
+                            row.downloads += 1;
+                        }
+                    }
+                    row.save(function(err1, rowTmp){
+                        if (err1) {
+                            logger.error('modifyPraiseOrDownloads=>fail!' + err1);
+                            callback({isOK: false, msg: '更新失败'});
+                            return;
+                        }
+                        var num = 0;
+                        if(type=='praise') {
+                            num = rowTmp.praise;
+                        }else if(type=='downloads'){
+                            num = rowTmp.downloads;
+                        }
+                        callback({isOK:true, msg:'', num: num});
                     });
                 }else {
                     callback({isOk: false,  msg: '更新失败'});

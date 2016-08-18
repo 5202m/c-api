@@ -143,12 +143,42 @@ router.post('/modify',function(req, res){
     var updater = req.body['data'];
     var field = req.body['field'];
     if(typeof query == 'string'){
-        query = JSON.parse(query);
+        try {
+            query = JSON.parse(query);
+        }catch(e){
+            res.json(null);
+            return;
+        }
     }
     if(typeof updater == 'string'){
-        updater = JSON.parse(updater);
+        try {
+            updater = JSON.parse(updater);
+        }catch(e){
+            res.json(null);
+            return;
+        }
     }
     articleService.modifyArticle(query, field, updater, function(apiResult){
+        res.json(apiResult);
+    });
+});
+
+/**
+ * 更新点赞数或下载次数
+ */
+router.post('/modifyPraiseOrDownloads', function(req, res){
+    APIUtil.logRequestInfo(req, "articleAPI");
+    var query = req.body['query'];
+    var type = req.body['type'];
+    if(typeof query == 'string'){
+        try {
+            query = JSON.parse(query);
+        }catch(e){
+            res.json(null);
+            return;
+        }
+    }
+    articleService.modifyPraiseOrDownloads(query, type, function(apiResult){
         res.json(apiResult);
     });
 });

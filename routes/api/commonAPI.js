@@ -14,6 +14,7 @@ var Utils = require('../../util/Utils'); //引入工具类js
 var logger = require('../../resources/logConf').getLogger('commonAPI');
 var SyllabusService = require('../../service/syllabusService');
 var EmailService = require('../../service/emailService');
+var articleService = require('../../service/articleService');
 var ApiResult = require('../../util/ApiResult');
 var errorMessage = require('../../util/errorMessage.js');
 
@@ -267,6 +268,24 @@ router.get('/getInformation', function(req, res){
         else{
             res.json({isOK:true, data:JSON.parse(result)});//获取的结果是字符串，需要转为json对象
         }
+    });
+});
+
+/**
+ * 更新点赞数或下载次数
+ */
+router.post('/modifyArticle', function(req, res){
+    var data = req.body['data'];
+    if(typeof data == 'string'){
+        try {
+            data = JSON.parse(data);
+        }catch(e){
+            res.json(null);
+            return;
+        }
+    }
+    articleService.modifyPraiseOrDownloads(data.q, data.type, function(apiResult){
+        res.json(apiResult);
     });
 });
 
