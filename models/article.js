@@ -16,6 +16,7 @@ var mongoose = require('mongoose')
         valid:{type:Number, default:1}, 			/**是否有效*/
         sequence: {type:Number, default:1},
         praise: {type:Number, default:0},
+        downloads:{type:Number,default:0},       /*下载次数*/
         mediaUrl:String,							/**媒体地址路径*/
         mediaImgUrl:String,					    /** 媒体图片（视频专用字段）*/
         linkUrl:String,								/** 点击媒体链接的路径*/
