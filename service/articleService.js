@@ -218,12 +218,12 @@ var articleService = {
     },
     /**
      * 更新点赞数或下载次数
-     * @param query
+     * @param _id
      * @param type
      * @param callback
      */
-    modifyPraiseOrDownloads: function(query, type, callback){
-        article.findOne(query, function(err, row){
+    modifyPraiseOrDownloads: function(_id, type, callback){
+        article.findOne({'_id':_id}, function(err, row){
             if(err){
                 logger.error("modifyPraiseOrDownloads->fail!:"+err);
                 callback({isOK:false, msg:'更新失败'});

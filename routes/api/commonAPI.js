@@ -275,16 +275,13 @@ router.get('/getInformation', function(req, res){
  * 更新点赞数或下载次数
  */
 router.post('/modifyArticle', function(req, res){
-    var data = req.body['data'];
-    if(typeof data == 'string'){
-        try {
-            data = JSON.parse(data);
-        }catch(e){
-            res.json(null);
-            return;
-        }
+    var _id = req.body['id'];
+    var type = req.body['type'];
+    if(common.isBlank(_id) || common.isBlank(type)){
+        res.json({isOk: false,  msg: '参数错误'});
+        return;
     }
-    articleService.modifyPraiseOrDownloads(data.q, data.type, function(apiResult){
+    articleService.modifyPraiseOrDownloads(_id, type, function(apiResult){
         res.json(apiResult);
     });
 });
