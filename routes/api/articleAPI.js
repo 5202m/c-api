@@ -57,6 +57,7 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
         params.isAll = !!req.query["isAll"];
         params.orderByJsonStr=req.query["orderByJsonStr"];
         params.hasContent= req.query["hasContent"];
+        params.format= req.query["format"];
     if(!params.pageNo||params.pageNo <= 0){
         params.pageNo = 1;
     }

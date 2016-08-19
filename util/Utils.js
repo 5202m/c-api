@@ -284,8 +284,11 @@ var Utils = {
          * eg:format="yyyy-MM-dd hh:mm:ss";
          */
         var loc_date = date;
-        if (typeof date === "number") {
+        if (date instanceof Date == false) {
             loc_date = new Date(date);
+        }
+        if(loc_date == "Invalid Date"){
+            return "";
         }
         var o = {
             "M+": loc_date.getMonth() + 1, // month

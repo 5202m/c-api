@@ -10,6 +10,7 @@ var category = require('../models/category');   //引入category数据模型
 var ApiResult = require('../util/ApiResult');
 var commonJs = require('../util/common');       //引入公共的js
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
+var Utils = require('../util/Utils'); 	 	            //引入工具类js
 var async = require('async');//引入async
 
 /**
@@ -79,6 +80,7 @@ var articleService = {
                                 logger.error(err);
                                 callbackTmp(null,null);
                             }else{
+                                articles = articleService.formatArticles(articles, params.format);
                                 callbackTmp(null,articles);
                             }
                      });
@@ -93,6 +95,57 @@ var articleService = {
              callback(ApiResult.page(params.pageNo,params.pageSize,results.totalSize,results.list));
           }
         );
+    },
+    /**
+     * 格式化
+     * @param articles
+     * @param type
+     */
+    formatArticles : function(articles, type){
+        if(!articles || articles.length == 0){
+            return articles;
+        }
+        if(type == "live"){
+            var article, detail, author;
+            var imgReg = /<img\s+[^>]*src=['"]([^'"]+)['"][^>]*>/,
+                tagRegAll = /<[^>]+>|<\/[^>]+>/g,
+                matches,content,contentImg;
+            for(var i in articles){
+                article = articles[i].toObject();
+                detail = article.detailList && article.detailList[0];
+
+                article.publishStartDate = Utils.dateFormat(article.publishStartDate, "yyyy-MM-dd hh:mm:ss");
+                article.publishEndDate = Utils.dateFormat(article.publishEndDate, "yyyy-MM-dd hh:mm:ss");
+                article.createDate = Utils.dateFormat(article.createDate, "yyyy-MM-dd hh:mm:ss");
+                article.praise = article.praise || 0;
+                if(detail){
+                    //基本信息
+                    author = detail.authorInfo;
+                    article.title = detail.title;
+                    article.tag = detail.tag;
+                    //内容
+                    content = detail.content || "";
+                    contentImg = "";
+                    matches = imgReg.exec(content);
+                    if(matches){
+                        contentImg = matches[1];
+                    }
+                    content = content.replace(tagRegAll, "");
+                    article.content = content;
+                    article.contentImg = contentImg;
+                    //作者
+                    if(author){
+                        article.authorId = author.userId;
+                        article.authorAvatar = author.avatar;
+                        article.authorPosition = author.position;
+                        article.authorName = author.name;
+                    }
+                }
+                delete article["detailList"];
+                articles[i] = article;
+            }
+        }
+        return articles;
     },
     /**
      * 提取当前日期文档条数
