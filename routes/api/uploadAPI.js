@@ -59,4 +59,54 @@ router.post('/uploadFile', function (req, res) {
     });
 });
 
+/**
+ * 编辑器上传
+ */
+router.all('/editorUpload', function (req, res) {
+    APIUtil.logRequestInfo(req, "uploadAPI");
+    var loc_fileDir = req.query['action'];
+    if(loc_fileDir == "config"){
+        res.json({});
+        return;
+    }else if(!loc_fileDir || (!(CommonJS.startsWith(loc_fileDir,Constant.FileDirectory.pic.code) != -1)
+        && !(CommonJS.startsWith(loc_fileDir,Constant.FileDirectory.video.code) != -1))){
+        res.json({state:"FAIL", error:"目录不存在，请重新确认参数"});
+        return;
+    }
+    var form = new Formidable.IncomingForm();
+    form.encoding = 'utf-8';
+    form.uploadDir = Config.uploadTempPath;
+    form.keepExtensions = true;
+    form.parse(req, function(err, fields, files) {
+        if (err) {
+            logger.error("文件上传失败，解析表单错误！", err);
+            res.json({state:"FAIL", error:"文件上传失败"});
+            return;
+        }
+        var loc_timeNow = new Date();
+        var loc_filePath = loc_fileDir + "/" + Utils.dateFormat(loc_timeNow, 'yyyyMM');
+        var loc_fileName = Utils.dateFormat(loc_timeNow, 'yyyyMMddhhmmss');
+
+        if(Config.uploadUseFtp){
+            UploadService.ftpUpload(files, loc_filePath, loc_fileName, function(result){
+                if(result.result == 0 && result.data && result.data.length > 0){
+                    var file = result.data[0];
+                    res.json({state:"SUCCESS", url:file.fileDomain + file.filePath});
+                }else{
+                    res.json({state:"FAIL", error:result.errmsg});
+                }
+            });
+        }else{
+            UploadService.upload(files, loc_filePath, loc_fileName, function(result){
+                if(result.result == 0 && result.data && result.data.length > 0){
+                    var file = result.data[0];
+                    res.json({state:"SUCCESS", url:file.fileDomain + file.filePath});
+                }else{
+                    res.json({state:"FAIL", error:result.errmsg});
+                }
+            });
+        }
+    });
+});
+
 module.exports = router;

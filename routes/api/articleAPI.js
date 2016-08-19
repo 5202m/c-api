@@ -103,6 +103,7 @@ router.post('/add', function(req, res){
         param = JSON.parse(param);
     }
     var loc_article = {
+        template: param.template,
         categoryId: param.category,
         status: 1,
         platform: param.platform,
@@ -113,7 +114,7 @@ router.post('/add', function(req, res){
         mediaUrl: param.mediaUrl,
         mediaImgUrl: param.mediaImgUrl,
         linkUrl: param.linkUrl,
-        detailList: param.detail
+        detailList: param.detailList
     };
     if(!loc_article.publishStartDate
         || !loc_article.publishEndDate

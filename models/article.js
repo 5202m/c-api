@@ -7,6 +7,7 @@ var mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , articleSchema = new Schema({
         _id : String,
+        template: String ,   	/**模板*/
         categoryId: {type:String,index:true} ,   	/**栏目*/
         status: {type:Number, default:1}, 			/**状态*/
         platform : {type:String,index:true},      	/**应用平台*/

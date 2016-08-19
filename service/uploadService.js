@@ -10,9 +10,8 @@
  *
  * </p>
  */
-var logger = require('../resources/logConf').getLogger("smsService");
+var logger = require('../resources/logConf').getLogger("uploadService");
 var Path = require('path');
-var Utils = require('../util/Utils.js');
 var APIUtil = require('../util/APIUtil.js');
 var Config = require('../resources/config.js');
 var IteratorUtil = require('../util/IteratorUtil.js');

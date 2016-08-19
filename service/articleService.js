@@ -165,6 +165,7 @@ var articleService = {
             var loc_timeNow = new Date();
             var loc_article = new article({
                 _id: articleId,
+                template: articleParam.template,
                 categoryId: articleParam.categoryId,
                 status: articleParam.status,
                 platform: articleParam.platform,
@@ -184,7 +185,7 @@ var articleService = {
                     callback({isOK:false, id:0, msg:err});
                     return;
                 }
-                callback({isOK: true, id: result._id,msg:''});
+                callback({isOK: true, id: result._id, createDate:loc_timeNow.getTime(),msg:''});
             });
         }, true);
     },
