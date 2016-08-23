@@ -41,23 +41,6 @@ var syllabusService = {
         });
     },
     /**
-     * 移除课程内容
-     * @param coursesObj
-     */
-    removeContext:function(coursesObj){
-        if(!coursesObj){
-            return;
-        }
-        var tmArr=coursesObj.timeBuckets,courseTmp=null;
-        for(var i in tmArr){
-            courseTmp=tmArr[i].course;
-            for(var k in courseTmp){
-                delete courseTmp[k].context;
-            }
-        }
-        return coursesObj;
-    },
-    /**
      * 查询聊天室课程安排(指定日期课程安排)
      * @param groupType
      * @param groupId
@@ -104,8 +87,7 @@ var syllabusService = {
                         loc_result = syllabusService.getCourseByDay(loc_courses, loc_day);
                     }
                 }else if(flag=='W'){
-                    loc_result=loc_courses;
-                    syllabusService.removeContext(loc_result);
+                    loc_result = syllabusService.getCourseByWeek(rowTmp, loc_courses);
                 }
             }
             callback(ApiResult.result(null, loc_result));
@@ -130,23 +112,52 @@ var syllabusService = {
                 }
             }
             if(loc_dayIndex != -1 && coursesObj.timeBuckets){
-                var loc_timeBucket;
+                var loc_timeBucket, loc_course;
                 for(var i in coursesObj.timeBuckets){
                     loc_timeBucket = coursesObj.timeBuckets[i];
-                    if(loc_timeBucket.course[loc_dayIndex].status == 1
-                        && loc_timeBucket.course[loc_dayIndex].lecturer
-                        && loc_timeBucket.course[loc_dayIndex].courseType != 2){
+                    loc_course = loc_timeBucket.course[loc_dayIndex];
+                    if(loc_course.status == 1
+                        && loc_course.lecturer
+                        && loc_course.courseType != 2){
                         loc_result.push({
                             startTime : loc_timeBucket.startTime,
                             endTime : loc_timeBucket.endTime,
-                            lecturer : loc_timeBucket.course[loc_dayIndex].lecturer,
-                            title : loc_timeBucket.course[loc_dayIndex].title
+                            lecturer : loc_course.lecturer,
+                            lecturerId : loc_course.lecturerId,
+                            courseType : loc_course.courseType,
+                            title : loc_course.title
                         });
                     }
                 }
             }
         }
         return loc_dayIndex == -1 ? [] : loc_result;
+    },
+
+    /**
+     * 按照星期获取全周课程安排 不包含课程说明
+     * @param syllabusObj
+     * @param coursesObj
+     * @returns {*}
+     */
+    getCourseByWeek:function(syllabusObj, coursesObj){
+        if(!coursesObj || !syllabusObj){
+            return null;
+        }
+        var tmArr=coursesObj.timeBuckets,courseTmp;
+        for(var i in tmArr){
+            courseTmp=tmArr[i].course;
+            for(var k in courseTmp){
+                delete courseTmp[k].context;
+            }
+        }
+        return {
+            groupType : syllabusObj.groupType,
+            groupId : syllabusObj.groupId,
+            courses : JSON.stringify(coursesObj),
+            publishStart : syllabusObj.publishStart.getTime(),
+            publishEnd : syllabusObj.publishEnd.getTime()
+        };
     },
 
     /**
@@ -244,6 +255,8 @@ var syllabusService = {
                 course.endTime = tmBkTmp.endTime;
                 course.isNext = isNext;
                 return course;
+            }else{
+                return null;
             }
         }else{
             return null;
