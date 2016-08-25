@@ -182,11 +182,16 @@ var articleService = {
      * @param  pageSize  每页显示条数
      */
     getListByGroup:function(params,callback){
+        //仅筛选最近一个月的文档分组，注意和days的关系。 分组函数的性能调优
+        var dateStart = new Date().getTime();
+        dateStart = new Date(dateStart - 86400000 * 31);
+
         var searchObj= {
             status: 1,
             valid: 1,
             categoryId: params.code,
-            platform: commonJs.getSplitMatchReg(params.platform)
+            platform: commonJs.getSplitMatchReg(params.platform),
+            publishStartDate : {$gte : dateStart}
         };
         var days=params.days||6;//默认前6天
         var o = {
