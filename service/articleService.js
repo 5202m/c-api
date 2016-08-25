@@ -1,5 +1,5 @@
 /**
- * 摘要：文章资讯 Service服务类
+ * 摘要：文档资讯 Service服务类
  * author：Gavin.guo
  * date:2015/4/23
  */
@@ -18,7 +18,7 @@ var async = require('async');//引入async
  */
 var articleService = {
     /**
-     * 根据栏目code-->提取文章资讯列表
+     * 根据栏目code-->提取文档资讯列表
      * @param params {{platform, code, isAll, lang, hasContent, authorId, orderByJsonStr, pageNo, pageSize, pageLess, pageKey}}
      * @param callback
      */
@@ -80,6 +80,9 @@ var articleService = {
                                 logger.error(err);
                                 callbackTmp(null,null);
                             }else{
+                                for(var i in articles) {
+                                    articles[i] = articles[i].toObject();
+                                }
                                 articles = articleService.formatArticles(articles, params.format);
                                 callbackTmp(null,articles);
                             }
@@ -111,7 +114,7 @@ var articleService = {
                 tagRegAll = /<[^>]+>|<\/[^>]+>/g,
                 matches,content,contentImg;
             for(var i in articles){
-                article = articles[i].toObject();
+                article = articles[i];
                 detail = article.detailList && article.detailList[0];
 
                 article.publishStartDate = Utils.dateFormat(article.publishStartDate, "yyyy-MM-dd hh:mm:ss");
@@ -154,46 +157,87 @@ var articleService = {
      */
     getCountByDate:function(params,callback){
         var currDate=params.dateTime?new Date(params.dateTime):new Date();
-        var startTime=commonJs.formatterDate(currDate)+" 00:00:00";
-        article.find({status:1,valid:1,categoryId:params.code,platform:commonJs.getSplitMatchReg(params.platform),publishStartDate:{"$lte":currDate,"$gt":new Date(startTime)}}).count(function(err,rowNum){
+        var startDate=currDate.getTime();
+        startDate=new Date(startDate - startDate % 86400000);
+        article.count({
+            status: 1,
+            valid: 1,
+            categoryId: params.code,
+            platform: commonJs.getSplitMatchReg(params.platform),
+            publishStartDate: {"$lte": currDate, "$gt": startDate}
+        }, function(err,rowNum){
+            if(err){
+                logger.error("文档数量查询异常！", err);
+                callback(null);
+                return;
+            }
             callback({count:rowNum});
         });
     },
     /**
-     * 根据栏目code-->提取文章资讯列表
+     * 根据栏目code-->提取文档资讯列表
      * @param  code  栏目code
      * @param  lang  语言
      * @param  curPageNo 当前页数
      * @param  pageSize  每页显示条数
      */
     getListByGroup:function(params,callback){
-        var searchObj={status:1,valid:1,categoryId:params.code,platform:commonJs.getSplitMatchReg(params.platform)};
+        var searchObj= {
+            status: 1,
+            valid: 1,
+            categoryId: params.code,
+            platform: commonJs.getSplitMatchReg(params.platform)
+        };
         var days=params.days||6;//默认前6天
-        var o = {};
-        o.map = function () {
-            var month=this.publishStartDate.getMonth()+1,date=this.publishStartDate.getDate();
-            month=month<10?'0'+month:month;
-            date=date<10?'0'+date:date;
-            emit((this.publishStartDate.getFullYear()+"-"+(month)+"-"+date),this.detailList);
+        var o = {
+            //映射方法
+            map : function () {
+                var month=this.publishStartDate.getMonth()+1,date=this.publishStartDate.getDate();
+                month=month<10?'0'+month:month;
+                date=date<10?'0'+date:date;
+                emit((this.publishStartDate.getFullYear()+"-"+(month)+"-"+date),this);
+            },
+            //查询条件
+            query : searchObj,
+            //简化
+            reduce : function (k, doc) {
+                return {articles:doc};
+            },
+            //将统计结果输出到articleDataMap集合中，如果存在则replace
+            out : {
+                replace: 'articleDateMap'
+            },
+            //是否产生更加详细的服务器日志
+            verbose : false
         };
-        o.query=searchObj;
-        o.reduce = function (k, doc) {
-            var list=[];
-            doc.forEach(function(row) {
-                list.push(row[0]);
-            });
-            return {count:doc.length,detailList:list};
-        };
-        o.out = { replace: 'detailList'};
-        o.verbose = false;
         article.mapReduce(o, function (err, model, stats) {
+            if(err){
+                logger.error("文档分组异常！", err);
+                callback(null);
+                return;
+            }
             model.find().sort({_id:'desc'}).limit(days).exec(function (err, docs) {
+                if(err){
+                    logger.error("文档分组查询异常！", err);
+                    callback(null);
+                    return;
+                }
+                var result = [];
+                var format = params.format;
                 docs.forEach(function(row) {
-                    if(row.value.length==1){
-                        row.value={"count":1,"detailList":[row.value[0]]};
+                    if(row.value.hasOwnProperty("articles") == false){
+                        result.push({
+                            date : row._id,
+                            articles : articleService.formatArticles([row.value], format)
+                        });
+                    }else{
+                        result.push({
+                            date : row._id,
+                            articles : articleService.formatArticles(row.value.articles, format)
+                        });
                     }
                 });
-                callback(docs);
+                callback(result);
             });
         });
     },
@@ -209,7 +253,7 @@ var articleService = {
     },
     
     /**
-     * 添加文章
+     * 添加文档
      * @param articleParam
      * @param callback
      */
@@ -234,7 +278,7 @@ var articleService = {
             });
             loc_article.save(function(err, result){
                 if(err){
-                    logger.error("保存文章失败！", err);
+                    logger.error("保存文档失败！", err);
                     callback({isOK:false, id:0, msg:err});
                     return;
                 }
@@ -243,7 +287,7 @@ var articleService = {
         }, true);
     },
     /**
-     * 更新文章
+     * 更新文档
      * @param query
      * @param field
      * @param updater

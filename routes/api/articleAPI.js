@@ -17,7 +17,12 @@ var ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
  * 提取分组样式文档数据
  */
 router.get('/getGoupArticles', function(req, res) {
-    var params={days:req.query["days"],code:req.query["code"],platform:req.query["platform"]};
+    var params={
+        days:req.query["days"],
+        code:req.query["code"],
+        platform:req.query["platform"],
+        format:req.query["format"]
+    };
     if(commonJs.isBlank(params.code)||commonJs.isBlank(params.platform)){
         res.json(null);
     }else{
@@ -31,7 +36,11 @@ router.get('/getGoupArticles', function(req, res) {
  * 提取分组样式文档数据
  */
 router.get('/getArticleCount', function(req, res) {
-    var params={code:req.query["code"],platform:req.query["platform"],dateTime:req.query["dateTime"]};
+    var params= {
+        code: req.query["code"],
+        platform: req.query["platform"],
+        dateTime: req.query["dateTime"]
+    };
     if(commonJs.isBlank(params.code)||commonJs.isBlank(params.platform)){
         res.json(null);
     }else{
