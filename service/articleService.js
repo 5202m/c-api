@@ -157,8 +157,7 @@ var articleService = {
      */
     getCountByDate:function(params,callback){
         var currDate=params.dateTime?new Date(params.dateTime):new Date();
-        var startDate=currDate.getTime();
-        startDate=new Date(startDate - startDate % 86400000 - 28800000);
+        var startDate=new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate());
         article.count({
             status: 1,
             valid: 1,
