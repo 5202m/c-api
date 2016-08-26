@@ -8,6 +8,7 @@ var router = express.Router();
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
+var userService = require('../../service/userService');
 var ApiResult = require('../../util/ApiResult');
 
 /**
@@ -48,6 +49,23 @@ router.post("/checkChatPraise", function(req, res) {
     }else{
         chatService.checkChatPraise(clientId,praiseId,fromPlatform,function(isOK){
             res.json({result:isOK});
+        });
+    }
+});
+
+/**
+ * 按照手机号查询客户信息
+ */
+router.get("/getMemberByMobile", function(req, res) {
+    var params = {
+        groupType : req.query["groupType"],
+        mobilePhone : req.query["mobilePhone"]
+    };
+    if(common.isBlank(params.groupType)||common.isBlank(params.mobilePhone)){
+        res.json(null);
+    }else{
+        userService.getMemberByMobile(params, function(err, member){
+            res.json(member);
         });
     }
 });
