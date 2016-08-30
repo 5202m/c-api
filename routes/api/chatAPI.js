@@ -56,15 +56,16 @@ router.post("/checkChatPraise", function(req, res) {
 /**
  * 按照手机号查询客户信息
  */
-router.get("/getMemberByMobile", function(req, res) {
+router.get("/getMemberInfo", function(req, res) {
     var params = {
         groupType : req.query["groupType"],
-        mobilePhone : req.query["mobilePhone"]
+        mobilePhone : req.query["mobilePhone"],
+        userId : req.query["userId"]
     };
-    if(common.isBlank(params.groupType)||common.isBlank(params.mobilePhone)){
+    if(common.isBlank(params.groupType)||(common.isBlank(params.mobilePhone)&&common.isBlank(params.userId))){
         res.json(null);
     }else{
-        userService.getMemberByMobile(params, function(err, member){
+        userService.getMemberInfo(params, function(err, member){
             res.json(member);
         });
     }

@@ -22,16 +22,21 @@ var userService = {
 
     /**
      * 按照手机号查询用户信息
-     * @param params  {{mobilePhone:String, groupType:String}}
+     * @param params  {{mobilePhone:String, userId:String, groupType:String}}
      * @param callback
      */
-    getMemberByMobile: function(params, callback){
-        member.findOne({
+    getMemberInfo: function(params, callback){
+        var searchObj = {
             valid:1,
-            status:1,
-            mobilePhone:params.mobilePhone,
-            "loginPlatform.chatUserGroup._id":params.groupType
-        }, {
+            status:1
+        };
+        if(params.userId){
+            searchObj["loginPlatform.chatUserGroup"] = {$elemMatch:{_id:params.groupType,userId:params.userId}};
+        }else{
+            searchObj["mobilePhone"] = params.mobilePhone;
+            searchObj["loginPlatform.chatUserGroup._id"] = params.groupType;
+        }
+        member.findOne(searchObj, {
             "mobilePhone": 1,
             "loginPlatform.chatUserGroup.$": 1
         }, function(err, data){
