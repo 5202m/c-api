@@ -30,6 +30,7 @@ router.post('/uploadFile', function (req, res) {
     form.encoding = 'utf-8';
     form.uploadDir = Config.uploadTempPath;
     form.keepExtensions = true;
+    form.maxFieldsSize = 2 * 1024 * 1024;
 
     form.parse(req, function(err, fields, files) {
         if (err) {

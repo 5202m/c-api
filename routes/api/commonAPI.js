@@ -275,8 +275,8 @@ router.get('/getInformation', function(req, res){
  * 更新点赞数或下载次数
  */
 router.post('/modifyArticle', function(req, res){
-    var _id = req.body['id'];
-    var type = req.body['type'];
+    var _id = req.body['id'] || req.query['id'];
+    var type = req.body['type'] || req.query['type'];
     if(common.isBlank(_id) || common.isBlank(type)){
         res.json({isOk: false,  msg: '参数错误'});
         return;
