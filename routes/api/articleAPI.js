@@ -16,7 +16,7 @@ var ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
 /**
  * 提取分组样式文档数据
  */
-router.get('/getGoupArticles', function(req, res) {
+router.get('/getGroupArticles', function(req, res) {
     var params={
         days:req.query["days"],
         code:req.query["code"],

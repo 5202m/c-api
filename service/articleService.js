@@ -196,13 +196,15 @@ var articleService = {
         var o = {
             //映射方法
             map : function () {
-                var month=this.publishStartDate.getMonth()+1,date=this.publishStartDate.getDate();
+                var month=this.createDate.getMonth()+1,date=this.createDate.getDate();
                 month=month<10?'0'+month:month;
                 date=date<10?'0'+date:date;
-                emit((this.publishStartDate.getFullYear()+"-"+(month)+"-"+date),this);
+                emit((this.createDate.getFullYear()+"-"+(month)+"-"+date),this);
             },
             //查询条件
             query : searchObj,
+            //排序
+            sort : {"createDate": -1},
             //简化
             reduce : function (k, doc) {
                 return {articles:doc};
