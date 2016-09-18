@@ -197,7 +197,7 @@ TestRequest.upload = function(url, param, callback){
  * 获取一个API结果对象
  * @param error 错误
  * @param data 数据信息
- * @param page 分页信息
+ * @param [page] 分页信息
  */
 var APIResult = function(error, data, page){
     var loc_result = {
@@ -225,7 +225,7 @@ var APIResult = function(error, data, page){
             loc_result.errmsg = loc_error.errmsg;
         }else{
             loc_result.errcode = "-1";
-            loc_result.errmsg = "未知错误";
+            loc_result.errmsg = typeof error == "string" ? error : "未知错误";
         }
     }
     //logger.info("[APIResult] %s", JSON.stringify(loc_result));
