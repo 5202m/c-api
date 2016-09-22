@@ -20,6 +20,7 @@ var chatPointsConfigSchema = new Schema({
     "type" : String,                            //类别
     "item" : {type:String, index : true},       //项目
     "val" : Number,                             //积分值
+    "tips" : String,                            //提示信息
     "limitUnit" : String,                       //积分上限类别
     "limitVal" : Number,                        //积分上限值
     "limitArg" : String,                        //积分上限参数

@@ -176,6 +176,9 @@ var chatPointsService = {
             }
             pointsInfo.points += journal.change;
             journal.after = pointsInfo.points;
+            if(config && config.tips){
+                journal.remark = config.tips.replace("${points}", Math.abs(journal.change));
+            }
             pointsInfo.journal.push(journal);
             pointsInfo.save(function(err) {
                 if (err) {
