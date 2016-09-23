@@ -21,6 +21,7 @@ var mongoose = require('mongoose')
         mediaUrl:String,							/**媒体地址路径*/
         mediaImgUrl:String,					    /** 媒体图片（视频专用字段）*/
         linkUrl:String,								/** 点击媒体链接的路径*/
+        point:Number,                               /**所需积分*/
         detailList : [{     						/**文章资讯详细信息*/
             lang: {type:String,index:true} ,        /**语言*/
             title: String ,         /**标题*/

@@ -45,7 +45,7 @@ var articleService = {
                 searchObj._id = {"$gt" : params.pageKey};
             }
         }
-        selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate praise downloads";
+        selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate praise downloads point";
         if(commonJs.isBlank(params.lang)){
             if("1"==params.hasContent){
                 selectField+=" detailList";
