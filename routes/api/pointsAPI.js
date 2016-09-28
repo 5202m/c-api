@@ -23,14 +23,6 @@ router.get('/pointsInfo', function(req, res) {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    if(common.isBlank(params.val)){
-        params.val = 0;
-    }else{
-        params.val = parseInt(params.val, 10);
-        if(isNaN(params.val)){
-            params.val = 0;
-        }
-    }
 
     //查询积分
     ChatPointsService.getPointsInfo(params.groupType, params.userId, params.hasJournal, function(pointsInfo){
