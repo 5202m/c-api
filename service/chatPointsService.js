@@ -108,19 +108,19 @@ var chatPointsService = {
      */
     add : function(params, callback){
         if(!params.groupType || !params.userId || !params.item){
-            callback(APIUtil.APIResult("code_1000", false));
+            callback(APIUtil.APIResult("code_1000", null));
             return;
         }
         params.opUser = params.opUser || params.userId;
         chatPointsService.getConfig(params.item, params.groupType, function(err, config){
             if(err){
-                callback(APIUtil.APIResult("code_10", false));
+                callback(APIUtil.APIResult("code_10", null));
             }else if(!params.val && !config){
-                callback(APIUtil.APIResult("code_3000", false));
+                callback(APIUtil.APIResult("code_3000", null));
             }else{
                 chatPointsService.getChatPoints(params.groupType, params.userId, function(err, pointsInfo){
                     if(err){
-                        callback(APIUtil.APIResult("code_10", false));
+                        callback(APIUtil.APIResult("code_10", null));
                     }else{
                         chatPointsService.savePoints(pointsInfo, config, params, callback);
                     }
@@ -184,13 +184,13 @@ var chatPointsService = {
                 if (err) {
                     //保存信息失败，不影响短信发送，仅打印错误日志。
                     logger.error("保存积分信息错误, error：" + err);
-                    callback(APIUtil.APIResult("code_10", false));
+                    callback(APIUtil.APIResult("code_10", null));
                 }else{
-                    callback(APIUtil.APIResult(null, true));
+                    callback(APIUtil.APIResult(null, journal));
                 }
             });
         }else{
-            callback(APIUtil.APIResult("code_3001", false));
+            callback(APIUtil.APIResult("code_3001", null));
         }
     },
 
