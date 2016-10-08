@@ -2,6 +2,7 @@ var logger = require('../resources/logConf').getLogger("taskService");
 var Schedule = require("node-schedule");//引入定时器
 var tokenService=require("../service/tokenService");//引入tokenService
 var ZxFinanceService = require("../service/zxFinanceService.js");//引入zxFinanceService
+var SyllabusService = require("../service/syllabusService.js");//引入syllabusService
 var Utils = require('../util/Utils'); //引入工具类js
 
 /** 任务服务类
@@ -16,6 +17,7 @@ var taskService = {
         //this.autoDestoryToken();//自动注销过期的token值
         this.autoFinanceData();  //财经日历
         this.autoFinanceEvent(); //财经事件
+        this.bakSyllabus();
     },
     /**
      * 自动注销过期的token值
@@ -160,6 +162,24 @@ var taskService = {
             }
             ZxFinanceService.importEventFromFxGold(dateAfter,function(isOK){
                 logger.debug("【定时任务】财经事件更新后15天数据" + (isOK ? "成功" : "失败"));
+            });
+        });
+    },
+
+    /**
+     * 备份课程表
+     */
+    bakSyllabus : function(){
+        var ruleBefore = new Schedule.RecurrenceRule();
+        ruleBefore.hour=0;
+        ruleBefore.minute=10;
+        ruleBefore.second=0;
+        Schedule.scheduleJob(ruleBefore, function(){
+            logger.info("【定时任务】课程表：每天备份前一天的课程表历史!");
+            var date = new Date().getTime();
+            date = new Date(date - (date % 86400000) - 115200000);
+            SyllabusService.bakSyllabus(date, function(isOK){
+                logger.debug("【定时任务】每天备份前一天的课程表历史" + (isOK ? "成功" : "失败"));
             });
         });
     }

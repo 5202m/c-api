@@ -155,6 +155,24 @@ router.get("/getCourse", function(req, res) {
     });
 });
 
+
+/**
+ * 备份课程表
+ */
+router.get("/bakSyllabus", function(req, res) {
+    var date = req.query["date"];
+    if(date){
+        date = new Date(date).getTime();
+        date = new Date(date - (date % 86400000) - 28800000);
+    }else{//默认备份前一天课程表
+        date = new Date().getTime();
+        date = new Date(date - (date % 86400000) - 115200000);
+    }
+    SyllabusService.bakSyllabus(date, function(isOK){
+        res.json(ApiResult.result(null, isOK));
+    });
+});
+
 /**
  * 发送电子邮件
  */

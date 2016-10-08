@@ -1,4 +1,5 @@
 var chatSyllabus = require('../models/chatSyllabus');//引入chatSyllabus数据模型
+var chatSyllabusHis = require('../models/chatSyllabusHis');//引入chatSyllabusHis数据模型
 var boUser = require('../models/boUser');//引入boUser数据模型
 var logger=require('../resources/logConf').getLogger('syllabusService');//引入log4js
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
@@ -6,6 +7,7 @@ var Utils = require('../util/Utils'); 	 	            //引入工具类js
 var Common = require('../util/common'); 	 	            //引入公共工具类js
 var ApiResult = require('../util/ApiResult');
 var errorMessage = require('../util/errorMessage.js');
+var ObjectId = require('mongoose').Types.ObjectId;
 
 /**
  * 课程安排服务类
@@ -304,6 +306,117 @@ var syllabusService = {
             }
             courseArr[0].avatar = avatarArr.join(",");
             callback(courseArr);
+        });
+    },
+
+    /**
+     * 备份课程表
+     * @param date
+     * @param callback
+     */
+    bakSyllabus : function(date, callback){
+        APIUtil.DBFind(chatSyllabus, {
+            query : {
+                isDeleted : 0,
+                publishStart : {$lte : date},
+                publishEnd : {$gt : date}
+            },
+            sortAsc : ["publishStart"]
+        }, function(err, rows){
+            if(err){
+                logger.error("查询聊天室课程安排失败!", err);
+                callback(false);
+                return;
+            }
+            var loc_courseHis = [], loc_groupMap = {};
+            var row = null;
+            if(rows){
+                for(var i = 0, lenI = rows.length; i < lenI; i++){
+                    row = rows[i];
+                    if(loc_groupMap.hasOwnProperty(row.groupId)){
+                        continue;
+                    }
+                    loc_groupMap[row.groupId] = 1;
+                    loc_courseHis = loc_courseHis.concat(syllabusService.convertSyllabus2His(row, date));
+                }
+            }
+            syllabusService.saveSyllabusHis(loc_courseHis, date, function(isOK){
+                callback(isOK);
+            });
+        });
+    },
+
+    /**
+     * 将课程表对象转化为课程历史记录（数组）
+     * @param syllabus
+     * @param date
+     */
+    convertSyllabus2His : function(syllabus, date){
+        var result = [];
+        if(!syllabus || !syllabus.courses){
+            return result;
+        }
+        var loc_dayIndex = -1;
+        var day = date.getDay();
+        var loc_courseObj = JSON.parse(syllabus.courses);
+        if(loc_courseObj && loc_courseObj.days){
+            for(var i in loc_courseObj.days){
+                if(loc_courseObj.days[i].day == day){
+                    if(loc_courseObj.days[i].status == 1){
+                        loc_dayIndex = i;
+                    }
+                    break;
+                }
+            }
+            if(loc_dayIndex != -1 && loc_courseObj.timeBuckets){
+                var loc_timeBucket, loc_course;
+                for(var i in loc_courseObj.timeBuckets){
+                    loc_timeBucket = loc_courseObj.timeBuckets[i];
+                    loc_course = loc_timeBucket.course[loc_dayIndex];
+                    if(loc_course.status == 1
+                        && loc_course.lecturer){
+                        result.push({
+                            _id : new ObjectId(),
+                            groupType : syllabus.groupType,
+                            groupId : syllabus.groupId,
+                            date : date,
+                            startTime : loc_timeBucket.startTime,
+                            endTime : loc_timeBucket.endTime,
+                            courseType : loc_course.courseType,
+                            lecturerId : loc_course.lecturerId,
+                            lecturer : loc_course.lecturer,
+                            title : loc_course.title,
+                            context : loc_course.context,
+                            updateDate : new Date()
+                        });
+                    }
+                }
+            }
+        }
+        return result;
+    },
+
+    /**
+     * 保存课程表历史
+     * @param courses
+     * @param date
+     * @param callback
+     */
+    saveSyllabusHis : function(courses, date, callback){
+        chatSyllabusHis.remove({date : date}, function(err){
+            if(err){
+                logger.error("删除课程表历史失败!", err);
+                callback(false);
+                return;
+            }
+            chatSyllabusHis.create(courses, function(err){
+                if(err){
+                    logger.error("保存课程表历史失败!", err);
+                    callback(false);
+                    return;
+                }
+                callback(true);
+            });
         });
     }
 };
