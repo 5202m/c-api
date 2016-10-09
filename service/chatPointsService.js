@@ -160,6 +160,7 @@ var chatPointsService = {
         var journal = {
             "_id" : new ObjectId(),
             "item" : params.item,
+            "tag" : params.tag,
             "before" : 0,
             "change" : params.val,
             "after" : 0,
@@ -219,7 +220,7 @@ var chatPointsService = {
             result = false;
         }else{
             var limitDate = chatPointsService.getLimitDate(config.limitUnit);
-            var statistics = chatPointsService.statisticsPoints(pointsInfo, journal.item, limitDate);
+            var statistics = chatPointsService.statisticsPoints(pointsInfo, config, journal, limitDate);
             switch(config.limitUnit){
                 case "A":
                 case "B":
@@ -269,10 +270,14 @@ var chatPointsService = {
     /**
      * 统计积分
      * @param pointsInfo
-     * @param item
+     * @param config
+     * @param journal
      * @param date
      */
-    statisticsPoints : function(pointsInfo, item, date){
+    statisticsPoints : function(pointsInfo, config, journal, date){
+        var item = journal.item;
+        var checkTag = config.limitArg == "tag";
+        var tag =  journal.tag;
         var result = {
             val : 0,
             cnt : 0
@@ -281,7 +286,7 @@ var chatPointsService = {
         var journal = null;
         for(var i = journals == null ? -1 : journals.length - 1; i >= 0; i--){
             journal = journals[i];
-            if(journal.item == item && (!date || journal.date > date)){
+            if(journal.item == item && (!date || journal.date > date) && (!checkTag || journal.tag == tag)){
                 result.val += journal.change;
                 result.cnt ++;
             }

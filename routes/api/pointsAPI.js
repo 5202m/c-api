@@ -38,6 +38,7 @@ router.post('/add', function(req, res) {
         groupType : req.body["groupType"],
         userId : req.body["userId"],
         item : req.body["item"],
+        tag : req.body["tag"] || "",
         val : req.body["val"],
         isGlobal : req.body["isGlobal"] == "1",
         remark : req.body["remark"] || "",

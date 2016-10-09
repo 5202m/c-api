@@ -26,6 +26,7 @@ var chatPointsSchema = new Schema({
     "journal" : [{                               //积分流水
         "_id" : ObjectId,
         "item" : String,          //项目
+        "tag" : String,           //标签
         "before" : Number,        //积分前值
         "change" : Number,        //积分变化
         "after" : Number,         //积分后值
