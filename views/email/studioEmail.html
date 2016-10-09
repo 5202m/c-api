@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[PM直播间]邮箱验证</title>
+<style type="text/css">
+	body {font-size: 14px;line-height: 1.666;font-family: arial, verdana, sans-serif;padding: 10px;margin: 0;}
+</style>
+</head>
+<body>
+	<div style="border:1px solid #D2D2D2; width:90%; margin: auto 5%; padding: 0 10px;">
+		<p>
+            欢迎注册直播间，请点击以下链接完成验证
+			<a href="http:192.168.35.91:3006/studio/confirmMail?grouptype=<%= groupType %>&userid=<%= userId %>&email=<%= encodeURI(email) %>&key=<%= key %>">点击验证</a>
+		</p>
+	</div>
+</body>
+</html>

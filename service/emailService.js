@@ -33,7 +33,7 @@ var emailService = {
         }
         var mailOps = {
             from : config.from,
-            to : config.to,
+            to : (data.to ? data.to : config.to),
             subject: config.subject,
             template : config.template,
             data : data || {}

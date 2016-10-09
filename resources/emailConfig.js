@@ -57,6 +57,24 @@ var emailConfig = {
                 return "[HX直播间]专家邮箱:" + (data.email || "");
             },
             template : "email/hxstudio"
+        },
+        //PM email valid
+        studioEmail : {
+            server :{
+                host: "smtp.qq.com",
+                secure: true,
+                port: 465,
+                auth: {
+                    user: "2807001686@qq.com",
+                    pass: "opkyukikffwfdfed"
+                }
+            },
+            from : "PM直播间<2807001686@qq.com>",
+            to : '',//"370419450@qq.com",//"expert@24k.hk",
+            subject: function(data){
+                return "[PM直播间]邮箱验证:" + (data.email || "");
+            },
+            template : "email/studioEmail"
         }
     },
     /**获取配置*/
