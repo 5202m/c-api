@@ -11,8 +11,10 @@
 <body>
 	<div style="border:1px solid #D2D2D2; width:90%; margin: auto 5%; padding: 0 10px;">
 		<p>
-            欢迎注册直播间，请点击以下链接完成验证
-			<a href="http:192.168.35.91:3006/studio/confirmMail?grouptype=<%= groupType %>&userid=<%= userId %>&email=<%= encodeURI(email) %>&key=<%= key %>">点击验证</a>
+            欢迎注册直播间，请点击以下链接完成验证<br />
+			<a target="_blank" href="http:192.168.35.91:3006/studio/confirmMail?grouptype=<%= groupType %>&userid=<%= userId %>&email=<%= encodeURI(email) %>&key=<%= key %>">点击验证</a>
+            无法点击请复制以下链接至浏览器完成验证<br />
+            http:192.168.35.91:3006/studio/confirmMail?grouptype=<%= groupType %>&userid=<%= userId %>&email=<%= encodeURI(email) %>&key=<%= key %>
 		</p>
 	</div>
 </body>
