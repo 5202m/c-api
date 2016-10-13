@@ -191,7 +191,7 @@ var chatPointsService = {
                 }
             });
         }else{
-            callback(APIUtil.APIResult("code_3001", null));
+            callback(APIUtil.APIResult(journal.change > 0 ? "code_3001" : "code_3004", null));
         }
     },
 
@@ -204,11 +204,10 @@ var chatPointsService = {
     checkLimit : function(config, pointsInfo, journal){
         if(!config){//积分配置不存在
             if(journal.change){
-                return true; //指定积分值，有效
+                return journal.change + pointsInfo.points > 0; //指定积分值，积分不为负有效
             }else{
                 return false; //不指定积分值，无效
             }
-            return;
         }
         var result = true;
         var loc_val = journal.change || config.val;

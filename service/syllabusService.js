@@ -418,6 +418,103 @@ var syllabusService = {
                 callback(true);
             });
         });
+    },
+
+    /**
+     * 提取即将开始的课程（10分钟内开始的课程信息）
+     * @param startTime
+     * @param endTime
+     * @param callback
+     */
+    getSyllabusPlan : function(startTime, endTime, callback){
+        APIUtil.DBFind(chatSyllabus, {
+            query : {
+                isDeleted : 0,
+                publishStart : {$lte : endTime},
+                publishEnd : {$gt : endTime}
+            },
+            sortAsc : ["publishStart"]
+        }, function(err, rows){
+            if(err){
+                logger.error("查询聊天室课程安排失败!", err);
+                callback([]);
+                return;
+            }
+            var loc_result = [], loc_course = null, loc_groupMap = {};
+            var row = null;
+            if(rows){
+                for(var i = 0, lenI = rows.length; i < lenI; i++){
+                    row = rows[i];
+                    if(loc_groupMap.hasOwnProperty(row.groupId)){
+                        continue;
+                    }
+                    loc_groupMap[row.groupId] = 1;
+                    loc_course = syllabusService.convertSyllabus2Plan(row, startTime, endTime);
+                    if(loc_course != null){
+                        loc_result.push(loc_course);
+                    }
+                }
+            }
+            callback(loc_result);
+        });
+    },
+
+    /**
+     * 按时间区间提取即将开始的课程信息
+     * @param syllabus
+     * @param start
+     * @param end
+     */
+    convertSyllabus2Plan : function(syllabus, start, end){
+        var result = null;
+        if(!syllabus || !syllabus.courses){
+            return result;
+        }
+        var loc_dayIndex = -1;
+        var day = end.getDay();
+        var startTime = null, endTime = Utils.dateFormat(end, 'hh:mm');
+        if(start.getDay() != day){//跨天
+            startTime = "00:00";
+        }else{
+            startTime = Utils.dateFormat(start, 'hh:mm');
+        }
+        var loc_courseObj = JSON.parse(syllabus.courses);
+        if(loc_courseObj && loc_courseObj.days){
+            for(var i in loc_courseObj.days){
+                if(loc_courseObj.days[i].day == day){
+                    if(loc_courseObj.days[i].status == 1){
+                        loc_dayIndex = i;
+                    }
+                    break;
+                }
+            }
+            if(loc_dayIndex != -1 && loc_courseObj.timeBuckets){
+                var loc_timeBucket, loc_course;
+                for(var i in loc_courseObj.timeBuckets){
+                    loc_timeBucket = loc_courseObj.timeBuckets[i];
+                    loc_course = loc_timeBucket.course[loc_dayIndex];
+                    if(loc_course.status == 1
+                        && loc_course.lecturer
+                        && loc_timeBucket.startTime >= startTime
+                        && loc_timeBucket.startTime < endTime){
+                        result={
+                            groupType : syllabus.groupType,
+                            groupId : syllabus.groupId,
+                            date : new Date(end.getFullYear(), end.getMonth(), end.getDate()),
+                            startTime : loc_timeBucket.startTime,
+                            endTime : loc_timeBucket.endTime,
+                            courseType : loc_course.courseType,
+                            lecturerId : loc_course.lecturerId,
+                            lecturer : loc_course.lecturer,
+                            title : loc_course.title,
+                            context : loc_course.context
+                        };
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 };
 //导出服务类

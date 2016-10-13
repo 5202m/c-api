@@ -18,7 +18,9 @@ var mongoose = require('mongoose')
         loginPlatform:{
             chatUserGroup:[{
                 _id:String,//组的大类别，区分是微信组、直播间
-                userId:{type:String,index:true},//第三方用户id，对于微信，userId为微信的openId;
+                userId:{type:String,index:true},
+                thirdId:{type:String,index:true},//第三方用户id，对于微信，userId为微信的openId;
+                email:String,
                 avatar:String,//头像
                 nickname:String,//昵称
                 accountNo:{type:String,index:true}, //账号

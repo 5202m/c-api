@@ -72,7 +72,8 @@ var errorMessage = {
     "code_2055" : {'errcode' : "2055", 'errmsg' : "更新用户喊单数失败！"},
     "code_2056" : {'errcode' : "2056", 'errmsg' : "原密码输入错误！"},
     "code_3000" : {'errcode' : "3000", 'errmsg' : "积分配置信息不存在！"},
-    "code_3001" : {'errcode' : "3001", 'errmsg' : "积分已达上限!"}
+    "code_3001" : {'errcode' : "3001", 'errmsg' : "积分已达上限!"},
+    "code_3004" : {'errcode' : "3004", 'errmsg' : "有效积分不足!"}
 };
 //导出类
 module.exports = errorMessage;

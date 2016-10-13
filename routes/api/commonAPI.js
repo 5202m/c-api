@@ -161,12 +161,13 @@ router.get("/getCourse", function(req, res) {
  */
 router.get("/bakSyllabus", function(req, res) {
     var date = req.query["date"];
+    var timezoneOffset = new Date().getTimezoneOffset() * 60000;
     if(date){
         date = new Date(date).getTime();
-        date = new Date(date - (date % 86400000) - 28800000);
+        date = new Date(date - (date % 86400000) + timezoneOffset);
     }else{//默认备份前一天课程表
         date = new Date().getTime();
-        date = new Date(date - (date % 86400000) - 115200000);
+        date = new Date(date - (date % 86400000) - 86400000 + timezoneOffset);
     }
     SyllabusService.bakSyllabus(date, function(isOK){
         res.json(ApiResult.result(null, isOK));

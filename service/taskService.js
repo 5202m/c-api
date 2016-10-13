@@ -3,6 +3,7 @@ var Schedule = require("node-schedule");//引入定时器
 var tokenService=require("../service/tokenService");//引入tokenService
 var ZxFinanceService = require("../service/zxFinanceService.js");//引入zxFinanceService
 var SyllabusService = require("../service/syllabusService.js");//引入syllabusService
+var SubscribeService = require("../service/subscribeService.js");//引入subscribeService
 var Utils = require('../util/Utils'); //引入工具类js
 
 /** 任务服务类
@@ -17,7 +18,8 @@ var taskService = {
         //this.autoDestoryToken();//自动注销过期的token值
         this.autoFinanceData();  //财经日历
         this.autoFinanceEvent(); //财经事件
-        this.bakSyllabus();
+        this.bakSyllabus();      //备份课程表
+        this.SubscribeSyllabus();//订阅-课程安排
     },
     /**
      * 自动注销过期的token值
@@ -180,6 +182,22 @@ var taskService = {
             date = new Date(date - (date % 86400000) - 115200000);
             SyllabusService.bakSyllabus(date, function(isOK){
                 logger.debug("【定时任务】每天备份前一天的课程表历史" + (isOK ? "成功" : "失败"));
+            });
+        });
+    },
+
+    /**
+     * 课程安排订阅通知
+     * @constructor
+     */
+    SubscribeSyllabus : function(){
+        var ruleBefore = new Schedule.RecurrenceRule();
+        ruleBefore.minute=[3, 13, 23, 33, 41, 54];
+        ruleBefore.second=12;
+        Schedule.scheduleJob(ruleBefore, function(){
+            logger.info("【定时任务】课程安排订阅通知：每10分钟检查即将开始的课程安排通知订阅客户!");
+            SubscribeService.noticeSyllabus(function(isOK){
+                logger.debug("【定时任务】发送课程安排通知" + (isOK ? "成功" : "失败"));
             });
         });
     }
