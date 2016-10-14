@@ -139,26 +139,18 @@ var subscribeService = {
         }
         var userIds = [];
         var subscribe = null;
-        console.log(subscribes);
         for(var i = 0, lenI = subscribes.length; i < lenI; i++){
             subscribe = subscribes[i];
             if(subscribeService.noticeType.email.test(subscribe.noticeType)){
                 userIds.push(subscribe.userId);
             }
         }
-        console.log({
-            "mobilePhone" : {$in : userIds},
-            "valid": 1,
-            "status": 1,
-            "loginPlatform.chatUserGroup._id" : groupType
-        });
         Member.find({
             "mobilePhone" : {$in : userIds},
             "valid": 1,
             "status": 1,
             "loginPlatform.chatUserGroup._id" : groupType
         }, "loginPlatform.chatUserGroup.$.email", function(err, rows){
-            console.log(rows);
             if(err){
                 logger.error("<<getNoticesEmails:提取用户邮箱失败，[errMessage:%s]", err);
                 callback([]);
@@ -166,8 +158,9 @@ var subscribeService = {
             }
             var result = [], row;
             for(var i = 0, lenI = !rows ? 0 : rows.length; i < lenI; i++){
-                if(row && row.loginPlatform && row.loginPlatform.chatUserGroup && row.loginPlatform.chatUserGroup.email){
-                    result.push(row.loginPlatform.chatUserGroup.email);
+                row = rows[i];
+                if(row && row.loginPlatform && row.loginPlatform.chatUserGroup && row.loginPlatform.chatUserGroup.length > 0 && row.loginPlatform.chatUserGroup[0].email){
+                    result.push(row.loginPlatform.chatUserGroup[0].email);
                 }
             }
             callback(result);
@@ -201,28 +194,28 @@ var subscribeService = {
             return;
         }
         var emailKey = null;
-        var data = null;
+        var emailData = null;
         switch (type){
             case subscribeService.subscribeType.syllabus :
                 emailKey = "studioSubscribeSyllabus";
-                data = data;
+                emailData = data;
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
                 emailKey = "studioSubscribeShoutTrade";
-                data = data;
+                emailData = data;
                 break;
 
             case subscribeService.subscribeType.strategy :
                 emailKey = "studioSubscribeStrategy";
-                data = data;
+                emailData = data;
                 break;
         }
         if(emailKey){
+            logger.info("<<doSendEmail:发送邮件通知：content=[%s], emails=[%s]", JSON.stringify(emailData), emails.join(","));
             for(var i = 0, lenI = !emails ? 0 : emails.length; i < lenI; i++){
-                data.to = emails[i];
-                logger.info(emailKey, data);
-                EmailService.send(emailKey, data, function(result){
+                emailData.to = emails[i];
+                EmailService.send(emailKey, emailData, function(result){
                     if(result.result != 0){
                         logger.error("<<doSendEmail:发送通知邮件失败，[errMessage:%s]", result.msg);
                     }
@@ -271,22 +264,30 @@ var subscribeService = {
         }
         if(templateCode){
             var smsData = {
-                timestamp : Common.formatterDateTime(new Date(), "-"),
+                timestamp : Common.formatDate(new Date(), "yyyyMMddHHmmss"),
                 accountSid: Config.utmSms.pm.sid,
-                sign: Config.utmSms.pm.token,
+                sign: "",
                 phones : mobiles.join(","),
                 templateCode : templateCode,
                 templateParam : JSON.stringify(templateParam)
             };
-            Request.post(Config.utmSms.url, smsData, function (error, response, data) {
+            smsData.sign = Common.getMD5(smsData.accountSid + Config.utmSms.pm.token + smsData.timestamp);
+
+            logger.info("<<doSendSms:发送短信通知：content=[%s]", JSON.stringify(smsData));
+            Request.post(Config.utmSms.url, function (error, response, data) {
                 if (error || response.statusCode != 200 || !data) {
-                    logger.error("<<doSendSms:发送通知短信失败，[errMessage:%s]", error);
-                } else if(data.respCode == "Success"){
-                    logger.info("<<doSendSms:发送通知短信成功！");
-                }else{
-                    logger.error("<<doSendSms:发送通知短信失败，[errMessage:%s]", data.respMsg);
+                    logger.error("<<doSendSms:发送通知短信异常，[errMessage:%s]", error);
+                } else{
+                    try{
+                        data = JSON.parse(data);
+                        if(data.respCode != "Success"){
+                            logger.error("<<doSendSms:发送通知短信失败，[errMessage:%s]", data.respMsg);
+                        }
+                    }catch(e){
+                        logger.error("<<doSendSms:发送通知短信出错，[response:%s]", data);
+                    }
                 }
-            });
+            }).form(smsData);
         }
     }
 };

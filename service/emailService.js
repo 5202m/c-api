@@ -14,10 +14,23 @@ var Logger = require('../resources/logConf').getLogger("emailService");
 var Nodemailer = require("nodemailer");
 var EmailConfig = require('../resources/emailConfig');
 var ApiResult = require('../util/ApiResult');
+var Path = require('path');
+var Express = require('express');
 
 var emailService = {
     /**邮件发送器缓存*/
     transporters : {},
+
+    /** 渲染器 */
+    render : null,
+
+    initRender : function(){
+        var render = Express();
+        render.set('views', Path.join(__dirname, '../views'));
+        render.set( 'view engine', 'html' );
+        render.engine('.html',require('ejs').__express);//两个下划线
+        this.render = render;
+    },
 
     /**
      * 发送邮件
@@ -78,7 +91,7 @@ var emailService = {
             delete mailOptions.template;
             var data = mailOptions.data;
             delete mailOptions.data;
-            require('../app').render(temp, data, function(err, html){
+            this.render.render(temp, data, function(err, html){
                 if(err){
                     Logger.error("preSend >> send email error:" + err);
                     callback(ApiResult.result("加载邮件模板出错！", false));
@@ -132,6 +145,8 @@ var emailService = {
         });
     }
 };
+
+emailService.initRender();
 
 //导出服务类
 module.exports =emailService;

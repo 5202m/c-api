@@ -192,7 +192,7 @@ var taskService = {
      */
     SubscribeSyllabus : function(){
         var ruleBefore = new Schedule.RecurrenceRule();
-        ruleBefore.minute=[3, 13, 23, 33, 41, 54];
+        ruleBefore.minute=[3, 13, 23, 33, 43, 53];
         ruleBefore.second=12;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】课程安排订阅通知：每10分钟检查即将开始的课程安排通知订阅客户!");
