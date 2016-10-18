@@ -70,4 +70,34 @@ router.get("/getMemberInfo", function(req, res) {
         });
     }
 });
+
+/**
+ * 查询分析师信息（点赞+胜率）
+ */
+router.get("/getAnalysts", function(req, res) {
+    var platform = req.query["platform"];
+    var analystIds = req.query["analystIds"];
+    if(common.isBlank(platform) || common.isBlank(analystIds)){
+        res.json(null);
+    }else{
+        chatService.getAnalystInfo(platform, analystIds, function(analysts){
+            res.json(analysts);
+        });
+    }
+});
+
+/**
+ * 分析师点赞
+ */
+router.post("/praiseAnalyst", function(req, res) {
+    var platform = req.body["platform"];
+    var analystId = req.body["analystId"];
+    if(common.isBlank(analystId)){
+        res.json({isOK:false, msg:'参数错误', num : 0});
+    }else{
+        chatService.praiseAnalyst(platform, analystId, function(result){
+            res.json(result);
+        });
+    }
+});
 module.exports = router;

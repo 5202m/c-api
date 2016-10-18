@@ -13,6 +13,11 @@ var mongoose = require('mongoose')
         introductionImg:String,//简介图片
         introduction:String,//简介
         remark:String ,
+        wechatCode:String ,              //微信号
+        wechatCodeImg:String ,           //微信图片
+        winRate:String ,                 //胜率
+        introductionImgLink:String ,     //介绍图片链接
+        tag:String ,                     //标签
         valid: {type:Number, default:1}, //是否删除：0 、删除；1、正常
         status: {type:Number, default:0},
         role : {

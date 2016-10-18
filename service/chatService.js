@@ -1,10 +1,13 @@
 var logger = require('../resources/logConf').getLogger("chatService");
 var chatMessage = require('../models/chatMessage');//引入chatMessage数据模型
+var BoUser = require('../models/boUser');//引入boUser数据模型
+var ChatPraise = require('../models/chatPraise');//引入chatPraise数据模型
 var common = require('../util/common');//引入common类
 var ApiResult = require('../util/ApiResult');
 var async = require('async');//引入async
 var config = require('../resources/config');
 var constant = require('../constant/constant');
+var ObjectId = require('mongoose').Types.ObjectId;
 /**
  * 聊天室相关信息服务类
  * author Alan.wu
@@ -32,7 +35,6 @@ var chatService ={
         }else{
             searchObj.userType={'$in':[0,2]};
         }
-        var currDate=new Date();
         if(common.isValid(params.userType)){
             searchObj.userType=params.userType;
         }
@@ -99,6 +101,102 @@ var chatService ={
                 cacheClient.expire(key,24*3600);
                 callback(true);
             }
+        });
+    },
+
+    /**
+     * 提取分析师信息
+     * @param platform
+     * @param analystIds
+     * @param callback
+     */
+    getAnalystInfo : function(platform, analystIds, callback){
+        var ids = analystIds.split(/\s*[,，]\s*/);
+        if(!ids || ids.length == 0){
+            callback(null);
+            return;
+        }
+        async.parallel({
+            userInfo: function(callbackTmp){
+                BoUser.find({
+                    userNo: {"$in": ids}
+                },"userNo userName winRate", callbackTmp);
+            },
+            praise: function(callbackTmp){
+                ChatPraise.find({
+                    fromPlatform : platform,
+                    praiseType : "user",
+                    praiseId :{$in : ids}
+                }, callbackTmp);
+            }
+        }, function(err, results) {
+            var userMap = {}, praiseMap = {};
+            var i, lenI;
+            for(i = 0, lenI = !results.userInfo ? 0 : results.userInfo.length; i < lenI; i++){
+                userMap[results.userInfo[i].userNo] = results.userInfo[i];
+            }
+            for(i = 0, lenI = !results.praise ? 0 : results.praise.length; i < lenI; i++){
+                praiseMap[results.praise[i].praiseId] = results.praise[i];
+            }
+            var result = [], analyst;
+            for(i = 0, lenI = ids.length; i < lenI; i++){
+                analyst = {
+                    userNo : ids[i],
+                    userName : "",
+                    winRate : "",
+                    praise : 0
+                };
+                if(userMap.hasOwnProperty(analyst.userNo)){
+                    analyst.userName = userMap[analyst.userNo].userName;
+                    analyst.winRate = userMap[analyst.userNo].winRate;
+                }
+                if(praiseMap.hasOwnProperty(analyst.userNo)){
+                    analyst.praise = praiseMap[analyst.userNo].praiseNum;
+                }
+                result.push(analyst);
+            }
+            callback(result);
+        });
+    },
+
+    /**
+     * 分析师点赞
+     */
+    praiseAnalyst : function(platform, analystId, callback){
+        ChatPraise.findOne({
+            fromPlatform : platform,
+            praiseType : "user",
+            praiseId : analystId
+        }, function(err, row){
+            if(err){
+                logger.error("praiseAnalyst->find fail!:"+err);
+                callback({isOK:false, msg:'更新失败', num : 0});
+                return;
+            }
+            if(row){
+                if(!row.praiseNum){
+                    row.praiseNum = 1;
+                }else {
+                    row.praiseNum += 1;
+                }
+            }else{
+                row = new ChatPraise({
+                    _id: new ObjectId(),
+                    praiseId: analystId,
+                    praiseType: "user",
+                    fromPlatform: platform,
+                    praiseNum: 1,
+                    remark: ""
+                });
+            }
+            row.save(function(err1, rowTmp){
+                if (err1) {
+                    logger.error('praiseAnalyst=>save fail!' + err1);
+                    callback({isOK: false, msg: '更新失败', num : 0});
+                    return;
+                }
+                callback({isOK:true, msg:'', num: rowTmp.praiseNum});
+            });
         });
     }
 };
