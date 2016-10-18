@@ -66,6 +66,26 @@ emailConfig.configs = {
         },
         template : "email/studioSubscribeSyllabus"
     },
+    //PM 喊单提醒
+    studioSubscribeShoutTrade : {
+        server :emailConfig.sendServer.studio,
+        from : "PM直播间<2807001686@qq.com>",
+        to : '',//"370419450@qq.com",//"expert@24k.hk",
+        subject: function(data){
+            return "[PM直播间]喊单提醒:[" + data.authName + "]";
+        },
+        template : "email/studioSubscribeShoutTrade"
+    },
+    //PM 交易策略提醒
+    studioSubscribeStrategy : {
+        server :emailConfig.sendServer.studio,
+        from : "PM直播间<2807001686@qq.com>",
+        to : '',//"370419450@qq.com",//"expert@24k.hk",
+        subject: function(data){
+            return "[PM直播间]交易策略提醒:[" + data.authName + "]";
+        },
+        template : "email/studioSubscribeStrategy"
+    },
     //FX
     fxstudio : {
         server : emailConfig.sendServer.fxstudio,

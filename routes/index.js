@@ -18,6 +18,7 @@ var tokenRoutes = require('./api/tokenAPI');							      //配置token API路由
 var articleRoutes = require('./api/articleAPI');						      //配置文章资讯  API路由
 var commonRoutes = require('./api/commonAPI');						   		  //配置公共  API路由
 var smsRoutes = require("./api/smsAPI.js");                                   //发送短信信息  API路由
+var subscribeRoutes = require("./api/subscribeAPI.js");                       //发送订阅信息  API路由
 var pointsRoutes = require("./api/pointsAPI.js");                             //积分信息  API路由
 var chatRoutes = require('./api/chatAPI');
 var zxFinanceRoutes = require('./api/zxFinanceAPI');                          //财经数据 API路由
@@ -68,6 +69,7 @@ exports.init = function(app){
     apiRoutes.use('/article',articleRoutes);
     apiRoutes.use('/common',commonRoutes);
     apiRoutes.use("/sms", smsRoutes);
+    apiRoutes.use("/subscribe", subscribeRoutes);
     apiRoutes.use("/points", pointsRoutes);
     apiRoutes.use("/chat", chatRoutes);
     apiRoutes.use("/upload/", uploadRoutes);

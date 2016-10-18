@@ -175,10 +175,8 @@ var articleService = {
     },
     /**
      * 根据栏目code-->提取文档资讯列表
-     * @param  code  栏目code
-     * @param  lang  语言
-     * @param  curPageNo 当前页数
-     * @param  pageSize  每页显示条数
+     * @param  params  参数
+     * @param  callback
      */
     getListByGroup:function(params,callback){
         //仅筛选最近一个月的文档分组，注意和days的关系。 分组函数的性能调优

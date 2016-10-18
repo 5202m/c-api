@@ -14,8 +14,9 @@ var logger = require('../resources/logConf').getLogger("subscribeService");
 var Common = require('../util/common');
 var Config = require('../resources/config');
 var Member = require('../models/member');
-var ChatSubscribe = require('../models/ChatSubscribe');
-var SyllabusService = require('./SyllabusService');
+var ChatSubscribe = require('../models/chatSubscribe');
+var SyllabusService = require('./syllabusService');
+var ArticleService = require('./articleService');
 var EmailService = require('./emailService');
 var Request = require('request');
 
@@ -24,7 +25,11 @@ var subscribeService = {
     subscribeType : {
         syllabus : "live_reminder",
         shoutTrade : "shout_single_strategy",
-        strategy : "trading_strategy"
+        strategy : "trading_strategy",
+        dailyQuotation : "daily_quotation",
+        bigQuotation : "big_quotation",
+        dailyReview : "daily_review",
+        weekReview : "week_review"
     },
     //通知类型
     noticeType :{
@@ -81,6 +86,7 @@ var subscribeService = {
         var startTime = new Date();
         var endTime = new Date(startTime.getTime() + 600000);
         SyllabusService.getSyllabusPlan(startTime, endTime, function(courses){
+            console.log(courses);
             var courseTmp = null;
             for(var i = 0, lenI = courses.length; i < lenI; i++){
                 courseTmp = courses[i];
@@ -91,6 +97,7 @@ var subscribeService = {
                     courseTmp.lecturerId,
                     endTime,
                     courseTmp, function(course, subscribes){
+                        console.log(subscribes);
                         //发送邮件
                         subscribeService.getNoticesEmails(subscribes, courseTmp.groupType, function(emails){
                             subscribeService.doSendEmail(course, emails, subscribeService.subscribeType.syllabus);
@@ -168,22 +175,6 @@ var subscribeService = {
     },
 
     /**
-     * 执行订阅通知——课程安排
-     * @param course
-     * @param subscribes
-     */
-    doNoticeSyllabus : function(course, subscribes){
-        if(!course || !subscribes || subscribes.length == 0){
-            return;
-        }
-        var subscribe = null, smsUser = [], emailUser = [];
-        for(var i = 0, lenI = subscribes.length; i < lenI; i++){
-            subscribe = subscribes[i];
-
-        }
-    },
-
-    /**
      * 发送邮件
      * @param data
      * @param emails
@@ -249,16 +240,16 @@ var subscribeService = {
             case subscribeService.subscribeType.shoutTrade :
                 templateCode = "ShoutSingleStrategy";
                 templateParam = {
-                    teacherName : "",
-                    shoutSingleContent : ""
+                    teacherName : data.authName,
+                    shoutSingleContent : subscribeService.formatArticle4Sms(data, subscribeService.subscribeType.shoutTrade)
                 };
                 break;
 
             case subscribeService.subscribeType.strategy :
                 templateCode = "TradingStrategy";
                 templateParam = {
-                    teacherName : "",
-                    policyContent : ""
+                    teacherName : data.authName,
+                    policyContent : subscribeService.formatArticle4Sms(data, subscribeService.subscribeType.strategy)
                 };
                 break;
         }
@@ -276,7 +267,7 @@ var subscribeService = {
             logger.info("<<doSendSms:发送短信通知：content=[%s]", JSON.stringify(smsData));
             Request.post(Config.utmSms.url, function (error, response, data) {
                 if (error || response.statusCode != 200 || !data) {
-                    logger.error("<<doSendSms:发送通知短信异常，[errMessage:%s]", error);
+                    logger.error("<<doSendSms:发送通知短信异常，errMessage:", error);
                 } else{
                     try{
                         data = JSON.parse(data);
@@ -289,6 +280,204 @@ var subscribeService = {
                 }
             }).form(smsData);
         }
+    },
+
+    /**
+     * 将文档格式化为短信
+     * @param article
+     * @param subscribeType
+     */
+    formatArticle4Sms : function(article, subscribeType){
+        var result = [];
+        switch (subscribeType){
+            case subscribeService.subscribeType.strategy:
+                var dataArr = article.remark || "", dataTmp;
+                if(dataArr){
+                    try{
+                        dataArr = JSON.parse(dataArr);
+                        //{"symbol":"USDJPY","name":"美元日元","support_level":"123456"}
+                        var symbol = null;
+                        for(var i = 0, lenI = !dataArr ? 0 : dataArr.length; i < lenI; i++){
+                            dataTmp = dataArr[i];
+                            if(symbol == dataTmp.symbol){
+                                result.push(";");
+                                result.push(dataTmp.support_level);
+                            }else{
+                                symbol = dataTmp.symbol;
+                                result.push("\r\n");
+                                result.push("品种:" + dataTmp.name);
+                                result.push(" 支撑位:" + dataTmp.support_level);
+                            }
+                        }
+                    }catch(e){
+
+                    }
+                }
+                break;
+
+            case subscribeService.subscribeType.shoutTrade:
+                var dataArr = article.remark || "", dataTmp;
+                if(dataArr){
+                    try{
+                        dataArr = JSON.parse(dataArr);
+                        //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
+                        for(var i = 0, lenI = !dataArr ? 0 : dataArr.length; i < lenI; i++){
+                            dataTmp = dataArr[i];
+                            result.push("\r\n");
+                            result.push("品种:" + dataTmp.name);
+                            result.push(" 方向:" + (dataTmp.longshort == "long" ? "看涨" : "看跌"));
+                            result.push(" 进场点位:" + dataTmp.point);
+                            result.push(" 止盈:" + dataTmp.profit);
+                            result.push(" 止损:" + dataTmp.loss);
+                        }
+                    }catch(e){
+
+                    }
+                }
+                break;
+            case subscribeService.subscribeType.dailyQuotation:
+            case subscribeService.subscribeType.bigQuotation:
+            case subscribeService.subscribeType.dailyReview:
+            case subscribeService.subscribeType.weekReview:
+                var content = article.content || "";
+                if(content){
+                    var tagRegAll = /<[^>]+>|<\/[^>]+>/g;
+                    content = content.replace(tagRegAll, "");
+                    if(content.length > 70){
+                        content = content.substring(0,67) + "...";
+                    }
+                }
+                result.push(content);
+                break;
+        }
+        return result.join("");
+    },
+
+    /**
+     * 订阅通知——文章发布（喊单策略、交易策略）
+     * @param callback
+     */
+    noticeArticle : function(articleId, callback){
+        if(!articleId){
+            logger.warn("<<noticeArticle:文章编号无效：%s", articleId);
+            callback(false);
+            return;
+        }
+        ArticleService.getArticleInfo(articleId, function(article){
+            if(!article){
+                logger.warn("<<noticeArticle:文章信息不存在");
+                callback(false);
+                return;
+            }
+            var groupTypeArr = subscribeService.getGroupType(article);
+            var subscribeType = subscribeService.getSubscribeType(article);
+            var noticeTime = new Date();
+            if(groupTypeArr.length == 0 || !subscribeType){
+                logger.warn("<<noticeArticle:文章信息不需要发送订阅通知，房间组别：%s，订阅类型：%s", groupTypeArr.join(","), subscribeType);
+                callback(false);
+                return;
+            }
+            var noticeObj = null;
+            for(var i = 0, lenI = groupTypeArr.length; i < lenI; i++){
+                noticeObj = subscribeService.convertNoticeObj(article, groupTypeArr[i], subscribeType);
+                subscribeService.getSubscribe(
+                    noticeObj.groupType,
+                    "",
+                    noticeObj.subscribeType,
+                    noticeObj.authId,
+                    noticeTime,
+                    noticeObj, function(noticeObj, subscribes){
+                        //发送邮件
+                        subscribeService.getNoticesEmails(subscribes, noticeObj.groupType, function(emails){
+                            subscribeService.doSendEmail(noticeObj, emails, noticeObj.subscribeType);
+                        });
+                        //发送短信
+                        subscribeService.getNoticesMobiles(subscribes, function(mobiles){
+                            subscribeService.doSendSms(noticeObj, mobiles, noticeObj.subscribeType);
+                        });
+                    });
+            }
+            callback(true);
+        });
+    },
+
+    /**
+     * 提取房间组别（通过文章的应用位置）
+     * @param article
+     */
+    getGroupType : function(article){
+        var platforms = article && article.platform;
+        var groupTypeMap = {};
+        if(platforms){
+            platforms = platforms.split(",");
+            var platformTmp = null;
+            var gtReg = /^((studio_)|(fxstudio_)|(hxstudio_))\w+/;
+            for(var i = 0, lenI = !platforms ? 0 : platforms.length; i < lenI; i++){
+                platformTmp = platforms[i];
+                if(gtReg.test(platformTmp)){
+                    platformTmp = platformTmp.replace(/_\w+$/g, "");
+                    groupTypeMap[platformTmp] = 1;
+                }
+            }
+        }
+        return Object.keys(groupTypeMap);
+    },
+
+    /**
+     * 提取通知类型（通过文章的栏目）
+     * @param article
+     */
+    getSubscribeType : function(article){
+        var categoryId = article && article.categoryId;
+        var result = null;
+        if(categoryId == "class_note"){
+            var tag = null;
+            if(article.detailList && article.detailList.length > 0 && article.detailList[0].tag){
+                tag = article.detailList[0].tag;
+            }
+            switch (tag){
+                case "trading_strategy":
+                    result = subscribeService.subscribeType.strategy;
+                    break;
+
+                case "shout_single":
+                    result = subscribeService.subscribeType.shoutTrade;
+                    break;
+            }
+        }else if(categoryId == "info_dailyQuotation"){
+            result = subscribeService.subscribeType.dailyQuotation;
+        }else if(categoryId == "info_bigQuotation"){
+            result = subscribeService.subscribeType.bigQuotation;
+        }else if(categoryId == "info_dailyReview"){
+            result = subscribeService.subscribeType.dailyReview;
+        }else if(categoryId == "info_weekReview"){
+            result = subscribeService.subscribeType.weekReview;
+        }
+        return result;
+    },
+
+    /**
+     * 转化为通知对象
+     * @param article
+     * @param groupType
+     * @param subscribeType
+     */
+    convertNoticeObj : function(article, groupType, subscribeType){
+        var result = {
+            groupType : groupType,
+            subscribeType : subscribeType
+        };
+        var articleDetail = article.detailList[0];
+        var authId = "", authName = "";
+        if(articleDetail && articleDetail.authorInfo){
+            authId = articleDetail.authorInfo.userId;
+            authName = articleDetail.authorInfo.name;
+        }
+        result.authId = authId;
+        result.authName = authName;
+        result.remark = articleDetail.remark;
+        result.content = articleDetail.content;
+        return result;
     }
 };
 

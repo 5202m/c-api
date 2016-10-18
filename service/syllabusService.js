@@ -435,6 +435,7 @@ var syllabusService = {
             },
             sortAsc : ["publishStart"]
         }, function(err, rows){
+            console.log(rows);
             if(err){
                 logger.error("查询聊天室课程安排失败!", err);
                 callback([]);
@@ -478,6 +479,7 @@ var syllabusService = {
         }else{
             startTime = Utils.dateFormat(start, 'hh:mm');
         }
+        console.log(syllabus, start, end, startTime, endTime);
         var loc_courseObj = JSON.parse(syllabus.courses);
         if(loc_courseObj && loc_courseObj.days){
             for(var i in loc_courseObj.days){
