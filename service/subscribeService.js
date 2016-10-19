@@ -180,10 +180,80 @@ var subscribeService = {
      * @param emails
      * @param type 订阅类型
      */
+    doSendEmailBak : function(data, emails, type){
+        if(!emails || emails.length == 0){
+            return;
+        }
+        var emailKey = null;
+        var emailData = null;
+        switch (type){
+            case subscribeService.subscribeType.syllabus :
+                emailKey = "studioSubscribeSyllabus";
+                emailData = data;
+                break;
+
+            case subscribeService.subscribeType.shoutTrade :
+                emailKey = "studioSubscribeShoutTrade";
+                emailData = data;
+                break;
+
+            case subscribeService.subscribeType.strategy :
+                emailKey = "studioSubscribeStrategy";
+                emailData = data;
+                break;
+        }
+        if(emailKey){
+            logger.info("<<doSendEmail:发送邮件通知：content=[%s], emails=[%s]", JSON.stringify(emailData), emails.join(","));
+            for(var i = 0, lenI = !emails ? 0 : emails.length; i < lenI; i++){
+                emailData.to = emails[i];
+                EmailService.send(emailKey, emailData, function(result){
+                    if(result.result != 0){
+                        logger.error("<<doSendEmail:发送通知邮件失败，[errMessage:%s]", result.msg);
+                    }
+                });
+            }
+        }
+    },
+
+    /**
+     * 发送邮件
+     * @param data
+     * @param emails
+     * @param type 订阅类型
+     */
     doSendEmail : function(data, emails, type){
         if(!emails || emails.length == 0){
             return;
         }
+        var templateCode = null;
+        var templateParam = null;
+        switch (type){
+            case subscribeService.subscribeType.syllabus :
+                templateCode = "LiveReminder";
+                templateParam = {
+                    userName : "",
+                    teacherName : data.lecturer,
+                    courseTime : data.startTime
+                };
+                break;
+
+            case subscribeService.subscribeType.shoutTrade :
+                templateCode = "ShoutSingleStrategy";
+                templateParam = {
+                    teacherName : data.authName,
+                    shoutSingleContent : subscribeService.formatArticle4Sms(data, subscribeService.subscribeType.shoutTrade)
+                };
+                break;
+
+            case subscribeService.subscribeType.strategy :
+                templateCode = "TradingStrategy";
+                templateParam = {
+                    teacherName : data.authName,
+                    policyContent : subscribeService.formatArticle4Sms(data, subscribeService.subscribeType.strategy)
+                };
+                break;
+        }
+
         var emailKey = null;
         var emailData = null;
         switch (type){

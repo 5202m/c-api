@@ -90,9 +90,9 @@ router.get("/getAnalysts", function(req, res) {
  * 分析师点赞
  */
 router.post("/praiseAnalyst", function(req, res) {
-    var platform = req.body["platform"];
-    var analystId = req.body["analystId"];
-    if(common.isBlank(analystId)){
+    var platform = req.body["platform"] || req.query["platform"];
+    var analystId = req.body["analystId"] || req.query["analystId"];
+    if(common.isBlank(analystId) || common.isBlank(platform)){
         res.json({isOK:false, msg:'参数错误', num : 0});
     }else{
         chatService.praiseAnalyst(platform, analystId, function(result){
