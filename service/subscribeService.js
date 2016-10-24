@@ -17,7 +17,6 @@ var Member = require('../models/member');
 var ChatSubscribe = require('../models/chatSubscribe');
 var SyllabusService = require('./syllabusService');
 var ArticleService = require('./articleService');
-var EmailService = require('./emailService');
 var Request = require('request');
 
 var subscribeService = {
@@ -60,14 +59,15 @@ var subscribeService = {
             }
             analystReg = new RegExp(ans.join("|"));
         }
-        ChatSubscribe.find({
+        var searchObj = {
             groupType : groupType,
             //groupId : groupId,
             type : type,
             analyst : analystReg,
             startDate : {$lte: date},
             endDate : {$gte: date}
-        }, function(err, subscribes){
+        };
+        ChatSubscribe.find(searchObj, function(err, subscribes){
             if(err){
                 logger.error("<<getSubscribe:提取订阅信息出错，[errMessage:%s]", err);
                 callback(data, []);
@@ -86,7 +86,6 @@ var subscribeService = {
         var startTime = new Date();
         var endTime = new Date(startTime.getTime() + 600000);
         SyllabusService.getSyllabusPlan(startTime, endTime, function(courses){
-            console.log(courses);
             var courseTmp = null;
             for(var i = 0, lenI = courses.length; i < lenI; i++){
                 courseTmp = courses[i];
@@ -97,14 +96,13 @@ var subscribeService = {
                     courseTmp.lecturerId,
                     endTime,
                     courseTmp, function(course, subscribes){
-                        console.log(subscribes);
                         //发送邮件
-                        subscribeService.getNoticesEmails(subscribes, courseTmp.groupType, function(emails){
-                            subscribeService.doSendEmail(course, emails, subscribeService.subscribeType.syllabus);
+                        subscribeService.getNoticesEmails(subscribes, course.groupType, function(emails){
+                            subscribeService.doSendEmail(course, emails, course.groupType, subscribeService.subscribeType.syllabus);
                         });
                         //发送短信
                         subscribeService.getNoticesMobiles(subscribes, function(mobiles){
-                            subscribeService.doSendSms(course, mobiles, subscribeService.subscribeType.syllabus);
+                            subscribeService.doSendSms(course, mobiles, course.groupType, subscribeService.subscribeType.syllabus);
                         });
                 });
             }
@@ -178,110 +176,110 @@ var subscribeService = {
      * 发送邮件
      * @param data
      * @param emails
+     * @param groupType
      * @param type 订阅类型
      */
-    doSendEmailBak : function(data, emails, type){
-        if(!emails || emails.length == 0){
-            return;
-        }
-        var emailKey = null;
-        var emailData = null;
-        switch (type){
-            case subscribeService.subscribeType.syllabus :
-                emailKey = "studioSubscribeSyllabus";
-                emailData = data;
-                break;
-
-            case subscribeService.subscribeType.shoutTrade :
-                emailKey = "studioSubscribeShoutTrade";
-                emailData = data;
-                break;
-
-            case subscribeService.subscribeType.strategy :
-                emailKey = "studioSubscribeStrategy";
-                emailData = data;
-                break;
-        }
-        if(emailKey){
-            logger.info("<<doSendEmail:发送邮件通知：content=[%s], emails=[%s]", JSON.stringify(emailData), emails.join(","));
-            for(var i = 0, lenI = !emails ? 0 : emails.length; i < lenI; i++){
-                emailData.to = emails[i];
-                EmailService.send(emailKey, emailData, function(result){
-                    if(result.result != 0){
-                        logger.error("<<doSendEmail:发送通知邮件失败，[errMessage:%s]", result.msg);
-                    }
-                });
-            }
-        }
-    },
-
-    /**
-     * 发送邮件
-     * @param data
-     * @param emails
-     * @param type 订阅类型
-     */
-    doSendEmail : function(data, emails, type){
+    doSendEmail : function(data, emails, groupType, type){
         if(!emails || emails.length == 0){
             return;
         }
         var templateCode = null;
         var templateParam = null;
+        var attachDataArr = null, attachData = null;
         switch (type){
             case subscribeService.subscribeType.syllabus :
                 templateCode = "LiveReminder";
                 templateParam = {
-                    userName : "",
-                    teacherName : data.lecturer,
-                    courseTime : data.startTime
+                    time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                    liveTime : data.startTime,
+                    teacherName : data.lecturer
                 };
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
-                templateCode = "ShoutSingleStrategy";
-                templateParam = {
-                    teacherName : data.authName,
-                    shoutSingleContent : subscribeService.formatArticle4Sms(data, subscribeService.subscribeType.shoutTrade)
-                };
-                break;
-
-            case subscribeService.subscribeType.strategy :
-                templateCode = "TradingStrategy";
-                templateParam = {
-                    teacherName : data.authName,
-                    policyContent : subscribeService.formatArticle4Sms(data, subscribeService.subscribeType.strategy)
-                };
-                break;
-        }
-
-        var emailKey = null;
-        var emailData = null;
-        switch (type){
-            case subscribeService.subscribeType.syllabus :
-                emailKey = "studioSubscribeSyllabus";
-                emailData = data;
-                break;
-
-            case subscribeService.subscribeType.shoutTrade :
-                emailKey = "studioSubscribeShoutTrade";
-                emailData = data;
-                break;
-
-            case subscribeService.subscribeType.strategy :
-                emailKey = "studioSubscribeStrategy";
-                emailData = data;
-                break;
-        }
-        if(emailKey){
-            logger.info("<<doSendEmail:发送邮件通知：content=[%s], emails=[%s]", JSON.stringify(emailData), emails.join(","));
-            for(var i = 0, lenI = !emails ? 0 : emails.length; i < lenI; i++){
-                emailData.to = emails[i];
-                EmailService.send(emailKey, emailData, function(result){
-                    if(result.result != 0){
-                        logger.error("<<doSendEmail:发送通知邮件失败，[errMessage:%s]", result.msg);
+                attachDataArr = data.remark || "";
+                if(attachDataArr){
+                    try{
+                        attachDataArr = JSON.parse(attachDataArr);
+                    }catch(e){
                     }
-                });
-            }
+                }
+                if(attachDataArr && attachDataArr.length > 0){
+                    templateCode = "ShoutSingleStrategy";
+                    templateParam = {
+                        time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                        teacherName : data.authName,
+                        content : data.content,
+                        shoutSingleList : []
+                    };
+                    //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
+                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
+                        attachData = attachDataArr[i];
+                        templateParam.shoutSingleList.push({
+                            name : attachData.name,
+                            trend : attachData.longshort == "long" ? "看涨" : "看跌",
+                            entryPoint : attachData.point,
+                            stopPoint : attachData.loss,
+                            profitPoint : attachData.profit
+                        });
+                    }
+                }
+                break;
+
+            case subscribeService.subscribeType.strategy :
+                attachDataArr = data.remark || "";
+                if(attachDataArr){
+                    try{
+                        attachDataArr = JSON.parse(attachDataArr);
+                    }catch(e){
+                    }
+                }
+                if(attachDataArr && attachDataArr.length > 0){
+                    templateCode = "TradingStrategy";
+                    templateParam = {
+                        time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                        teacherName : data.authName,
+                        content : data.content,
+                        varietyList : []
+                    };
+                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456"}
+                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
+                        attachData = attachDataArr[i];
+                        templateParam.varietyList.push({
+                            variety : attachData.name,
+                            support : attachData.support_level
+                        });
+                    }
+                }
+                break;
+        }
+        if(templateCode && Config.utm.hasOwnProperty(groupType)){
+            var config = Config.utm[groupType];
+            var emailData = {
+                timestamp : Common.formatDate(new Date(), "yyyyMMddHHmmss"),
+                accountSid: config.sid,
+                sign: "",
+                emails : emails.join(","),
+                templateCode : templateCode,
+                templateParam : JSON.stringify(templateParam)
+            };
+            emailData.sign = Common.getMD5(emailData.accountSid + config.token + emailData.timestamp);
+
+            logger.info("<<doSendSms:发送邮件通知：content=[%s]", JSON.stringify(emailData));
+            Request.post(Config.utm.emailUrl, function (error, response, data) {
+                if (error || response.statusCode != 200 || !data) {
+                    logger.error("<<doSendSms:发送通知邮件异常，errMessage:", error);
+                } else{
+                    try{
+                        data = JSON.parse(data);
+                        if(data.respCode != "Success"){
+                            logger.error("<<doSendSms:发送通知邮件失败，[errMessage:%s]", data.respMsg);
+                        }
+                    }catch(e){
+                        logger.error("<<doSendSms:发送通知邮件出错，[response:%s]", data);
+                    }
+                }
+            }).form(emailData);
         }
     },
 
@@ -289,53 +287,92 @@ var subscribeService = {
      * 发送短信
      * @param data
      * @param mobiles
+     * @param groupType
      * @param type 订阅类型
      */
-    doSendSms : function(data, mobiles, type){
+    doSendSms : function(data, mobiles, groupType, type){
         if(!mobiles || mobiles.length == 0){
             return;
         }
         var templateCode = null;
         var templateParam = null;
+        var attachDataArr = null, attachData = null;
         switch (type){
             case subscribeService.subscribeType.syllabus :
                 templateCode = "LiveReminder";
                 templateParam = {
-                    userName : "",
                     teacherName : data.lecturer,
                     courseTime : data.startTime
                 };
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
-                templateCode = "ShoutSingleStrategy";
-                templateParam = {
-                    teacherName : data.authName,
-                    shoutSingleContent : subscribeService.formatArticle4Sms(data, subscribeService.subscribeType.shoutTrade)
-                };
+                attachDataArr = data.remark || "";
+                if(attachDataArr){
+                    try{
+                        attachDataArr = JSON.parse(attachDataArr);
+                    }catch(e){
+                    }
+                }
+                if(attachDataArr && attachDataArr.length > 0){
+                    templateCode = "ShoutSingleStrategy";
+                    templateParam = {
+                        teacherName : data.authName,
+                        shoutSingleList : []
+                    };
+                    //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
+                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
+                        attachData = attachDataArr[i];
+                        templateParam.shoutSingleList.push({
+                            name : attachData.name,
+                            trend : attachData.longshort == "long" ? "看涨" : "看跌",
+                            entryPoint : attachData.point,
+                            stopPoint : attachData.loss,
+                            profitPoint : attachData.profit
+                        });
+                    }
+                }
                 break;
 
             case subscribeService.subscribeType.strategy :
-                templateCode = "TradingStrategy";
-                templateParam = {
-                    teacherName : data.authName,
-                    policyContent : subscribeService.formatArticle4Sms(data, subscribeService.subscribeType.strategy)
-                };
+                attachDataArr = data.remark || "";
+                if(attachDataArr){
+                    try{
+                        attachDataArr = JSON.parse(attachDataArr);
+                    }catch(e){
+                    }
+                }
+                if(attachDataArr && attachDataArr.length > 0){
+                    templateCode = "TradingStrategy";
+                    templateParam = {
+                        teacherName : data.authName,
+                        varietyList : []
+                    };
+                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456"}
+                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
+                        attachData = attachDataArr[i];
+                        templateParam.varietyList.push({
+                            variety : attachData.name,
+                            support : attachData.support_level
+                        });
+                    }
+                }
                 break;
         }
-        if(templateCode){
+        if(templateCode && Config.utm.hasOwnProperty(groupType)){
+            var config = Config.utm[groupType];
             var smsData = {
                 timestamp : Common.formatDate(new Date(), "yyyyMMddHHmmss"),
-                accountSid: Config.utmSms.pm.sid,
+                accountSid: config.sid,
                 sign: "",
                 phones : mobiles.join(","),
                 templateCode : templateCode,
                 templateParam : JSON.stringify(templateParam)
             };
-            smsData.sign = Common.getMD5(smsData.accountSid + Config.utmSms.pm.token + smsData.timestamp);
+            smsData.sign = Common.getMD5(smsData.accountSid + config.token + smsData.timestamp);
 
             logger.info("<<doSendSms:发送短信通知：content=[%s]", JSON.stringify(smsData));
-            Request.post(Config.utmSms.url, function (error, response, data) {
+            Request.post(Config.utm.smsUrl, function (error, response, data) {
                 if (error || response.statusCode != 200 || !data) {
                     logger.error("<<doSendSms:发送通知短信异常，errMessage:", error);
                 } else{
@@ -350,77 +387,6 @@ var subscribeService = {
                 }
             }).form(smsData);
         }
-    },
-
-    /**
-     * 将文档格式化为短信
-     * @param article
-     * @param subscribeType
-     */
-    formatArticle4Sms : function(article, subscribeType){
-        var result = [];
-        switch (subscribeType){
-            case subscribeService.subscribeType.strategy:
-                var dataArr = article.remark || "", dataTmp;
-                if(dataArr){
-                    try{
-                        dataArr = JSON.parse(dataArr);
-                        //{"symbol":"USDJPY","name":"美元日元","support_level":"123456"}
-                        var symbol = null;
-                        for(var i = 0, lenI = !dataArr ? 0 : dataArr.length; i < lenI; i++){
-                            dataTmp = dataArr[i];
-                            if(symbol == dataTmp.symbol){
-                                result.push(";");
-                                result.push(dataTmp.support_level);
-                            }else{
-                                symbol = dataTmp.symbol;
-                                result.push("\r\n");
-                                result.push("品种:" + dataTmp.name);
-                                result.push(" 支撑位:" + dataTmp.support_level);
-                            }
-                        }
-                    }catch(e){
-
-                    }
-                }
-                break;
-
-            case subscribeService.subscribeType.shoutTrade:
-                var dataArr = article.remark || "", dataTmp;
-                if(dataArr){
-                    try{
-                        dataArr = JSON.parse(dataArr);
-                        //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
-                        for(var i = 0, lenI = !dataArr ? 0 : dataArr.length; i < lenI; i++){
-                            dataTmp = dataArr[i];
-                            result.push("\r\n");
-                            result.push("品种:" + dataTmp.name);
-                            result.push(" 方向:" + (dataTmp.longshort == "long" ? "看涨" : "看跌"));
-                            result.push(" 进场点位:" + dataTmp.point);
-                            result.push(" 止盈:" + dataTmp.profit);
-                            result.push(" 止损:" + dataTmp.loss);
-                        }
-                    }catch(e){
-
-                    }
-                }
-                break;
-            case subscribeService.subscribeType.dailyQuotation:
-            case subscribeService.subscribeType.bigQuotation:
-            case subscribeService.subscribeType.dailyReview:
-            case subscribeService.subscribeType.weekReview:
-                var content = article.content || "";
-                if(content){
-                    var tagRegAll = /<[^>]+>|<\/[^>]+>/g;
-                    content = content.replace(tagRegAll, "");
-                    if(content.length > 70){
-                        content = content.substring(0,67) + "...";
-                    }
-                }
-                result.push(content);
-                break;
-        }
-        return result.join("");
     },
 
     /**
@@ -459,11 +425,11 @@ var subscribeService = {
                     noticeObj, function(noticeObj, subscribes){
                         //发送邮件
                         subscribeService.getNoticesEmails(subscribes, noticeObj.groupType, function(emails){
-                            subscribeService.doSendEmail(noticeObj, emails, noticeObj.subscribeType);
+                            subscribeService.doSendEmail(noticeObj, emails, noticeObj.groupType, noticeObj.subscribeType);
                         });
                         //发送短信
                         subscribeService.getNoticesMobiles(subscribes, function(mobiles){
-                            subscribeService.doSendSms(noticeObj, mobiles, noticeObj.subscribeType);
+                            subscribeService.doSendSms(noticeObj, mobiles, noticeObj.groupType, noticeObj.subscribeType);
                         });
                     });
             }
@@ -500,12 +466,12 @@ var subscribeService = {
     getSubscribeType : function(article){
         var categoryId = article && article.categoryId;
         var result = null;
-        if(categoryId == "class_note"){
+        if(categoryId == "class_note") {
             var tag = null;
-            if(article.detailList && article.detailList.length > 0 && article.detailList[0].tag){
+            if (article.detailList && article.detailList.length > 0 && article.detailList[0].tag) {
                 tag = article.detailList[0].tag;
             }
-            switch (tag){
+            switch (tag) {
                 case "trading_strategy":
                     result = subscribeService.subscribeType.strategy;
                     break;
@@ -514,14 +480,6 @@ var subscribeService = {
                     result = subscribeService.subscribeType.shoutTrade;
                     break;
             }
-        }else if(categoryId == "info_dailyQuotation"){
-            result = subscribeService.subscribeType.dailyQuotation;
-        }else if(categoryId == "info_bigQuotation"){
-            result = subscribeService.subscribeType.bigQuotation;
-        }else if(categoryId == "info_dailyReview"){
-            result = subscribeService.subscribeType.dailyReview;
-        }else if(categoryId == "info_weekReview"){
-            result = subscribeService.subscribeType.weekReview;
         }
         return result;
     },

@@ -170,7 +170,7 @@ var chatPointsService = {
             "isDeleted" : 0
         };
         var chkResult = chatPointsService.checkLimit(config, pointsInfo, journal);
-        if(chkResult){
+        if(!chkResult){
             journal.before = pointsInfo.points;
             if(params.isGlobal || journal.change > 0){
                 pointsInfo.pointsGlobal += journal.change;
@@ -191,7 +191,7 @@ var chatPointsService = {
                 }
             });
         }else{
-            callback(APIUtil.APIResult(journal.change > 0 ? "code_3001" : "code_3004", null));
+            callback(APIUtil.APIResult(chkResult, null));
         }
     },
 
@@ -204,19 +204,23 @@ var chatPointsService = {
     checkLimit : function(config, pointsInfo, journal){
         if(!config){//积分配置不存在
             if(journal.change){
-                return journal.change + pointsInfo.points > 0; //指定积分值，积分不为负有效
+                if(journal.change + pointsInfo.points > 0){
+                    return null;
+                }else{
+                    return "code_3004";
+                }
             }else{
-                return false; //不指定积分值，无效
+                return "code_3000"; //不指定积分值，无效
             }
         }
-        var result = true;
+        var result = null;
         var loc_val = journal.change || config.val;
         if(loc_val + pointsInfo.points < 0){ //有效积分不足
-            result = false;
+            result = "code_3004";
         }else if(!config.limitUnit){ //无上限
-            result = true;
+            result = null;
         }else if(config.limitVal < 0){ //上限值小于0
-            result = false;
+            result = "code_3001";
         }else{
             var limitDate = chatPointsService.getLimitDate(config.limitUnit);
             var statistics = chatPointsService.statisticsPoints(pointsInfo, config, journal, limitDate);
@@ -224,20 +228,20 @@ var chatPointsService = {
                 case "A":
                 case "B":
                     if(statistics.val + loc_val > config.limitVal){
-                        result = false;
+                        result = "code_3001";
                     }
                     break;
                 case "C":
                 case "D":
                     if(statistics.cnt >= config.limitVal){
-                        result = false;
+                        result = "code_3001";
                     }
                     break;
                 default :
-                    result = false;
+                    result = "code_3001";
             }
         }
-        if(result){
+        if(!result){
             journal.change = loc_val;
         }
         return result;
