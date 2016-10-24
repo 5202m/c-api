@@ -12,13 +12,14 @@ var config = {
         fx : 'http://192.168.75.27:4447/SMS_Channel_Send.ucs?phone=${phone}&content=${content}&catalog=others&platform=FX&country=China',
         hx : 'http://192.168.75.27:4467/SMS_Channel_Send.ucs?phone=${phone}&content=${content}&catalog=others&platform=HX'
     },
-    utmSms : {
-        url : "http://testweboa.gwfx.com:8088/GwUserTrackingManager_NEW/smsTemplate/send", //http://das.gwfx.com/smsTemplate/send
-        fx : {
+    utm : {
+        smsUrl : "http://testweboa.gwfx.com:8088/GwUserTrackingManager_NEW/smsTemplate/send", //http://das.gwfx.com/smsTemplate/send
+        emailUrl : "http://testweboa.gwfx.com:8088/GwUserTrackingManager_NEW/emailTemplate/send", //http://das.gwfx.com/emailTemplate/send
+        fxstudio : {
             sid : "fa573c78eaa8402cb6c84dabfcce7158",
             token : "8867af2616da47d7927ff0df7ea60668"
         },
-        pm : {
+        studio : {
             sid : "fa573c78eaa8402cb6c84dabfcce7159",
             token : "8867af2616da47d7927ff0df7ea60669"
         }
