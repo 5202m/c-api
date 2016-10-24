@@ -81,6 +81,18 @@ var constant = {
             }
             return null;
         }
+    },
+    //积分折扣
+    pointsRate : {
+        studio : {
+            vip:0,
+            active : 0.1,
+            notActive : 0.7,
+            real:0.7,
+            simulate:0.8
+            //register:1,
+            //visitor:1
+        }
     }
 };
 

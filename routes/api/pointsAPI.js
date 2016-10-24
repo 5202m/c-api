@@ -36,6 +36,7 @@ router.get('/pointsInfo', function(req, res) {
 router.post('/add', function(req, res) {
     var params = {
         groupType : req.body["groupType"],
+        clientGroup : req.body["clientGroup"] || "",
         userId : req.body["userId"],
         item : req.body["item"],
         tag : req.body["tag"] || "",
