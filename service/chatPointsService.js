@@ -114,8 +114,8 @@ var chatPointsService = {
         chatPointsService.getConfig(params.item, params.groupType, function(err, config){
             if(err){
                 callback(APIUtil.APIResult("code_10", null));
-            }else if(!params.val && !config){
-                callback(APIUtil.APIResult("code_3000", null));
+            }else if(!config){
+                callback(APIUtil.APIResult(null, null));
             }else{
                 chatPointsService.getChatPoints(params.groupType, params.userId, function(err, pointsInfo){
                     if(err){
