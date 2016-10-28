@@ -120,7 +120,7 @@ var chatService ={
             userInfo: function(callbackTmp){
                 BoUser.find({
                     userNo: {"$in": ids}
-                },"userNo userName winRate", callbackTmp);
+                },callbackTmp);
             },
             praise: function(callbackTmp){
                 ChatPraise.find({
@@ -138,17 +138,30 @@ var chatService ={
             for(i = 0, lenI = !results.praise ? 0 : results.praise.length; i < lenI; i++){
                 praiseMap[results.praise[i].praiseId] = results.praise[i];
             }
-            var result = [], analyst;
+            var result = [], analyst,user;
             for(i = 0, lenI = ids.length; i < lenI; i++){
                 analyst = {
                     userNo : ids[i],
                     userName : "",
+                    position : "",
+                    avatar : "",
+                    introduction : "",
+                    wechatCode : "",
+                    tag : "",
                     winRate : "",
+                    earningsM : "",
                     praise : 0
                 };
                 if(userMap.hasOwnProperty(analyst.userNo)){
-                    analyst.userName = userMap[analyst.userNo].userName;
-                    analyst.winRate = userMap[analyst.userNo].winRate;
+                    user = userMap[analyst.userNo];
+                    analyst.userName = user.userName;
+                    analyst.position = user.position;
+                    analyst.avatar = user.avatar;
+                    analyst.introduction = user.introduction;
+                    analyst.wechatCode = user.wechatCode;
+                    analyst.tag = user.tag;
+                    analyst.winRate = user.winRate;
+                    analyst.earningsM = user.earningsM;
                 }
                 if(praiseMap.hasOwnProperty(analyst.userNo)){
                     analyst.praise = praiseMap[analyst.userNo].praiseNum;

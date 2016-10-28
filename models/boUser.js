@@ -16,6 +16,7 @@ var mongoose = require('mongoose')
         wechatCode:String ,              //微信号
         wechatCodeImg:String ,           //微信图片
         winRate:String ,                 //胜率
+        earningsM:String ,               //月收益
         introductionImgLink:String ,     //介绍图片链接
         tag:String ,                     //标签
         valid: {type:Number, default:1}, //是否删除：0 、删除；1、正常
