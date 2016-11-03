@@ -197,7 +197,7 @@ var subscribeService = {
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
-                attachDataArr = data.remark || "";
+                attachDataArr = data.remark;
                 if(attachDataArr){
                     try{
                         attachDataArr = JSON.parse(attachDataArr);
@@ -227,7 +227,7 @@ var subscribeService = {
                 break;
 
             case subscribeService.subscribeType.strategy :
-                attachDataArr = data.remark || "";
+                attachDataArr = data.remark;
                 if(attachDataArr){
                     try{
                         attachDataArr = JSON.parse(attachDataArr);
@@ -307,7 +307,7 @@ var subscribeService = {
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
-                attachDataArr = data.remark || "";
+                attachDataArr = data.remark;
                 if(attachDataArr){
                     try{
                         attachDataArr = JSON.parse(attachDataArr);
@@ -335,7 +335,7 @@ var subscribeService = {
                 break;
 
             case subscribeService.subscribeType.strategy :
-                attachDataArr = data.remark || "";
+                attachDataArr = data.remark;
                 if(attachDataArr){
                     try{
                         attachDataArr = JSON.parse(attachDataArr);
@@ -501,10 +501,10 @@ var subscribeService = {
             authId = articleDetail.authorInfo.userId;
             authName = articleDetail.authorInfo.name;
         }
-        result.authId = authId;
-        result.authName = authName;
-        result.remark = articleDetail.remark;
-        result.content = articleDetail.content;
+        result.authId = authId || "";
+        result.authName = authName || "";
+        result.remark = articleDetail.remark || "";
+        result.content = articleDetail.content || "";
         return result;
     }
 };
