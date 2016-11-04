@@ -86,7 +86,7 @@ var syllabusService = {
                     return;
                 }else if(flag=='D'){
                     if(rowTmp.publishStart.getTime() <= today.getTime()){//获取全天课程安排
-                        loc_result = syllabusService.getCourseByDay(loc_courses, loc_day);
+                        loc_result = syllabusService.getCourseByDay(loc_courses, today);
                     }
                 }else if(flag=='W'){
                     loc_result = syllabusService.getCourseByWeek(rowTmp, loc_courses);
@@ -98,10 +98,11 @@ var syllabusService = {
     /**
      * 按照星期获取全天课程安排
      * @param coursesObj
-     * @param day
+     * @param today
      * @returns {Array}
      */
-    getCourseByDay : function(coursesObj, day){
+    getCourseByDay : function(coursesObj, today){
+        var day = today.getDay();
         var loc_result = [];
         var loc_dayIndex = -1;
         if(coursesObj && coursesObj.days){
@@ -115,9 +116,9 @@ var syllabusService = {
             }
             if(loc_dayIndex != -1 && coursesObj.timeBuckets){
                 var loc_timeBucket, loc_course;
-                var currDate = new Date();
-                var loc_courseDate = new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate());
-                loc_courseDate = loc_courseDate.getTime() + (day - currDate.getDay()) * 86400000;
+                var currTime = Utils.dateFormat(today, 'hh:mm');
+                var loc_courseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                loc_courseDate = loc_courseDate.getTime() + (day - today.getDay()) * 86400000;
 
                 for(var i in coursesObj.timeBuckets){
                     loc_timeBucket = coursesObj.timeBuckets[i];
@@ -127,6 +128,7 @@ var syllabusService = {
                         && loc_course.courseType != 2){
                         loc_result.push({
                             date : loc_courseDate,
+                            flag : currTime < loc_timeBucket.startTime ? 1 : (currTime >= loc_timeBucket.endTime ? -1 : 0),
                             startTime : loc_timeBucket.startTime,
                             endTime : loc_timeBucket.endTime,
                             lecturer : loc_course.lecturer,
@@ -520,6 +522,40 @@ var syllabusService = {
             }
         }
         return result;
+    },
+
+    /**
+     * 按照分析师编号，提取下此课程信息
+     * @param date
+     * @param groupType
+     * @param groupId
+     * @param lecturerIds
+     * @param callback
+     */
+    getNextCources : function(date, groupType, groupId, lecturerIds, callback){
+        APIUtil.DBFind(chatSyllabus, {
+            query : {
+                groupType : groupType,
+                groupId : groupId,
+                isDeleted : 0,
+                publishStart : {$lte : date},
+                publishEnd : {$gt : date}
+            },
+            sortAsc : ["publishStart"]
+        }, function(err, rows){
+            if(err){
+                logger.error("getNextCources<<查询聊天室课程安排失败!", err);
+                callback(ApiResult.result("getNextCources<<查询聊天室课程安排失败!", null));
+                return;
+            }
+            if(!rows || rows.length == 0){
+                callback(ApiResult.result(null, []));
+                return;
+            }
+            var row = rows[0];
+
+            callback(ApiResult.result(null, !row ? null : row.courses));
+        });
     }
 };
 //导出服务类
