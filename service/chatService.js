@@ -1,13 +1,16 @@
 var logger = require('../resources/logConf').getLogger("chatService");
 var chatMessage = require('../models/chatMessage');//引入chatMessage数据模型
+var ChatShowTrade = require('../models/chatShowTrade');//引入chatShowTrade数据模型
 var BoUser = require('../models/boUser');//引入boUser数据模型
 var ChatPraise = require('../models/chatPraise');//引入chatPraise数据模型
 var common = require('../util/common');//引入common类
 var ApiResult = require('../util/ApiResult');
+var ErrorMessage = require('../util/errorMessage');
 var async = require('async');//引入async
 var config = require('../resources/config');
 var constant = require('../constant/constant');
 var ObjectId = require('mongoose').Types.ObjectId;
+
 /**
  * 聊天室相关信息服务类
  * author Alan.wu
@@ -211,6 +214,55 @@ var chatService ={
                 callback({isOK:true, msg:'', num: rowTmp.praiseNum});
             });
         });
+    },
+
+    /**
+     * 获取分析师晒单
+     * @param params {{platform:String, userId:String, tradeType:Number, num:Number, onlyHis:boolean}}
+     * @param callback
+     */
+    getShowTrade : function(params, callback){
+        var queryObj = {
+            groupType : params.platform,
+            "boUser.userNo" : params.userId,
+            tradeType : params.tradeType,
+            valid : 1
+        };
+        if(params.tradeType != 1){
+            queryObj.status = 1; //审核通过
+        }
+        if(params.onlyHis){
+            queryObj.profit = {$nin : [null, ""]};
+        }
+        ChatShowTrade.find(queryObj)
+            .limit(params.num)
+            .sort({showDate : -1})
+            .exec('find', function(err, datas){
+                if(err){
+                    logger.error('getShowTrade=>query fail:' + err);
+                    callback(ApiResult.result(ErrorMessage.code_10, null));
+                }else{
+                    var result = [], data = null;
+                    for(var i = 0, lenI = !datas ? 0 : datas.length; i < lenI; i++){
+                        data = datas[i];
+                        result.push({
+                            id : data._id,
+                            groupType : data.groupType,
+                            groupId : data.groupId,
+                            userId : data.boUser.userNo,
+                            userName : data.boUser.userName,
+                            userAvatar : data.boUser.avatar,
+                            showDate : data.showDate ? data.showDate.getTime() : 0,
+                            tradeImg : data.tradeImg,
+                            profit : data.profit,
+                            remark: data.remark,
+                            title: data.title,
+                            praise: data.praise
+                        });
+                    }
+                    callback(ApiResult.result(null, result));
+                }
+            });
     }
 };
 //导出服务类

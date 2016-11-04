@@ -100,4 +100,30 @@ router.post("/praiseAnalyst", function(req, res) {
         });
     }
 });
+
+/**
+ * 分析师晒单
+ */
+router.get("/getShowTrade", function(req, res) {
+    var params = {
+        platform : req.query["platform"],
+        userId : req.query["userId"],
+        tradeType : req.query["tradeType"] || 1,
+        onlyHis : req.query["onlyHis"] != 0,
+        num : req.query["num"]
+    };
+    if(!params.platform || !params.userId){
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+        return;
+    }
+    if(params.num){
+        params.num = parseInt(params.num, 10);
+        if(isNaN(params.num)){
+            params.num = 2;
+        }
+    }
+    chatService.getShowTrade(params, function(result){
+        res.json(result);
+    });
+});
 module.exports = router;

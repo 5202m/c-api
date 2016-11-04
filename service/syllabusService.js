@@ -115,6 +115,10 @@ var syllabusService = {
             }
             if(loc_dayIndex != -1 && coursesObj.timeBuckets){
                 var loc_timeBucket, loc_course;
+                var currDate = new Date();
+                var loc_courseDate = new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate());
+                loc_courseDate = loc_courseDate.getTime() + (day - currDate.getDay()) * 86400000;
+
                 for(var i in coursesObj.timeBuckets){
                     loc_timeBucket = coursesObj.timeBuckets[i];
                     loc_course = loc_timeBucket.course[loc_dayIndex];
@@ -122,6 +126,7 @@ var syllabusService = {
                         && loc_course.lecturer
                         && loc_course.courseType != 2){
                         loc_result.push({
+                            date : loc_courseDate,
                             startTime : loc_timeBucket.startTime,
                             endTime : loc_timeBucket.endTime,
                             lecturer : loc_course.lecturer,
