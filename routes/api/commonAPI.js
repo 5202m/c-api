@@ -173,7 +173,7 @@ router.get("/getNextCourses", function(req, res) {
         loc_params.groupId = cfg.roomId;
     }
     if(!loc_params.groupType || !loc_params.groupId){
-        res.json(ApiResult.result(errorMessage.code_1000, null));
+        res.json(null);
         return;
     }
     if(loc_params.analystIds) {

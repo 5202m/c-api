@@ -289,6 +289,9 @@ var syllabusService = {
         var userNoArr = [], courseTmp;
         for(var i = 0, lenI = !courseArr ? 0 : courseArr.length; i < lenI; i++){
             courseTmp = courseArr[i];
+            if(!courseTmp){
+                continue;
+            }
             courseTmp.avatar = "";
             courseTmp.userNoArr = !courseTmp.lecturerId ? [] : courseTmp.lecturerId.split(/[,，]/);
             userNoArr = userNoArr.concat(courseTmp.userNoArr);
@@ -314,8 +317,11 @@ var syllabusService = {
             }
             var avatarArr, courseTmp;
             for(i = 0,lenI = !courseArr ? 0 : courseArr.length; i < lenI; i++){
-                avatarArr = [];
                 courseTmp = courseArr[i];
+                if(!courseTmp){
+                    continue;
+                }
+                avatarArr = [];
                 for(var j = 0,lenJ = courseTmp.userNoArr.length; j < lenJ; j++){
                     row = lecturerMap[courseTmp.userNoArr[j]];
                     avatarArr.push((row && row.avatar) ? row.avatar : "");
@@ -556,11 +562,11 @@ var syllabusService = {
         }, function(err, rows){
             if(err){
                 logger.error("getNextCources<<查询聊天室课程安排失败!", err);
-                callback(ApiResult.result("getNextCources<<查询聊天室课程安排失败!", null));
+                callback(null);
                 return;
             }
             if(!rows || rows.length == 0 || !rows[0]){
-                callback(ApiResult.result(null, []));
+                callback(null);
                 return;
             }
             var row = rows[0];
@@ -580,7 +586,7 @@ var syllabusService = {
             }catch(e){}
             //填充分析师头像
             syllabusService.fillLecturerInfo(result, function(courseArr){
-                callback(ApiResult.result(null, courseArr));
+                callback(courseArr);
             });
         });
     },
