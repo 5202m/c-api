@@ -157,6 +157,35 @@ router.get("/getCourse", function(req, res) {
 
 
 /**
+ * 获取指定分析师的下次课程安排
+ */
+router.get("/getNextCourses", function(req, res) {
+    var loc_params = {
+        type : req.query["type"],
+        platform : req.query["platform"],
+        groupType : req.query["groupType"],
+        groupId : req.query["groupId"],
+        analystIds : req.query["analystIds"]
+    };
+    var cfg = constant.studioThirdUsed.getConfig(loc_params.type, loc_params.platform);
+    if(cfg){
+        loc_params.groupType = cfg.groupType;
+        loc_params.groupId = cfg.roomId;
+    }
+    if(!loc_params.groupType || !loc_params.groupId){
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+        return;
+    }
+    if(loc_params.analystIds) {
+        loc_params.analystIds = loc_params.analystIds.split(/[,，]/);
+    }
+    SyllabusService.getNextCources(new Date(), loc_params.groupType, loc_params.groupId, loc_params.analystIds, function(courses){
+        res.json(courses);
+    });
+});
+
+
+/**
  * 备份课程表
  */
 router.get("/bakSyllabus", function(req, res) {

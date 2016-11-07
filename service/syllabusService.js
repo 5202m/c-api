@@ -286,11 +286,17 @@ var syllabusService = {
      * @param courseArr
      */
     fillLecturerInfo : function(courseArr, callback){
-        if(!courseArr || courseArr.length != 1 || !courseArr[0].lecturerId){
+        var userNoArr = [], courseTmp;
+        for(var i = 0, lenI = !courseArr ? 0 : courseArr.length; i < lenI; i++){
+            courseTmp = courseArr[i];
+            courseTmp.avatar = "";
+            courseTmp.userNoArr = !courseTmp.lecturerId ? [] : courseTmp.lecturerId.split(/[,，]/);
+            userNoArr = userNoArr.concat(courseTmp.userNoArr);
+        }
+        if(userNoArr.length == 0){
             callback(courseArr);
             return;
         }
-        var userNoArr = courseArr[0].lecturerId.split(",");
         boUser.find({
             'userNo':{$in : userNoArr},
             'status':0,
@@ -306,12 +312,17 @@ var syllabusService = {
                 row = rows[i];
                 lecturerMap[row.userNo] = row.toObject();
             }
-            var avatarArr = [];
-            for(i = 0,lenI = userNoArr.length; i < lenI; i++){
-                row = lecturerMap[userNoArr[i]];
-                avatarArr.push((row && row.avatar) ? row.avatar : "");
+            var avatarArr, courseTmp;
+            for(i = 0,lenI = !courseArr ? 0 : courseArr.length; i < lenI; i++){
+                avatarArr = [];
+                courseTmp = courseArr[i];
+                for(var j = 0,lenJ = courseTmp.userNoArr.length; j < lenJ; j++){
+                    row = lecturerMap[courseTmp.userNoArr[j]];
+                    avatarArr.push((row && row.avatar) ? row.avatar : "");
+                }
+                delete courseTmp["userNoArr"];
+                courseTmp.avatar = avatarArr.join(",");
             }
-            courseArr[0].avatar = avatarArr.join(",");
             callback(courseArr);
         });
     },
@@ -548,16 +559,86 @@ var syllabusService = {
                 callback(ApiResult.result("getNextCources<<查询聊天室课程安排失败!", null));
                 return;
             }
-            if(!rows || rows.length == 0){
+            if(!rows || rows.length == 0 || !rows[0]){
                 callback(ApiResult.result(null, []));
                 return;
             }
             var row = rows[0];
-
-            callback(ApiResult.result(null, !row ? null : row.courses));
+            var result = [];
+            try{
+                var courses = JSON.parse(row.courses);
+                var coursesMap = syllabusService.getNextCourseMap(courses, date);
+                if(lecturerIds){
+                    for(var i = 0, lenI = lecturerIds.length; i < lenI; i++){
+                        result.push(coursesMap[lecturerIds[i]] || null);
+                    }
+                }else{
+                    for(var lecturerId in coursesMap){
+                        result.push(coursesMap[lecturerId]);
+                    }
+                }
+            }catch(e){}
+            //填充分析师头像
+            syllabusService.fillLecturerInfo(result, function(courseArr){
+                callback(ApiResult.result(null, courseArr));
+            });
         });
+    },
+
+    /**
+     * 将课程表转化为分析师为key，课程为val的map
+     * @param coursesObj
+     * @param date
+     * @returns {*}
+     */
+    getNextCourseMap : function(coursesObj, date){
+        var result = {};
+        if(!coursesObj||!coursesObj.days||!coursesObj.timeBuckets){
+            return result;
+        }
+        var days=coursesObj.days,timeBuckets=coursesObj.timeBuckets;
+        var currDay = (date.getDay() + 6) % 7;
+        var currTime = Utils.dateFormat(date, 'hh:mm');
+        var tmBk=null;
+        var courseObj=null;
+        var i, k = 0, tmpDay = 0;
+        var loc_courseDate = null;
+        for(i = 0; i < days.length; i++){
+            tmpDay = (days[i].day + 6) % 7;
+            if(days[i].status==0 || tmpDay < currDay){
+                continue;
+            }
+            loc_courseDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            loc_courseDate = loc_courseDate.getTime() + (tmpDay - currDay) * 86400000;
+            for(k in timeBuckets){
+                tmBk=timeBuckets[k];
+                if(tmpDay == currDay && tmBk.endTime <= currTime){
+                    continue;
+                }
+                courseObj = tmBk.course[i];
+                if(courseObj.lecturerId){ //分析师为空的课程无效
+                    var ids = courseObj.lecturerId.split(/[,，]/);
+                    var names = courseObj.lecturer ? courseObj.lecturer.split(/[,，]/) : [];
+                    var idTmp = null;
+                    for(var j = 0, lenJ = ids.length; j < lenJ; j++){
+                        idTmp = ids[j];
+                        if(result.hasOwnProperty(idTmp) == false){
+                            result[idTmp] = {
+                                date : loc_courseDate,
+                                startTime : tmBk.startTime,
+                                endTime : tmBk.endTime,
+                                lecturerId : idTmp,
+                                lecturer : names[j],
+                                courseType : courseObj.courseType,
+                                title : courseObj.title
+                            };
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 };
 //导出服务类
 module.exports =syllabusService;
-
