@@ -65,7 +65,9 @@ var subscribeService = {
             type : type,
             analyst : analystReg,
             startDate : {$lte: date},
-            endDate : {$gte: date}
+            endDate : {$gte: date},
+            valid : 1,
+            status : 1
         };
         ChatSubscribe.find(searchObj, function(err, subscribes){
             if(err){
