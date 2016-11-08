@@ -8,6 +8,7 @@ var Common = require('../util/common'); 	 	            //引入公共工具类js
 var ApiResult = require('../util/ApiResult');
 var errorMessage = require('../util/errorMessage.js');
 var ObjectId = require('mongoose').Types.ObjectId;
+var Async = require('async');//引入async
 
 /**
  * 课程安排服务类
@@ -300,31 +301,17 @@ var syllabusService = {
             callback(courseArr);
             return;
         }
-        boUser.find({
-            'userNo':{$in : userNoArr},
-            'status':0,
-            'valid':1
-        }, "_id userNo userName avatar" , function(err, rows){
-            if(err || !rows || rows.length == 0){
-                courseArr[0].avatar = "";
-                callback(courseArr);
-                return;
-            }
-            var lecturerMap = {}, row, i, lenI;
-            for(i = 0,lenI = rows.length; i < lenI; i++){
-                row = rows[i];
-                lecturerMap[row.userNo] = row.toObject();
-            }
-            var avatarArr, courseTmp;
-            for(i = 0,lenI = !courseArr ? 0 : courseArr.length; i < lenI; i++){
+        syllabusService.getLecturerInfoMap(userNoArr, function(lecturerMap){
+            var lecturerTmp, avatarArr, courseTmp;
+            for(var i = 0,lenI = !courseArr ? 0 : courseArr.length; i < lenI; i++){
                 courseTmp = courseArr[i];
                 if(!courseTmp){
                     continue;
                 }
                 avatarArr = [];
                 for(var j = 0,lenJ = courseTmp.userNoArr.length; j < lenJ; j++){
-                    row = lecturerMap[courseTmp.userNoArr[j]];
-                    avatarArr.push((row && row.avatar) ? row.avatar : "");
+                    lecturerTmp = lecturerMap[courseTmp.userNoArr[j]];
+                    avatarArr.push((lecturerTmp && lecturerTmp.avatar) ? lecturerTmp.avatar : "");
                 }
                 delete courseTmp["userNoArr"];
                 courseTmp.avatar = avatarArr.join(",");
@@ -550,44 +537,111 @@ var syllabusService = {
      * @param callback
      */
     getNextCources : function(date, groupType, groupId, lecturerIds, callback){
-        APIUtil.DBFind(chatSyllabus, {
-            query : {
-                groupType : groupType,
-                groupId : groupId,
-                isDeleted : 0,
-                publishStart : {$lte : date},
-                publishEnd : {$gt : date}
+        Async.parallel({
+            lecturers: function(callbackTmp){
+                syllabusService.getLecturerInfoMap(lecturerIds, function(analystMap){
+                    callbackTmp(null, analystMap);
+                });
             },
-            sortAsc : ["publishStart"]
-        }, function(err, rows){
-            if(err){
-                logger.error("getNextCources<<查询聊天室课程安排失败!", err);
-                callback(null);
-                return;
-            }
-            if(!rows || rows.length == 0 || !rows[0]){
-                callback(null);
-                return;
-            }
-            var row = rows[0];
-            var result = [];
-            try{
-                var courses = JSON.parse(row.courses);
-                var coursesMap = syllabusService.getNextCourseMap(courses, date);
-                if(lecturerIds){
-                    for(var i = 0, lenI = lecturerIds.length; i < lenI; i++){
-                        result.push(coursesMap[lecturerIds[i]] || null);
+            courses: function(callbackTmp){
+                APIUtil.DBFind(chatSyllabus, {
+                    query : {
+                        groupType : groupType,
+                        groupId : groupId,
+                        isDeleted : 0,
+                        publishStart : {$lte : date},
+                        publishEnd : {$gt : date}
+                    },
+                    sortAsc : ["publishStart"]
+                }, function(err, rows){
+                    var result = {};
+                    if(err){
+                        logger.error("getNextCources<<查询聊天室课程安排失败!", err);
+                        callbackTmp(null, result);
+                        return;
                     }
-                }else{
-                    for(var lecturerId in coursesMap){
-                        result.push(coursesMap[lecturerId]);
+                    if(!rows || rows.length == 0 || !rows[0]){
+                        callbackTmp(null, result);
+                        return;
                     }
+                    var row = rows[0];
+                    try{
+                        var courses = JSON.parse(row.courses);
+                        result = syllabusService.getNextCourseMap(courses, date);
+                    }catch(e){}
+                    callbackTmp(null, result);
+                });
+            }
+        },
+        function(err, results) {
+            var result = [], resultTmp = null, courseTmp = null, lecturerIdTmp = null;
+            var coursesMap = results.courses;
+            var lecturerMap = results.lecturers;
+            if(lecturerIds){
+                for(var i = 0, lenI = lecturerIds.length; i < lenI; i++){
+                    lecturerIdTmp = lecturerIds[i];
+                    resultTmp = {
+                        date : 0,
+                        startTime : "",
+                        endTime : "",
+                        lecturerId : lecturerIdTmp,
+                        lecturer : "",
+                        courseType : "",
+                        title : "",
+                        avatar : ""
+                    };
+                    if(coursesMap.hasOwnProperty(lecturerIdTmp)){
+                        courseTmp = coursesMap[lecturerIdTmp];
+                        resultTmp.date       = courseTmp.date;
+                        resultTmp.startTime  = courseTmp.startTime;
+                        resultTmp.endTime    = courseTmp.endTime;
+                        resultTmp.lecturer   = courseTmp.lecturer;
+                        resultTmp.courseType = courseTmp.courseType;
+                        resultTmp.title      = courseTmp.title;
+                    }
+                    if(lecturerMap.hasOwnProperty(lecturerIdTmp)){
+                        resultTmp.avatar     = lecturerMap[lecturerIdTmp].avatar;
+                        resultTmp.lecturer     = lecturerMap[lecturerIdTmp].userName;
+                    }
+                    result.push(resultTmp);
                 }
-            }catch(e){}
-            //填充分析师头像
-            syllabusService.fillLecturerInfo(result, function(courseArr){
-                callback(courseArr);
-            });
+                callback(result);
+            }else{
+                for(var lecturerId in coursesMap){
+                    result.push(coursesMap[lecturerId]);
+                }
+                //填充分析师头像
+                syllabusService.fillLecturerInfo(result, function(courseArr){
+                    callback(courseArr);
+                });
+            }
+        });
+    },
+
+    /**
+     * 获取分析师信息Map
+     */
+    getLecturerInfoMap : function(lecturerIds, callback){
+        var result = {};
+        if(!lecturerIds || lecturerIds.length == 0){
+            callback(result);
+            return;
+        }
+        boUser.find({
+            'userNo':{$in : lecturerIds},
+            'status':0,
+            'valid':1
+        }, "_id userNo userName avatar" , function(err, rows){
+            if(err || !rows || rows.length == 0){
+                callback(result);
+                return;
+            }
+            var row;
+            for(var i = 0,lenI = rows.length; i < lenI; i++){
+                row = rows[i];
+                result[row.userNo] = row.toObject();
+            }
+            callback(result);
         });
     },
 
