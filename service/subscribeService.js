@@ -211,6 +211,7 @@ var subscribeService = {
                     templateParam = {
                         time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
                         teacherName : data.authName,
+                        typeLabel : data.tag == "resting_order" ? "挂单" : "喊单",
                         content : data.content,
                         shoutSingleList : []
                     };
@@ -320,6 +321,7 @@ var subscribeService = {
                     templateCode = "ShoutSingleStrategy";
                     templateParam = {
                         teacherName : data.authName,
+                        typeLabel : data.tag == "resting_order" ? "挂单" : "喊单",
                         shoutSingleList : []
                     };
                     //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
@@ -481,6 +483,10 @@ var subscribeService = {
                 case "shout_single":
                     result = subscribeService.subscribeType.shoutTrade;
                     break;
+
+                case "resting_order":
+                    result = subscribeService.subscribeType.shoutTrade;
+                    break;
             }
         }
         return result;
@@ -507,6 +513,7 @@ var subscribeService = {
         result.authName = authName || "";
         result.remark = articleDetail.remark || "";
         result.content = articleDetail.content || "";
+        result.tag = articleDetail.tag || "";
         return result;
     }
 };
