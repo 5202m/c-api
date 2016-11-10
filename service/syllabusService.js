@@ -672,7 +672,7 @@ var syllabusService = {
             loc_courseDate = loc_courseDate.getTime() + (tmpDay - currDay) * 86400000;
             for(k in timeBuckets){
                 tmBk=timeBuckets[k];
-                if(tmpDay == currDay && tmBk.endTime <= currTime){
+                if(tmpDay == currDay && tmBk.startTime <= currTime){
                     continue;
                 }
                 courseObj = tmBk.course[i];
