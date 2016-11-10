@@ -17,6 +17,7 @@ var EmailService = require('../../service/emailService');
 var articleService = require('../../service/articleService');
 var ApiResult = require('../../util/ApiResult');
 var errorMessage = require('../../util/errorMessage.js');
+var Redirect4FXAPI = require('./redirect4FXAPI.js');
 
 /**
  * 提取24k报价数据
@@ -149,6 +150,10 @@ router.get("/getCourse", function(req, res) {
         res.json(ApiResult.result(errorMessage.code_1000, null));
         return;
     }
+    if(Redirect4FXAPI.needRedirect4Fxstudio(req, loc_params.groupType)){
+        Redirect4FXAPI.redirect(req, res);
+        return;
+    }
     //查询课程安排
     SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), loc_params.flag, function(apiResult){
         res.json(apiResult);
@@ -174,6 +179,10 @@ router.get("/getNextCourses", function(req, res) {
     }
     if(!loc_params.groupType || !loc_params.groupId){
         res.json(null);
+        return;
+    }
+    if(Redirect4FXAPI.needRedirect4Fxstudio(req, loc_params.groupType)){
+        Redirect4FXAPI.redirect(req, res);
         return;
     }
     if(loc_params.analystIds) {
