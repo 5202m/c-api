@@ -1,10 +1,8 @@
-#!/usr/bin/env node
-
 var mongoose = require('mongoose');
 var logger = require('../resources/logConf');
 var config=require('../resources/config');
-
-logger.initConfig("pm_task");//配置框架日志输出
+//配置框架日志输出
+logger.initConfig("pm_task");
 /*＃＃＃＃＃＃＃＃＃＃数据库连接配置＃＃＃＃＃＃＃＃begin */
 var dboptions = {
     server: {auto_reconnect: true, poolSize: 5 },
