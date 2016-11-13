@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 var mongoose = require('mongoose');
 var logger = require('../resources/logConf');
 var config=require('../resources/config');
