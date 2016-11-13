@@ -13,7 +13,7 @@ mongoose.connect(config.dbURL,dboptions);
 /*＃＃＃＃＃＃＃＃＃＃数据库连接配置＃＃＃＃＃＃＃＃end */
 
 /**
- * PM定时任务，请勿使用集群
+ * PM定时任务,请勿使用集群
  * @type {taskService|exports}
  */
 var taskService = require('../service/taskService');
