@@ -206,7 +206,7 @@ var subscribeService = {
                     }catch(e){
                     }
                 }
-                if(attachDataArr && attachDataArr.length > 0){
+                if(attachDataArr){
                     templateCode = "ShoutSingleStrategy";
                     templateParam = {
                         time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
@@ -216,7 +216,7 @@ var subscribeService = {
                         shoutSingleList : []
                     };
                     //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
-                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
+                    for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
                         templateParam.shoutSingleList.push({
                             name : attachData.name,
@@ -237,7 +237,7 @@ var subscribeService = {
                     }catch(e){
                     }
                 }
-                if(attachDataArr && attachDataArr.length > 0){
+                if(attachDataArr){
                     templateCode = "TradingStrategy";
                     templateParam = {
                         time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
@@ -245,12 +245,13 @@ var subscribeService = {
                         content : data.content,
                         varietyList : []
                     };
-                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456"}
-                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
+                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456","drag_level":"123456"}
+                    for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
                         templateParam.varietyList.push({
                             variety : attachData.name,
-                            support : attachData.support_level
+                            support : attachData.support_level,
+                            drag    : attachData.drag_level
                         });
                     }
                 }
@@ -352,12 +353,13 @@ var subscribeService = {
                         teacherName : data.authName,
                         varietyList : []
                     };
-                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456"}
+                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456","drag_level":"123456"}
                     for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
                         templateParam.varietyList.push({
                             variety : attachData.name,
-                            support : attachData.support_level
+                            support : attachData.support_level,
+                            drag    : attachData.drag_level
                         });
                     }
                 }
