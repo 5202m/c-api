@@ -29,6 +29,22 @@ exports.initConfig = function(appName){
             },
             replaceConsole: true   //替换console.log
         });
+    }else if("pm_socket" === appName){
+        //配置日志格式
+        log4js.configure({
+            appenders: [
+                {//控制台输出
+                    type: 'console'
+                },
+                {//日志文件输出
+                    type: "dateFile",
+                    filename: 'logs/pm_socket.log',
+                    pattern: "_yyyy-MM-dd",//日期文件格式
+                    alwaysIncludePattern: true  //当天的日志文件名是否加上日期
+                }
+            ],
+            replaceConsole: true   //替换console.log
+        });
     }else{
         //配置日志格式
         log4js.configure({

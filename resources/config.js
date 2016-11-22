@@ -43,7 +43,8 @@ var config = {
     messagePush : {appKey:'c139eac92b28b05be7d54d95',masterSecret:'bf11c36cdc35a7b52ee1131e'}, //消息推送
     fxgoldApiUrl: "http://api.fxgold.com",  //金汇财经接口
     web24k: "http://www.24k.hk/public/datas", //24k数据公用host前缀
-    fx678ApiUrl:"http://unews.fx678.com"
+    fx678ApiUrl:"http://unews.fx678.com",
+    noticeSocketClient:"http://localhost:3007" // socket客户端
 };
 //导出常量类
 module.exports =config;
