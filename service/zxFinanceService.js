@@ -21,6 +21,7 @@ var Config=require('../resources/config.js');
 var Utils = require('../util/Utils');
 var Common = require('../util/common');
 var CacheClient=require('../cache/cacheClient');
+var noticeService = require('./noticeService');
 
 var zxFinanceService = {
     /**
@@ -892,7 +893,7 @@ var zxFinanceService = {
                     return dataDb
                         && dataDb.basicIndexId == dataApi.basicIndexId;
                 };
-                var i, lenI, dataApi, dataDbIndex, dataDb;
+                var i, lenI, dataApi, dataDbIndex, dataDb,isPush=false;
                 var newDatas = [];
                 var currDate = new Date();
                 for(i = 0, lenI = !results.api ? 0 : results.api.length; i < lenI; i++){
@@ -907,6 +908,7 @@ var zxFinanceService = {
                     }else{
                         dataDb = results.db[dataDbIndex];
                         results.db[dataDbIndex] = null; //标记已经处理
+                        isPush = dataDb && dataDb.importanceLevel == 5 && (dataDb.predictValue != dataApi.predictValue || dataDb.lastValue != dataApi.lastValue || dataDb.value != dataApi.value);
                         dataDb = zxFinanceService.refreshData(dataDb, dataApi);
                         //数据更新的直接用现有数据更新描述，不需要查询配置信息，因为配置更新的时候会更新所有数据
                         dataDb.description = zxFinanceService.getDescription(dataDb);
@@ -920,6 +922,9 @@ var zxFinanceService = {
                                 Logger.error("importDataFromFxGold <<1<< 保存财经数据出错: " + err);
                             }
                         });
+                        if(isPush){
+                            zxFinanceService.pushFinanceData(dataDb);
+                        }
                     }
                 }
                 //针对所有未处理数据库中的财经数据，状态标记
@@ -976,6 +981,9 @@ var zxFinanceService = {
                             configTmp.valid           = newDataTmp.valid;
                             newConfigs.push(configTmp);
                             configs[configTmp._id] = configTmp;
+                        }
+                        if(newDataTmp.importanceLevel == 5){
+                            zxFinanceService.pushFinanceData(newDataTmp);
                         }
                     }
                     //批量保存配置信息
@@ -1092,6 +1100,14 @@ var zxFinanceService = {
             }
             callback(true);
         });
+    },
+    /**
+     * 推送财经日历数据
+     * @param type
+     * @param data
+     */
+    pushFinanceData:function(data){
+        noticeService.send('financeData', data);
     }
 };
 
