@@ -895,7 +895,7 @@ var zxFinanceService = {
                 };
                 var i, lenI, dataApi, dataDbIndex, dataDb,isPush=false;
                 var newDatas = [];
-                var currDate = new Date();
+                var currDate = new Date(), currDateStr = Common.formatterDate(currDate,'-');
                 for(i = 0, lenI = !results.api ? 0 : results.api.length; i < lenI; i++){
                     dataApi = results.api[i];
                     dataDbIndex = Common.searchIndexArray(results.db, dataApi, compareFn);
@@ -908,7 +908,7 @@ var zxFinanceService = {
                     }else{
                         dataDb = results.db[dataDbIndex];
                         results.db[dataDbIndex] = null; //标记已经处理
-                        isPush = dataDb && dataDb.importanceLevel == 5 && (dataDb.predictValue != dataApi.predictValue || dataDb.lastValue != dataApi.lastValue || dataDb.value != dataApi.value);
+                        isPush = dataDb && dataDb.importanceLevel == 5 && dataDb.date == currDateStr && (dataDb.predictValue != dataApi.predictValue || dataDb.lastValue != dataApi.lastValue || dataDb.value != dataApi.value);
                         dataDb = zxFinanceService.refreshData(dataDb, dataApi);
                         //数据更新的直接用现有数据更新描述，不需要查询配置信息，因为配置更新的时候会更新所有数据
                         dataDb.description = zxFinanceService.getDescription(dataDb);
@@ -982,7 +982,7 @@ var zxFinanceService = {
                             newConfigs.push(configTmp);
                             configs[configTmp._id] = configTmp;
                         }
-                        if(newDataTmp.importanceLevel == 5){
+                        if(newDataTmp.importanceLevel == 5 && newDataTmp.date == currDateStr){
                             zxFinanceService.pushFinanceData(newDataTmp);
                         }
                     }
