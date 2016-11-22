@@ -79,6 +79,13 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
             res.json(ApiResult.result(errorMessage.code_1000));
         }
     }else{
+        if("class_note" == params.code){ //官网请求直播精华，应用位置直接修改为普通房间的直播精华（特殊处理）
+            if("24k_web" == params.platform || "24k_mobile" == params.platform){
+                params.platform = constant.studioDefRoom.studio
+            }else if("gwfx_web" == params.platform || "gwfx_mobile" == params.platform){
+                params.platform = constant.studioDefRoom.fxstudio
+            }
+        }
         articleService.getArticlePage(params,function(page){
             if(req.path.indexOf('.xml')!=-1){
                 res.end(ApiResult.result(null,page,ApiResult.dataType.xml));
