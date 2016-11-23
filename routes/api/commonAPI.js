@@ -138,7 +138,8 @@ router.get("/getCourse", function(req, res) {
         platform : req.query["platform"],
         groupType : req.query["groupType"],
         groupId : req.query["groupId"],
-        flag : req.query["flag"]
+        flag : req.query["flag"],
+        strategy : req.query["strategy"] == 1
     };
     var cfg = constant.studioThirdUsed.getConfig(loc_params.type, loc_params.platform);
     if(cfg){
@@ -155,7 +156,7 @@ router.get("/getCourse", function(req, res) {
         return;
     }
     //查询课程安排
-    SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), loc_params.flag, function(apiResult){
+    SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), loc_params.flag, loc_params.strategy, function(apiResult){
         res.json(apiResult);
     });
 });

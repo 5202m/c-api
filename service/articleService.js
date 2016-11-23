@@ -18,6 +18,38 @@ var async = require('async');//引入async
  */
 var articleService = {
     /**
+     * 查询单个文档信息（按照创建时间逆序）
+     * @param code
+     * @param platform
+     * @param isAll
+     */
+    findArticle : function(code, platform, isAll, callback){
+        var searchObj = {
+            valid:1,
+            platform:commonJs.getSplitMatchReg(platform),
+            status:1,
+            categoryId:code
+        };
+        if(!isAll){
+            var currDate=new Date();
+            searchObj.publishStartDate = {"$lte":currDate};
+            searchObj.publishEndDate = {"$gte":currDate};
+        }
+        article.find(searchObj)
+            .sort({"createDate":-1})
+            .limit(1)
+            .exec('find', function(err,articles) {
+                if(err || !articles || articles.length == 0){
+                    if(err){
+                        logger.error(err);
+                    }
+                    callback(null);
+                }else{
+                    callback(articles[0]);
+                }
+            });
+    },
+    /**
      * 根据栏目code-->提取文档资讯列表
      * @param params {{platform, code, isAll, lang, hasContent, authorId, orderByJsonStr, pageNo, pageSize, pageLess, pageKey}}
      * @param callback
@@ -27,7 +59,7 @@ var articleService = {
             valid:1,
             platform:commonJs.getSplitMatchReg(params.platform),
             status:1
-        },selectField="";
+        };
         if(params.code.indexOf(",")!=-1){
             searchObj.categoryId = {$in:params.code.split(",")};
         }else{
@@ -45,7 +77,7 @@ var articleService = {
                 searchObj._id = {"$gt" : params.pageKey};
             }
         }
-        selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate praise downloads point";
+        var selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate praise downloads point";
         if(commonJs.isBlank(params.lang)){
             if("1"==params.hasContent){
                 selectField+=" detailList";
