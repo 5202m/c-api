@@ -14,7 +14,7 @@ var noticeService ={
         if(noticeService.socket==null) {
             try {
                 noticeService.socket = require('socket.io-client')(Config.noticeSocketClient);
-                socket.on('disconnect', function (socket) {
+                noticeService.socket.on('disconnect', function (socket) {
                     logger.info('socket.io-client disconnect');
                     noticeService.socket = null;
                 });
