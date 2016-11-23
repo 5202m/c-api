@@ -1,6 +1,7 @@
 var chatSyllabus = require('../models/chatSyllabus');//引入chatSyllabus数据模型
 var chatSyllabusHis = require('../models/chatSyllabusHis');//引入chatSyllabusHis数据模型
 var boUser = require('../models/boUser');//引入boUser数据模型
+var ArticleService = require('../service/articleService');//引入ArticleService服务类
 var logger=require('../resources/logConf').getLogger('syllabusService');//引入log4js
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
 var Utils = require('../util/Utils'); 	 	            //引入工具类js
@@ -48,10 +49,11 @@ var syllabusService = {
      * @param groupType
      * @param groupId
      * @param today
-     * @param single
+     * @param flag
+     * @param strategy
      * @param callback
      */
-    getCourse : function(groupType, groupId, today, flag, callback){
+    getCourse : function(groupType, groupId, today, flag, strategy, callback){
         groupId = groupId || "";
         APIUtil.DBFind(chatSyllabus, {
             query : {
@@ -82,7 +84,13 @@ var syllabusService = {
                     }
                     //补充课程表信息（分析师头像）
                     syllabusService.fillLecturerInfo(loc_result, function(courseArr){
-                        callback(ApiResult.result(null, courseArr));
+                        if(strategy){
+                            syllabusService.fillArticleIfo(groupId, courseArr, function(courseArr){
+                                callback(ApiResult.result(null, courseArr));
+                            });
+                        }else{
+                            callback(ApiResult.result(null, courseArr));
+                        }
                     });
                     return;
                 }else if(flag=='D'){
@@ -315,6 +323,29 @@ var syllabusService = {
                 }
                 delete courseTmp["userNoArr"];
                 courseTmp.avatar = avatarArr.join(",");
+            }
+            callback(courseArr);
+        });
+    },
+
+    /**
+     * 填充交易策略信息
+     * @param groupId
+     * @param courseArr 特别注意只会对单个课程信息填充策略
+     * @param callback
+     */
+    fillArticleIfo : function(groupId, courseArr, callback){
+        if(!courseArr || courseArr.length == 0){
+            callback(courseArr);
+            return;
+        }
+        var course = courseArr[0];
+        var tagRegAll = /<[^>]+>|<\/[^>]+>/g;
+        ArticleService.findArticle("trade_strategy_article", groupId, false, function(article){
+            if(article && article.detailList && article.detailList.length > 0){
+                var articleDetail = article.detailList[0];
+                course.strategyTitle = articleDetail.title || "";
+                course.strategyContent = (articleDetail.content || "").replace(tagRegAll, "");
             }
             callback(courseArr);
         });
