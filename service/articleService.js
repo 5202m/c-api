@@ -155,9 +155,9 @@ var articleService = {
                 article.praise = article.praise || 0;
                 if(detail){
                     //基本信息
-                    author = detail.authorInfo;
-                    article.title = detail.title;
-                    article.tag = detail.tag;
+                    author = detail.authorInfo || {};
+                    article.title = detail.title || "";
+                    article.tag = detail.tag || "";
                     //内容
                     content = detail.content || "";
                     contentImg = "";
@@ -170,10 +170,10 @@ var articleService = {
                     article.contentImg = contentImg;
                     //作者
                     if(author){
-                        article.authorId = author.userId;
-                        article.authorAvatar = author.avatar;
-                        article.authorPosition = author.position;
-                        article.authorName = author.name;
+                        article.authorId = author.userId || "";
+                        article.authorAvatar = author.avatar || "";
+                        article.authorPosition = author.position || "";
+                        article.authorName = author.name || "";
                     }
                 }
                 delete article["detailList"];
