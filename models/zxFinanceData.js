@@ -48,6 +48,22 @@ var ZxFinanceDataSchema = new Schema({
     createDate : {type : Date, default : new Date()},
     updateUser : String,
     updateIp : String,
-    updateDate : {type : Date, default : new Date()}
+    updateDate : {type : Date, default : new Date()},
+    comments : [
+        {
+            _id : ObjectId,
+            userId : String,
+            userName : String,
+            avatar : String,
+            comment : String,
+            valid : Number,// 是否有效(0：无效 1：有效)
+            createUser : String,
+            createIp : String,
+            createDate : {type : Date, default : new Date()},
+            updateUser : String,
+            updateIp : String,
+            updateDate : {type : Date, default : new Date()}
+        }
+    ]
 });
 module.exports = mongoose.model('zxFinanceData',ZxFinanceDataSchema,"zxFinanceData");
