@@ -29,7 +29,7 @@ router.post('/zxFinanceReviewNotice',function(req, res){
             res.json(result);
             return;
         }
-        noticeService.send('financeReview',{'review':data, 'finance':financeData});
+        noticeService.send('financeData',{'review':data, 'finance':financeData});
         result.isOK = true;
     }
     res.json(result);

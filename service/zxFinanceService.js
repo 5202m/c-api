@@ -1107,7 +1107,7 @@ var zxFinanceService = {
      * @param data
      */
     pushFinanceData:function(data){
-        noticeService.send('financeData', data);
+        noticeService.send('financeData', {'review' : null, 'finance' : data});
     }
 };
 
