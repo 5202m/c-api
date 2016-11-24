@@ -17,7 +17,7 @@ var socketService ={
             socket.on('disconnect',function(data){
             });
             socket.on('API-notice',function(data){
-                socket.broadcast.emit('notice',data);
+                socket.broadcast.emit(data.type, data.data);
             });
         });
     }
