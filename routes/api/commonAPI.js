@@ -18,6 +18,7 @@ var articleService = require('../../service/articleService');
 var ApiResult = require('../../util/ApiResult');
 var errorMessage = require('../../util/errorMessage.js');
 var Redirect4FXAPI = require('./redirect4FXAPI.js');
+var ZxFinanceService = require('../../service/zxFinanceService.js');
 
 /**
  * 提取24k报价数据
@@ -341,6 +342,15 @@ router.post('/modifyArticle', function(req, res){
     }
     articleService.modifyPraiseOrDownloads(_id, type, function(apiResult){
         res.json(apiResult);
+    });
+});
+
+/**
+ * 获取财经日历最后点评的数据
+ */
+router.get('/getLastReview', function(req, res){
+    ZxFinanceService.getFinanceDataLastReview(function(data){
+        res.json(data);
     });
 });
 

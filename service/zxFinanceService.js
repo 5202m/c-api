@@ -1108,6 +1108,24 @@ var zxFinanceService = {
      */
     pushFinanceData:function(data){
         noticeService.send('financeData', {'review' : null, 'finance' : data});
+    },
+
+    /**
+     * 获取最后点评的数据
+     * @param callback
+     */
+    getFinanceDataLastReview:function(callback){
+        var searchObj = {"importanceLevel":{$in : [4,5]},"valid" : 1};
+        ZxFinanceData.find(searchObj).sort({"comments.createDate":-1}).limit(1).exec('find', function(err,data) {
+            if(err || !data || data.length == 0){
+                if(err){
+                    Logger.error(err);
+                }
+                callback(null);
+            }else{
+                callback(data[0]);
+            }
+        });
     }
 };
 

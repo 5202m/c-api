@@ -121,4 +121,13 @@ router.get('/refresh', function(req, res) {
     }
 });
 
+/**
+ * 获取最后点评的数据
+ */
+router.get('/getLastReview', function(req, res){
+    ZxFinanceService.getFinanceDataLastReview(function(data){
+        res.json(data);
+    });
+});
+
 module.exports = router;
