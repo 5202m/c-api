@@ -1,6 +1,7 @@
 /**
  * Created by Administrator on 2015/3/4.
  */
+var uniqueValidator = require('mongoose-unique-validator');
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , ObjectId = Schema.ObjectId
@@ -75,4 +76,5 @@ var mongoose = require('mongoose')
             }
         }
     });
+memberSchema.plugin(uniqueValidator);
 module.exports = mongoose.model('member',memberSchema,"member");

@@ -16,6 +16,7 @@
     "jpush-sdk": "^3.2.1",
     "log4js": "^0.6.24",
     "mongoose": "^4.0.2",
+    "mongoose-unique-validator":"1.0.3",
     "node-schedule": "^0.2.6",
     "node-uuid": "^1.4.3",
     "redis": "^0.12.1",
