@@ -269,7 +269,7 @@ var subscribeService = {
             };
             emailData.sign = Common.getMD5(emailData.accountSid + config.token + emailData.timestamp);
 
-            logger.info("<<doSendSms:发送邮件通知：content=[%s]", JSON.stringify(emailData));
+            //logger.info("<<doSendSms:发送邮件通知：content=[%s]", JSON.stringify(emailData));
             Request.post(Config.utm.emailUrl, function (error, response, data) {
                 if (error || response.statusCode != 200 || !data) {
                     logger.error("<<doSendSms:发送通知邮件异常，errMessage:", error);
