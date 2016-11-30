@@ -15,13 +15,17 @@ var config = {
     utm : {
         smsUrl : "http://testweboa.gwfx.com:8088/GwUserTrackingManager_NEW/smsTemplate/send", //http://das.gwfx.com/smsTemplate/send
         emailUrl : "http://testweboa.gwfx.com:8088/GwUserTrackingManager_NEW/emailTemplate/send", //http://das.gwfx.com/emailTemplate/send
+        studio : {
+            sid : "fa573c78eaa8402cb6c84dabfcce7159",
+            token : "8867af2616da47d7927ff0df7ea60669"
+        },
         fxstudio : {
             sid : "fa573c78eaa8402cb6c84dabfcce7158",
             token : "8867af2616da47d7927ff0df7ea60668"
         },
-        studio : {
-            sid : "fa573c78eaa8402cb6c84dabfcce7159",
-            token : "8867af2616da47d7927ff0df7ea60669"
+        hxstudio : {
+            sid : "fa573c78eaa8402cb6c84dabfcce7160",
+            token : "8867af2616da47d7927ff0df7ea60670"
         }
     },
     //图片等文件访问域名
