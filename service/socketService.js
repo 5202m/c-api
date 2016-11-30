@@ -10,13 +10,14 @@ var socketService ={
      * @param server
      */
     setSocket: function (server) {
-        console.log('socket starting');
+        logger.info('socket starting');
         socketService.socket=require('socket.io')(server);
         socketService.socket.on('connection', function(socket){
             //断开连接
             socket.on('disconnect',function(data){
             });
             socket.on('API-notice',function(data){
+                logger.info("socket info from task[API-notice]:", JSON.stringify(data));
                 socket.broadcast.emit(data.type, data.data);
             });
         });

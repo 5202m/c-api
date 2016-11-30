@@ -31,9 +31,10 @@ var noticeService ={
     send:function(type, data){
         noticeService.init();
         try {
+            logger.info('noticeService.send[API-notice]:', JSON.stringify({type: type, data: data}));
             noticeService.socket.emit('API-notice', {type: type, data: data});
         }catch(e){
-            logger.error('noticeService.send:'+e);
+            logger.error('noticeService.send error:'+e);
         }
     }
 };
