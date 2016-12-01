@@ -908,7 +908,7 @@ var zxFinanceService = {
                     }else{
                         dataDb = results.db[dataDbIndex];
                         results.db[dataDbIndex] = null; //标记已经处理
-                        isPush = dataDb && (dataDb.importanceLevel == 4 || dataDb.importanceLevel == 5) && dataDb.date == currDateStr && dataDb.value != dataApi.value;
+                        isPush = dataDb && dataDb.date == currDateStr && dataDb.value != dataApi.value;
                         dataDb = zxFinanceService.refreshData(dataDb, dataApi);
                         //数据更新的直接用现有数据更新描述，不需要查询配置信息，因为配置更新的时候会更新所有数据
                         dataDb.description = zxFinanceService.getDescription(dataDb);
@@ -982,7 +982,7 @@ var zxFinanceService = {
                             newConfigs.push(configTmp);
                             configs[configTmp._id] = configTmp;
                         }
-                        if((newDataTmp.importanceLevel == 4 || newDataTmp.importanceLevel == 5) && newDataTmp.date == currDateStr && Common.isValid(newDataTmp.value)){
+                        if(newDataTmp.date == currDateStr && Common.isValid(newDataTmp.value)){
                             zxFinanceService.pushFinanceData(newDataTmp);
                         }
                     }
@@ -1115,7 +1115,7 @@ var zxFinanceService = {
      * @param callback
      */
     getFinanceDataLastReview:function(callback){
-        var searchObj = {"importanceLevel":{$in : [4,5]},"valid" : 1};
+        var searchObj = {"valid" : 1};
         ZxFinanceData.find(searchObj).sort({"comments.createDate":-1}).limit(1).exec('find', function(err,data) {
             if(err || !data || data.length == 0){
                 if(err){

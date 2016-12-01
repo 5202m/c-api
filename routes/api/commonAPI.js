@@ -201,13 +201,12 @@ router.get("/getNextCourses", function(req, res) {
  */
 router.get("/bakSyllabus", function(req, res) {
     var date = req.query["date"];
-    var timezoneOffset = new Date().getTimezoneOffset() * 60000;
     if(date){
-        date = new Date(date).getTime();
-        date = new Date(date - (date % 86400000) + timezoneOffset);
+        date = new Date(date);
+        date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     }else{//默认备份前一天课程表
-        date = new Date().getTime();
-        date = new Date(date - (date % 86400000) - 86400000 + timezoneOffset);
+        date = new Date();
+        date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
     }
     SyllabusService.bakSyllabus(date, function(isOK){
         res.json(ApiResult.result(null, isOK));

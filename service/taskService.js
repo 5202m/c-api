@@ -55,9 +55,9 @@ var taskService = {
 
         var ruleSpecial = new Schedule.RecurrenceRule();
         ruleSpecial.minute=[0,29,30,59];
-        ruleSpecial.second=[5,15,25,35,45,55];
+        ruleSpecial.second=[5,10,15,25,30,35,45,50,55];
         Schedule.scheduleJob(ruleSpecial, function(){
-            logger.info("【定时任务】财经日历:特殊时间段（半点、整点）每10秒更新当天数据!");
+            logger.info("【定时任务】财经日历:特殊时间段（半点、整点）每5秒更新当天数据!");
             var dateToday = [Utils.dateFormat(new Date(), "yyyy-MM-dd")];
             ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
                 logger.debug("【定时任务】财经日历更新当天数据" + (isOK ? "成功" : "失败"));
@@ -65,9 +65,9 @@ var taskService = {
         });
 
         var ruleToday = new Schedule.RecurrenceRule();
-        ruleToday.second=0;
+        ruleToday.second=[0, 20, 40];
         Schedule.scheduleJob(ruleToday, function(){
-            logger.info("【定时任务】财经日历:每1分钟更新当天数据!");
+            logger.info("【定时任务】财经日历:每半分钟更新当天数据!");
             var dateToday = [Utils.dateFormat(new Date(), "yyyy-MM-dd")];
             ZxFinanceService.importDataFromFxGold(dateToday,function(isOK){
                 logger.debug("【定时任务】财经日历更新当天数据" + (isOK ? "成功" : "失败"));
@@ -178,8 +178,8 @@ var taskService = {
         ruleBefore.second=0;
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】课程表：每天备份前一天的课程表历史!");
-            var date = new Date().getTime();
-            date = new Date(date - (date % 86400000) - 115200000);
+            var date = new Date();
+            date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
             SyllabusService.bakSyllabus(date, function(isOK){
                 logger.debug("【定时任务】每天备份前一天的课程表历史" + (isOK ? "成功" : "失败"));
             });
