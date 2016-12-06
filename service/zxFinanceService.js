@@ -1115,7 +1115,7 @@ var zxFinanceService = {
      * @param callback
      */
     getFinanceDataLastReview:function(callback){
-        var searchObj = {"valid" : 1};
+        var searchObj = {"valid" : 1,"date":Common.formatterDate(new Date, '-')};
         ZxFinanceData.find(searchObj).sort({"comments.createDate":-1}).limit(1).exec('find', function(err,data) {
             if(err || !data || data.length == 0){
                 if(err){
