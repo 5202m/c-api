@@ -1,5 +1,6 @@
 var logger = require('../resources/logConf').getLogger("noticeService");
 var Config = require('../resources/config');
+var Common = require('../util/common');
 /**
  * 财经日历信息推送服务类
  * author Alan.wu
@@ -36,6 +37,38 @@ var noticeService ={
         }catch(e){
             logger.error('noticeService.send error:'+e);
         }
+    },
+
+    /**
+     * 推送消息到APP
+     */
+    pushToApps : function(platTypeKey, msgObj, callback){
+        if(Config.gwApiOauthKeys.hasOwnProperty(platTypeKey) == false){
+            logger.error("pushToApps << config is error." + platTypeKey);
+            callback(false, null);
+        }
+        var params = {
+            token : "",
+            timeStamp : new Date().getTime(),
+            platTypeKey : platTypeKey,
+            platAccount : "",
+            msg : JSON.stringify(msgObj)
+        };
+        params.token = Common.getMD5(params.platAccount + Config.gwApiOauthKeys[platTypeKey] + params.timestamp);
+
+        request.post({strictSSL:false,url:(Config.gwApiUrl+'/restmsg/pushmsg.json'),form:params}, function(error,response,data){
+            if(error){
+                logger.error("pushToApps << has error:"+error);
+                callback(false, null);
+            }else{
+                try {
+                    callback(true, data ? JSON.parse(data) : null);
+                }catch(e){
+                    logger.error("pushToApps << has error:"+e);
+                    callback(false, null);
+                }
+            }
+        });
     }
 };
 //导出服务类

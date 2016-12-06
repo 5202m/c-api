@@ -70,14 +70,14 @@ router.get('/getNewsInfoList', function(req, res) {
     }else{
         var time=Date.now();
         var md5 = crypto.createHash('md5');
-        var gwApiAuthorKey='YHJK786sdbbmkyusd';//授权码
+        var gwApiAuthorKey=config.gwApiOauthKeys.web24k;//授权码
         md5.update(gwApiAuthorKey+time);
         var token=md5.digest('hex');
         var param={token:token,platTypeKey:'web24k',timeStamp:time,lang:'zh',contenttype1:contentType1,siteflg:1,pageno:pageNo,pagesize:pageSize};
         if(common.isValid(contentType2)){
             param.contenttype2=contentType2;
         }
-        request.post({strictSSL:false,url:(config.gwApiUrl+'/information/list'),form:param}, function(error,response,data){
+        request.post({strictSSL:false,url:(config.gwApiUrl+'/restweb/information/list'),form:param}, function(error,response,data){
             if(error){
                 logger.error("getNewsInfoList has error:"+error);
                 res.json(null);
@@ -108,13 +108,13 @@ router.get('/getBroadStrateList', function(req, res) {
         var md5 = crypto.createHash('md5');
         var gwApiAuthorKey='',siteflg=0;
         if("web24k"==platform){
-            gwApiAuthorKey='YHJK786sdbbmkyusd';//授权码
+            gwApiAuthorKey=config.gwApiOauthKeys.web24k;//授权码
             siteflg=1;
         }
         md5.update(gwApiAuthorKey+time);
         var token=md5.digest('hex');
         var param={token:token,platTypeKey:platform,timeStamp:time,lang:lang,datestr:dateStr,siteflg:siteflg};
-        request.post({strictSSL:false,url:(config.gwApiUrl+'/broadcast/index.json'),form:param}, function(error,response,data){
+        request.post({strictSSL:false,url:(config.gwApiUrl+'/restweb/broadcast/index.json'),form:param}, function(error,response,data){
             if(error){
                 logger.error("getBroadStrateList has error:"+error);
                 res.json(null);

@@ -1126,6 +1126,40 @@ var zxFinanceService = {
                 callback(data[0]);
             }
         });
+    },
+
+    /**
+     * 推送到APP
+     * @param data
+     * @param reviewData
+     */
+    pushToApps : function(data, reviewData){
+        var pushObj = {
+            dataid : 0,
+            lang : "zh",
+            title : data.country + data.name,
+            content : "",
+            type : "2#5",
+            channel : "PCUI:2|WEBUI:2|IPHONE:3|ANDROID:3",
+            toclient : "*", //全部设备
+            sendtime : "",  //立即发送
+            url : ""
+        };
+        if(!reviewData){// 公布数据
+            pushObj.content = "预期值:" + (data.predictValue || "--") + "; "
+                + "前值:" + (data.lastValue || "--") + "; "
+                + "公布值:" + (data.value || "--") + "。";
+        }else{// 点评数据
+            pushObj.content = "预期值:" + (data.predictValue || "--") + "、 "
+                + "前值:" + (data.lastValue || "--") + "、 "
+                + "公布值:" + (data.value || "--") + "; "
+                + (data.userName || "") + "点评:"
+                + (data.comment || "") + "。";
+        }
+        if(pushObj.content){
+            //TODO 推送给Android
+            noticeService.pushToApps("andrapp", pushObj, function(isOk, resultObj){});
+        }
     }
 };
 

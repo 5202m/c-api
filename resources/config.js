@@ -6,7 +6,14 @@ var config = {
     redisUrlObj:{ host: '192.168.35.236', port: 6379 },				//链接redis缓存客户端连接
     webUiUrl:'http://192.168.9.72:5555/webui_login_token.ucs',//webUI对应token地址
     web24kPriceUrl:'http://www.24k.hk/public/datas/24k_price.xml',
-    gwApiUrl:'https://192.168.35.236:8443/GwAPI_SIT/restweb',//gwApi地址
+    gwApiUrl:'https://192.168.35.236:8443/GwAPI_SIT',//gwApi地址
+    gwApiOauthKeys : {
+        "web24k" : "YHJK786sdbbmkyusd",
+        "pcui"   : "kldgdfjdYUiOPweQ",
+        "webui"  : "RTyPgdsebdsedzjkl",
+        "iphapp" : "Nmjjsd85ftiozwd12",
+        "andrapp": "95HjbwtyzhkHDfg7L"
+    },
     smsUrl : {
         pm : 'http://192.168.35.86:4448/SMS_Channel_Send.ucs?phone=${phone}&content=${content}&catalog=others&platform=24K',
         fx : 'http://192.168.75.27:4447/SMS_Channel_Send.ucs?phone=${phone}&content=${content}&catalog=others&platform=FX&country=China',
