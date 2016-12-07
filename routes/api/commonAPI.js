@@ -353,4 +353,86 @@ router.get('/getLastReview', function(req, res){
     });
 });
 
+/**
+ * 多空比例
+ */
+router.get('/getSymbolLongShortRatios', function(req, res){
+    var cacheClient = require('../../cache/cacheClient');
+    var date = new Date();
+    var key = "symbolLongShortRatios";
+    if(common.getHHMM(date)>'11:15'){
+        cacheClient.set(key, null);
+    }
+    cacheClient.get(key, function(err, result){
+        if(err){
+            logger.error("getSymbolLongShortRatios fail:" + err);
+            res.json({code:"FAIL", result:[]});
+        }
+        else if(!result){
+            request(config.symbolLongShortOpenPositionRatios + "/findSymbolLongShortRatios", function(error, response, data){
+                if (!error && data) {
+                    try {
+                        if (typeof data == 'string') {
+                            data = JSON.parse(data);
+                        }
+                        cacheClient.set(key, JSON.stringify(data));
+                        cacheClient.expire(key, 5 * 60);//设置有效时间
+                        res.json(data);
+                    }catch (e){
+                        logger.error("getSymbolLongShortRatios JSON.parse error:" + e);
+                        res.json({code:"FAIL", result:[]});
+                    }
+                }else{
+                    logger.error("getSymbolLongShortRatios has error:" + err);
+                    res.json({code:"FAIL", result:[]});
+                }
+            });
+        }
+        else{
+            res.json(JSON.parse(result));
+        }
+    });
+});
+
+/**
+ * 未平仓品种比率
+ */
+router.get('/getSymbolOpenPositionRatios', function(req, res){
+    var cacheClient = require('../../cache/cacheClient');
+    var date = new Date();
+    var key = "symbolOpenPositionRatios";
+    if(common.getHHMM(date)>'11:15'){
+        cacheClient.set(key, null);
+    }
+    cacheClient.get(key, function(err, result){
+        if(err){
+            logger.error("getSymbolOpenPositionRatios fail:" + err);
+            res.json({code:"FAIL", result:[]});
+        }
+        else if(!result){
+            request(config.symbolLongShortOpenPositionRatios + "/findSymbolOpenPositionRatios", function(error, response, data){
+                if (!error && data) {
+                    try {
+                        if (typeof data == 'string') {
+                            data = JSON.parse(data);
+                        }
+                        cacheClient.set(key, JSON.stringify(data));
+                        cacheClient.expire(key, 5 * 60);//设置有效时间
+                        res.json(data);
+                    }catch (e){
+                        logger.error("getSymbolOpenPositionRatios JSON.parse error:" + e);
+                        res.json({code:"FAIL", result:[]});
+                    }
+                }else{
+                    logger.error("getSymbolOpenPositionRatios has error:" + err);
+                    res.json({code:"FAIL", result:[]});
+                }
+            });
+        }
+        else{
+            res.json(JSON.parse(result));
+        }
+    });
+});
+
 module.exports = router;

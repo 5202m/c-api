@@ -264,6 +264,18 @@ var common = {
                 .getSeconds());
         return datetime;
     },
+    /**
+     * 提取时分
+     */
+    getHHMM:function(date){
+        if(!(date instanceof Date)){
+            date=new Date(date);
+        }
+        var datetime = (date.getHours() < 10 ? "0" + date.getHours() : date.getHours())
+            + ":"
+            + (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes());
+        return datetime;
+    },
 
     /**
      * 时间对象的格式化;
