@@ -185,7 +185,7 @@ var uploadService = {
             if(cfg){
                 for(var i = 0, lenI = !imgs ? 0 : imgs.length; i < lenI; i++){
                     if(uploadService.zipConfigs.hasOwnProperty(op))
-                        ImgUtil.zipImg(imgs[i].path, options);
+                        ImgUtil.zipImg(imgs[i].path, cfg);
                 }
             }
             return true;
