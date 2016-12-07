@@ -39,10 +39,17 @@ router.post('/uploadFile', function (req, res) {
             return;
         }
         var loc_fileDir = fields['fileDir'];
-        if(!loc_fileDir || (!(CommonJS.startsWith(loc_fileDir,Constant.FileDirectory.pic.code) != -1)
-                            && !(CommonJS.startsWith(loc_fileDir,Constant.FileDirectory.video.code) != -1))){
+        var loc_fileType = fields['fileType'];
+        if(!loc_fileDir || (!CommonJS.startsWith(loc_fileDir,Constant.FileDirectory.pic.code)
+                            && !CommonJS.startsWith(loc_fileDir,Constant.FileDirectory.video.code))){
             res.json(APIUtil.APIResult("code_1003", null, null));
             return;
+        }
+        if(CommonJS.startsWith(loc_fileDir,Constant.FileDirectory.pic.code)){
+            if(!loc_fileType || !UploadService.zipImg(files, loc_fileType)){
+                res.json(APIUtil.APIResult("code_1000", null, null));
+                return;
+            }
         }
         var loc_timeNow = new Date();
         var loc_filePath = loc_fileDir + "/" + Utils.dateFormat(loc_timeNow, 'yyyyMM');

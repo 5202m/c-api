@@ -17,6 +17,7 @@ var Config = require('../resources/config.js');
 var IteratorUtil = require('../util/IteratorUtil.js');
 var Ftp = require('ftp');
 var FS = require('fs');
+var ImgUtil = require('../util/imgUtil');
 
 var uploadService = {
     /**
@@ -164,6 +165,31 @@ var uploadService = {
                 });
             }
         });
+    },
+
+    zipConfigs : {
+        "avatar" : {width : 100, quality : 50},
+        "showTrade" : null
+    },
+
+    /**
+     * 压缩图片
+     * @param imgs
+     * @param op
+     */
+    zipImg : function(imgs, op){
+        if(uploadService.zipConfigs.hasOwnProperty(op) == false){
+            return false;
+        }else{
+            var cfg = uploadService.zipConfigs[op];
+            if(cfg){
+                for(var i = 0, lenI = !imgs ? 0 : imgs.length; i < lenI; i++){
+                    if(uploadService.zipConfigs.hasOwnProperty(op))
+                        ImgUtil.zipImg(imgs[i].path, options);
+                }
+            }
+            return true;
+        }
     }
 };
 
