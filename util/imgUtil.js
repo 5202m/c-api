@@ -42,14 +42,12 @@ var imgUtil = {
         if(options.quality){
             saveCfg = {quality : options.quality};
         }
-        if(!options.output){
-            options.output = imgPath;
-        }
+        var output = options.output || imgPath;
         if(exName == "gif"){
-            // options.output = options.output.replace(/\.\w+$/, ".png");
-            img.save(options.output, "png", saveCfg);
+            // output = output.replace(/\.\w+$/, ".png");
+            img.save(output, "png", saveCfg);
         }else{
-            img.save(options.output, saveCfg);
+            img.save(output, saveCfg);
         }
     }
 };
