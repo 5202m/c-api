@@ -72,7 +72,7 @@ var syllabusService = {
             }
             var loc_result = [];
             if(rows && rows.length > 0){
-                if(flag=='S'){//获取下次课程安排
+                if(flag=='S' || flag=='SN'){//获取一次课程安排
                     var index = 0;
                     var isNext = false;
                     var loc_courses = null;
@@ -81,7 +81,7 @@ var syllabusService = {
                         rowTmp = rows[index];
                         loc_courses = JSON.parse(rowTmp.courses);
                         isNext = rowTmp.publishStart > today;
-                        loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, isNext ? rowTmp.publishStart : today, isNext);
+                        loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, isNext ? rowTmp.publishStart : today, isNext, flag=='SN');
                     }
                     //补充课程表信息（分析师头像）
                     syllabusService.fillLecturerInfo(loc_result, function(courseArr){
@@ -186,9 +186,10 @@ var syllabusService = {
      * @param publishEnd 发布结束时间
      * @param currDate   当前日期
      * @param isNext     是否下次课程
+     * @param onlyNext   是否仅取下次课
      * @returns {*}
      */
-    getCourseSingle:function(coursesObj, publishEnd, currDate, isNext){
+    getCourseSingle:function(coursesObj, publishEnd, currDate, isNext, onlyNext){
         if(!coursesObj||!coursesObj.days||!coursesObj.timeBuckets){
             return [];
         }
@@ -217,7 +218,9 @@ var syllabusService = {
                     if(tmBk.endTime <= currTime){
                         continue;
                     }else if(tmBk.startTime<=currTime && tmBk.endTime>currTime){
-                        courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, isNext || false);
+                        if(!onlyNext){
+                            courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, isNext || false);
+                        }
                     }else{ //tmBk.startTime>currTime
                         courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, true);
                     }
