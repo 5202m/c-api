@@ -71,16 +71,17 @@ var syllabusService = {
                 return;
             }
             var loc_result = [];
-            var rowTmp = rows ? rows[0] : null;
-            if(rowTmp){
-                var loc_courses = JSON.parse(rowTmp.courses);
-                var loc_day = today.getDay();
+            if(rows && rows.length > 0){
                 if(flag=='S'){//获取下次课程安排
-                    loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, today, false);
-                    if((!loc_result || loc_result.length == 0) && rows.length > 1){
-                        rowTmp = rows[1];
+                    var index = 0;
+                    var isNext = false;
+                    var loc_courses = null;
+                    var rowTmp = null;
+                    while((!loc_result || loc_result.length == 0) && rows.length > index){
+                        rowTmp = rows[index];
                         loc_courses = JSON.parse(rowTmp.courses);
-                        loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, rowTmp.publishStart, true);
+                        isNext = rowTmp.publishStart > today;
+                        loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, isNext ? rowTmp.publishStart : today, isNext);
                     }
                     //补充课程表信息（分析师头像）
                     syllabusService.fillLecturerInfo(loc_result, function(courseArr){
@@ -93,12 +94,13 @@ var syllabusService = {
                         }
                     });
                     return;
-                }else if(flag=='D'){
-                    if(rowTmp.publishStart.getTime() <= today.getTime()){//获取全天课程安排
+                }else if(rows[0].publishStart <= today){
+                    var loc_courses = JSON.parse(rows[0].courses);
+                    if(flag=='D'){
                         loc_result = syllabusService.getCourseByDay(loc_courses, today);
+                    }else if(flag=='W'){
+                        loc_result = syllabusService.getCourseByWeek(rows[0], loc_courses);
                     }
-                }else if(flag=='W'){
-                    loc_result = syllabusService.getCourseByWeek(rowTmp, loc_courses);
                 }
             }
             callback(ApiResult.result(null, loc_result));

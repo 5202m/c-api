@@ -94,6 +94,9 @@ var articleService = {
             if(commonJs.isValid(params.authorId)){
                 deList["authorInfo.userId"] = params.authorId;
             }
+            if(commonJs.isValid(params.tag)){
+                deList["tag"] = params.tag;
+            }
             searchObj.detailList = {$elemMatch:deList};
         }
         var from = (params.pageNo-1) * params.pageSize;
@@ -158,6 +161,7 @@ var articleService = {
                     author = detail.authorInfo || {};
                     article.title = detail.title || "";
                     article.tag = detail.tag || "";
+                    article.remark = detail.remark || "";
                     //内容
                     content = detail.content || "";
                     contentImg = "";

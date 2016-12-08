@@ -56,9 +56,10 @@ router.get('/getArticleCount', function(req, res) {
 router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
     var params={};
         params.authorId = req.query["authorId"];
+        params.tag = req.query["tag"];
         params.code = req.query["code"];
         params.platform = req.query["platform"];
-        params.lang =req.query["lang"];
+        params.lang =req.query["lang"] || "zh";
         params.pageNo = commonJs.isBlank(req.query["pageNo"]) ? constant.curPageNo : req.query["pageNo"];
         params.pageSize = commonJs.isBlank(req.query["pageSize"]) ? constant.pageSize : req.query["pageSize"];
         params.pageLess = req.query["pageLess"] == "1";
