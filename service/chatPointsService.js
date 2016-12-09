@@ -84,20 +84,24 @@ var chatPointsService = {
      * @param groupType
      * @param callback (err, config)
      */
-    getConfig : function(item, groupType, callback){
-        APIUtil.DBFindOne(ChatPointsConfig, {
+    getConfig : function(item, groupType, clientGroup, callback){
+        ChatPointsConfig.findOne({
             query : {
-                item : item,
-                groupType : groupType,
-                isDeleted : 0,
-                status : 1
+            item : item,
+            groupType : groupType,
+            clientGroup : {
+                $in : [ clientGroup ]
+            },
+            isDeleted : 0,
+            status : 1
             }
-        }, function(err, config){
-            if(err){
+        }, function(err, config) {
+            if (err) {
                 logger.error("<<getConfig:查询积分配置信息出错，[errMessage:%s]", err);
+                callback(APIUtil.APIResult("code_3003", null));
             }
-            callback(err, config);
-        })
+                callback(err, config);
+        });
     },
 
     /**
@@ -106,26 +110,31 @@ var chatPointsService = {
      * @param callback
      */
     add : function(params, callback){
-        if(!params.groupType || !params.userId || !params.item){
+        if (!params.groupType || !params.userId || !params.item
+            || !params.clientGroup) {
             callback(APIUtil.APIResult("code_1000", null));
             return;
         }
         params.opUser = params.opUser || params.userId;
-        chatPointsService.getConfig(params.item, params.groupType, function(err, config){
-            if(err){
-                callback(APIUtil.APIResult("code_10", null));
-            }else if(!config){
-                callback(APIUtil.APIResult(null, null));
-            }else{
-                chatPointsService.getChatPoints(params.groupType, params.userId, function(err, pointsInfo){
-                    if(err){
+        chatPointsService.getConfig(params.item, params.groupType,
+            params.clientGroup, function(err, config) {
+                if (err) {
+                    callback(APIUtil.APIResult("code_10", null));
+                } else if (!config) {
+                    callback(APIUtil.APIResult("code_3003", null));
+                } else {
+                chatPointsService.getChatPoints(params.groupType,
+                    params.userId, function(err, pointsInfo) {
+                        if (err) {
                         callback(APIUtil.APIResult("code_10", null));
-                    }else{
-                        chatPointsService.savePoints(pointsInfo, config, params, callback);
-                    }
-                });
-            }
-        });
+                        } else {
+                        chatPointsService.savePoints(
+                            pointsInfo, config, params,
+                            callback);
+                        }
+                    });
+                }
+            });
     },
 
     /**

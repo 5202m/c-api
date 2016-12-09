@@ -26,7 +26,12 @@ router.get('/pointsInfo', function(req, res) {
 
     //查询积分
     ChatPointsService.getPointsInfo(params.groupType, params.userId, params.hasJournal, function(pointsInfo){
-        res.json(pointsInfo);
+    //    res.json(pointsInfo);
+        if(pointsInfo){
+            res.json(APIUtil.APIResult(null, pointsInfo));
+        } else {
+            res.json(APIUtil.APIResult("code_3003", null));
+        }
     });
 });
 
@@ -63,7 +68,11 @@ router.post('/add', function(req, res) {
 
     //添加积分
     ChatPointsService.add(params, function(apiResult){
-        res.json(apiResult);
+        if(apiResult){
+            res.json(apiResult);
+        } else {
+            res.json(APIUtil.APIResult("code_3002", null));
+        }
     });
 });
 
