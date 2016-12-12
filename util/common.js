@@ -265,6 +265,54 @@ var common = {
         return datetime;
     },
     /**
+     * 检查当前日期是否符合日期插件数据
+     * @param dateTime
+     * @param nullResult 空值结果
+     *          1）对于禁言设置，空值表示没有设置禁言，即当前时间不包含在其中。传值false
+     *          2）对于聊天规则设置，空值表示永久生效，即当前时间包含在其中。传值true
+     * @param checkDate 仅仅检查日期是否通过
+     */
+    dateTimeWeekCheck:function(srcDateTime, nullResult,checkDate){
+        if(this.isBlank(srcDateTime)){
+            return !!nullResult;
+        }
+        var dateTime=JSON.parse(srcDateTime);
+        var currDate=new Date(),isPass=false,currDateStr = this.formatterDate(currDate);
+        isPass=this.isBlank(dateTime.beginDate)||currDateStr>=dateTime.beginDate;
+        if(isPass){
+            isPass=this.isBlank(dateTime.endDate)||currDateStr<=dateTime.endDate;
+        }
+        if(!isPass){
+            return false;
+        }
+        if(checkDate){
+            return isPass;
+        }
+        var weekTime=dateTime.weekTime;
+        if(this.isBlank(weekTime)){
+            return isPass;
+        }
+        var row=null,currTime=null,weekTimePass=false;
+        for(var i in weekTime){
+            row=weekTime[i];
+            if(this.isValid(row.week) && currDate.getDay()!=parseInt(row.week)){
+                continue;
+            }
+            if(this.isBlank(row.beginTime) && this.isBlank(row.beginTime)){
+                return true;
+            }
+            currTime=this.getHHMMSS(currDate);
+            weekTimePass=this.isBlank(row.beginTime)||currTime>=row.beginTime;
+            if(weekTimePass){
+                weekTimePass=this.isBlank(row.endTime)||currTime<=row.endTime;
+            }
+            if(weekTimePass){
+                break;
+            }
+        }
+        return weekTimePass;
+    },
+    /**
      * 提取时分
      */
     getHHMM:function(date){
@@ -274,6 +322,21 @@ var common = {
         var datetime = (date.getHours() < 10 ? "0" + date.getHours() : date.getHours())
             + ":"
             + (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes());
+        return datetime;
+    },
+    
+    /**
+     * 提取时分秒
+     */
+    getHHMMSS:function(date){
+        if(!(date instanceof Date)){
+            date=new Date(date);
+        }
+        var datetime = (date.getHours() < 10 ? "0" + date.getHours() : date.getHours())
+            + ":"
+            + (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes())
+            + ":"
+            + (date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds());
         return datetime;
     },
     
