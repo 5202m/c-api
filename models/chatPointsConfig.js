@@ -10,9 +10,9 @@
  *     积分配置信息
  * </p>
  */
-var mongoose = require('mongoose')
-    , Schema = mongoose.Schema
-    , ObjectId = Schema.ObjectId;
+let mongoose = require('./commonMongoose');
+let Schema = mongoose.Schema;
+let ObjectId = Schema.ObjectId;
 
 var chatPointsConfigSchema = new Schema({
     "_id" : ObjectId,
