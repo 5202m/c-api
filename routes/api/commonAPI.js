@@ -357,7 +357,7 @@ router.get('/getLastReview', function(req, res){
  * 多空比例
  */
 router.get('/getSymbolLongShortRatios', function(req, res){
-    var cacheClient = require('../../cache/cacheClient');
+    /*var cacheClient = require('../../cache/cacheClient');
     var date = new Date();
     var key = "symbolLongShortRatios";
     if(common.getHHMM(date)>'11:15'){
@@ -368,15 +368,15 @@ router.get('/getSymbolLongShortRatios', function(req, res){
             logger.error("getSymbolLongShortRatios fail:" + err);
             res.json({code:"FAIL", result:[]});
         }
-        else if(!result){
+        else if(!result){*/
             request(config.symbolLongShortOpenPositionRatios + "/findSymbolLongShortRatios", function(error, response, data){
                 if (!error && data) {
                     try {
                         if (typeof data == 'string') {
                             data = JSON.parse(data);
                         }
-                        cacheClient.set(key, JSON.stringify(data));
-                        cacheClient.expire(key, 5 * 60);//设置有效时间
+                        //cacheClient.set(key, JSON.stringify(data));
+                        //cacheClient.expire(key, 5 * 60);//设置有效时间
                         res.json(data);
                     }catch (e){
                         logger.error("getSymbolLongShortRatios JSON.parse error:" + e);
@@ -387,18 +387,18 @@ router.get('/getSymbolLongShortRatios', function(req, res){
                     res.json({code:"FAIL", result:[]});
                 }
             });
-        }
+        /*}
         else{
             res.json(JSON.parse(result));
         }
-    });
+    });*/
 });
 
 /**
  * 未平仓品种比率
  */
 router.get('/getSymbolOpenPositionRatios', function(req, res){
-    var cacheClient = require('../../cache/cacheClient');
+    /*var cacheClient = require('../../cache/cacheClient');
     var date = new Date();
     var key = "symbolOpenPositionRatios";
     if(common.getHHMM(date)>'11:15'){
@@ -409,15 +409,15 @@ router.get('/getSymbolOpenPositionRatios', function(req, res){
             logger.error("getSymbolOpenPositionRatios fail:" + err);
             res.json({code:"FAIL", result:[]});
         }
-        else if(!result){
+        else if(!result){*/
             request(config.symbolLongShortOpenPositionRatios + "/findSymbolOpenPositionRatios", function(error, response, data){
                 if (!error && data) {
                     try {
                         if (typeof data == 'string') {
                             data = JSON.parse(data);
                         }
-                        cacheClient.set(key, JSON.stringify(data));
-                        cacheClient.expire(key, 5 * 60);//设置有效时间
+                        /*cacheClient.set(key, JSON.stringify(data));
+                        cacheClient.expire(key, 5 * 60);//设置有效时间*/
                         res.json(data);
                     }catch (e){
                         logger.error("getSymbolOpenPositionRatios JSON.parse error:" + e);
@@ -428,11 +428,11 @@ router.get('/getSymbolOpenPositionRatios', function(req, res){
                     res.json({code:"FAIL", result:[]});
                 }
             });
-        }
+        /*}
         else{
             res.json(JSON.parse(result));
         }
-    });
+    });*/
 });
 
 module.exports = router;
