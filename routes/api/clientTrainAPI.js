@@ -4,17 +4,6 @@ let common = require('../../util/common');
 let clientTrainService = require('../../service/clientTrainService');
 let APIUtil = require('../../util/APIUtil.js');
 
-/*
-saveTrain
-addClientTrain
-getTrainAndClientNum
-getTrainList
-addSignin
-checkSign
-addSignPoints
-getSignin
-*/
-
 router.post("/saveTrain", (req, res) => {//groupId,userId,nickname
     let requires = ["groupId","userId","nickname"];
     let isSatify = requires.every((name) => {
