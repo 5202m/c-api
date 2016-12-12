@@ -276,6 +276,64 @@ var common = {
             + (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes());
         return datetime;
     },
+    
+    Deferred: function(){
+        var _resolve;
+        var _reject;
+        this.promise = new Promise(function(resolve, reject){
+            _resolve = resolve;
+            _reject = reject;
+        }.bind(this));
+        this.resolve = function(value){
+            _resolve.call(this.promise, value);
+        };
+        this.reject = function(value){
+            _reject.call(this.promise, value);
+        };
+    },
+    
+    /*
+     *   功能:实现VBScript的DateAdd功能.
+     *   参数:interval,字符串表达式，表示要添加的时间间隔.
+     *   参数:number,数值表达式，表示要添加的时间间隔的个数.
+     *   参数:date,时间对象.
+     *   返回:新的时间对象.
+     *   var   now   =   new   Date();
+     *   var   newDate   =   DateAdd( "d ",5,now);
+     *---------------   DateAdd(interval,number,date)   -----------------
+     */
+    DateAdd: function(interval,number,date){
+        switch(interval){
+            case "y"://年
+                date.setFullYear(date.getFullYear() + number);
+                break;
+            case "q"://季度
+                date.setMonth(date.getMonth() + number * 3);
+                break;
+            case "M"://月
+                date.setMonth(date.getMonth() + number);
+                break;
+            case "w"://周
+                date.setDate(date.getDate() + number * 7);
+                break;
+            case "d"://天
+                date.setDate(date.getDate() + number);
+                break;
+            case "h"://小时
+                date.setHours(date.getHours() + number);
+                break;
+            case "m"://分钟
+                date.setMinutes(date.getMinutes() + number);
+                break;
+            case "s"://秒
+                date.setSeconds(date.getSeconds() + number);
+                break;
+            default ://默认增加天
+                date.setDate(date.getDate() + number);
+                break;
+        }
+        return date;
+    },
 
     /**
      * 时间对象的格式化;

@@ -233,6 +233,20 @@ var APIResult = function(error, data, page){
     return loc_result;
 };
 
+var APIResultFromData = function(data){
+    if(!data){
+        return APIResult();
+    }
+    if("isOK" in data && "msg" in data){
+        if(data["isOK"]){
+            return APIResult(null, data["msg"]);
+        }
+        return APIResult(data["msg"]);
+    } else {
+        return APIResult(null, data);
+    }
+};
+
 /***
  * 将字符串数组转化为对象。
  *  [str1, str2, str3] ==> {str1: value, str2: value, str3: value}
@@ -597,6 +611,7 @@ module.exports = {
      * API结果
      */
     APIResult : APIResult,
+    APIResultFromData: APIResultFromData,
 
     /**
      * 数据库操作相关
