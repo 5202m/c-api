@@ -1,4 +1,4 @@
-﻿var Images = require('images');//引入images
+﻿//var Images = require('images');//引入images
 /**
  * 图片处理通用方法
  * create by alan.wu

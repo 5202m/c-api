@@ -22,6 +22,7 @@ var subscribeRoutes = require("./api/subscribeAPI.js");                     //�
 var clientTrainRoutes = require("./api/clientTrainAPI.js");                    //发送订阅信息  API路由
 var pointsRoutes = require("./api/pointsAPI.js");                             //积分信息  API路由
 var chatRoutes = require('./api/chatAPI');
+var messageRoutes = require('./api/messageAPI');
 var zxFinanceRoutes = require('./api/zxFinanceAPI');                          //财经数据 API路由
 var uploadRoutes = require("./api/uploadAPI.js");                             //文件上传  API路由
 var noticeRoutes = require("./api/noticeAPI.js");                             //通知  API路由
@@ -76,6 +77,7 @@ exports.init = function(app){
     apiRoutes.use("/clientTrain", clientTrainRoutes);
     apiRoutes.use("/points", pointsRoutes);
     apiRoutes.use("/chat", chatRoutes);
+    apiRoutes.use("/message", messageRoutes);
     apiRoutes.use("/upload/", uploadRoutes);
     apiRoutes.use("/zxFinanceData", zxFinanceRoutes);
     apiRoutes.use("/notice", noticeRoutes);

@@ -3,9 +3,9 @@
  * author：alan.wu
  * date:2015/4/3
  */
-var mongoose = require('mongoose')
-    , Schema = mongoose.Schema
-    ,chatMessageSchema=new Schema(
+let mongoose = require('./commonMongoose');
+let Schema = mongoose.Schema;
+let chatMessageSchema = new Schema(
     {
       _id:String,
       userId:{type:String,index:true},//用户id
@@ -29,5 +29,13 @@ var mongoose = require('mongoose')
       createDate:Date, //创建日期
       valid:{type:Number, default:1}//是否有效，1为有效，0为无效
     });
-var key="chatMessage_"+new Date().getFullYear();
-module.exports =mongoose.model(key,chatMessageSchema,key);
+let key = "chatMessage_"+new Date().getFullYear();
+module.exports = {
+    db:(year) => {
+        let key = "chatMessage_"+new Date().getFullYear();
+        if(year){
+           key = "chatMessage_"+year;
+        }
+        return mongoose.model(key, chatMessageSchema, key);
+    }
+};

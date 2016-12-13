@@ -38,6 +38,13 @@ var common = {
         return !this.isBlank(obj);
     },
     /**
+     * 是否直播间
+     * @param type
+     */
+    isStudio:function(groupType){
+        return groupType && groupType.indexOf("studio")!=-1;
+    },
+    /**
      * 过滤空格
      * @param val
      * @returns {XML|string|void}
