@@ -107,7 +107,7 @@ var messageService ={
                 callback({isOK:false, msg:'save chatMessage Failure'});
             }else{
                 logger.info(rows);
-                callback({isExist: (rows && rows > 0)});
+                callback({isOK:true, isExist: (rows && rows > 0)});
             }
         });
     },

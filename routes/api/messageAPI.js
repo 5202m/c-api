@@ -6,18 +6,6 @@ var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage');
 let APIUtil = require('../../util/APIUtil.js');
 
-/*
- * loadMsg
- * findMessageList
- * existRecord
- * getWhUseMsgCount
- * getUnApprovalList
- * loadBigImg
- * updateMsgStatus
- * saveMsg
- * deleteMsg
- * getLastTwoDaysMsg
- */
  
 router.get("/loadMsg", (req, res) => {
     let requires = ["groupType", "groupId", "userType", "userId"];
@@ -150,7 +138,5 @@ router.get("/getLastTwoDaysMsg", (req, res) => {
         }
     );
 });
-router.get("/getUnApprovalList", (req, res) => {});
-router.post("/updateMsgStatus", (req, res) => {});
 
 module.exports = router;
