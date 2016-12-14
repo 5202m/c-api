@@ -10,14 +10,13 @@
  *     晒单
  * </p>
  */
-var mongoose = require('mongoose')
-    , Schema = mongoose.Schema
-    , ObjectId = Schema.ObjectId;
+let mongoose = require('./commonMongoose');
+let Schema = mongoose.Schema;
+let ObjectId = Schema.ObjectId;
 
 var chatShowTradeSchema = new Schema({
     _id : ObjectId,
     groupType : {type:String,index:true}, //聊天室组别
-    groupId: {type:String,index:true}, //房间
     boUser : {
         _id : String,   //userId
         userNo : {type:String,index:true},//userNo

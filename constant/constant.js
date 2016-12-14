@@ -90,6 +90,10 @@ var constant = {
         cs:3, //客服
         navy:4//水军
     },
+    chatPraiseType:{//点赞类型
+        user:'user',//用户
+        article:'article'//文章
+    },
     //积分折扣
     pointsRate : {
         studio : {
