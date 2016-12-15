@@ -2,6 +2,9 @@ var chatSyllabus = require('../models/chatSyllabus');//引入chatSyllabus数据�
 var chatSyllabusHis = require('../models/chatSyllabusHis');//引入chatSyllabusHis数据模型
 var boUser = require('../models/boUser');//引入boUser数据模型
 var ArticleService = require('../service/articleService');//引入ArticleService服务类
+var userService = require('../service/userService');//引入userService
+var chatPraiseService = require('../service/chatPraiseService');//引入chatPraiseService
+var constant = require('../constant/constant');//引入constant
 var logger=require('../resources/logConf').getLogger('syllabusService');//引入log4js
 var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
 var Utils = require('../util/Utils'); 	 	            //引入工具类js
@@ -44,9 +47,76 @@ var syllabusService = {
                 logger.error("查询聊天室课程安排失败!", err);
                 callback(null);
             }else{
-                callback(ApiResult.result(null, row?((groupIdArr && groupIdArr.length>1)?row:row[0]):null));
+                callback(row?((groupIdArr && groupIdArr.length>1)?row:row[0]):null);
             }
         });
+    },
+    /**
+     * 通过参数提取课程信息,包括课程分析师的个人信息
+     * @param params
+     */
+    getCourseInfo:function(params,outCallback){
+        var result={remark:'',authors:[]};
+        Async.parallel({
+                courseRemark: function(callback){
+                    syllabusService.getSyllabus(params.groupType,params.groupId, new Date(),function(rows){
+                        var remark='';
+                        if(rows){
+                            var courses=rows.courses;
+                            if(courses){
+                                courses=JSON.parse(courses);
+                                var days=courses.days,tmArr=courses.timeBuckets,tmObj=null;
+                                for(var i in days){
+                                    if(days[i].day==params.day){
+                                        for(var k in tmArr){
+                                            tmObj=tmArr[k];
+                                            if(tmObj.startTime==params.startTime && tmObj.endTime==params.endTime){
+                                                remark=tmObj.course[i].context;
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        callback(null,remark);
+                    });
+                },
+                courseAuthors: function(callback){
+                    userService.getUserList(params.authorId,function(rows){
+                        callback(null,rows);
+                    });
+                },
+                getPraise:function(callback){
+                    chatPraiseService.getPraiseNum(params.authorId,constant.chatPraiseType.user,params.groupType,function(rows){
+                        callback(null,rows);
+                    });
+                }
+            },
+            function(err, datas) {
+                if(!err){
+                    result.remark=datas.courseRemark;
+                    var crs=datas.courseAuthors;
+                    var pre=datas.getPraise;
+                    var crow=null,praiseNum=0;
+                    if(crs){
+                        for(var i in crs){
+                            crow=crs[i];
+                            if(pre){
+                                for(var k in pre){
+                                    if(pre[k].praiseId==crow.userNo){
+                                        praiseNum=pre[k].praiseNum;
+                                        break;
+                                    }
+                                }
+                            }
+                            result.authors.push({userId:crow.userNo,name:crow.userName,position:crow.position,avatar:crow.avatar,praiseNum:praiseNum});
+                        }
+                    }
+                }
+                outCallback(result);
+            });
     },
     /**
      * 查询聊天室课程安排(指定日期课程安排)
@@ -733,6 +803,40 @@ var syllabusService = {
             }
         }
         return result;
+    },
+
+    /**
+     * 查询聊天室课程安排历史记录
+     * @param groupType
+     * @param groupId
+     * @param date
+     * @param callback
+     */
+    getSyllabusHis : function(groupType, groupId, date, callback){
+        groupId = groupId || "";
+        var timezoneOffset = new Date().getTimezoneOffset() * 60000;
+        date = date === "null" ? null : date;
+        date = date === "false" ? null : date;
+        date = date === "undefined" ? null : date;
+        if(!date){
+            date = new Date().getTime();
+            date = new Date(date - (date % 86400000) - 86400000 + timezoneOffset);
+        }else{
+            date = new Date(date);
+            date = new Date(date - (date % 86400000) + timezoneOffset);
+        }
+        chatSyllabusHis.find({
+            groupType : groupType,
+            groupId : groupId,
+            date : date
+        }).sort({startTime:1}).exec("find", function(err, rows){
+            if(err){
+                logger.error("查询聊天室课程安排历史记录失败!", err);
+                callback(null);
+            }else{
+                callback(rows);
+            }
+        });
     }
 };
 //导出服务类

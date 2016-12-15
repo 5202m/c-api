@@ -1,9 +1,9 @@
-//studioAPI
-var logger =require("../../resources/logConf").getLogger("studioAPI");
-var express = require('express');
-var router = express.Router();
-var studioService = require('../../service/studioService');
-var common = require('../../util/common');
+"use strict";
+let logger =require("../../resources/logConf").getLogger("studioAPI");
+let express = require('express');
+let router = express.Router();
+let studioService = require('../../service/studioService');
+let common = require('../../util/common');
 let APIUtil = require('../../util/APIUtil.js');
 
 router.get("/getIndexLoadData", (req, res) => {
@@ -12,6 +12,7 @@ router.get("/getIndexLoadData", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -33,6 +34,7 @@ router.get("/getIndexLoadData", (req, res) => {
 });
 router.get("/getRoomList", (req, res) => {
     if(common.isBlank(req.query["groupType"])){
+        logger.warn("Parameters missed! Expecting parameters: ", "groupType");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -46,6 +48,7 @@ router.get("/getRoomList", (req, res) => {
 });
 router.get("/getClientGroupList", (req, res) => {
     if(common.isBlank(req.query["groupType"])){
+        logger.warn("Parameters missed! Expecting parameters: ", "groupType");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -64,6 +67,7 @@ router.post("/resetPwd", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -79,6 +83,7 @@ router.post("/resetPwd", (req, res) => {
 });
 router.get("/getStudioByGroupId", (req, res) => {
     if(common.isBlank(req.query["groupId"])){
+        logger.warn("Parameters missed! Expecting parameters: ", "groupId");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -96,6 +101,7 @@ router.get("/checkGroupAuth", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -114,6 +120,7 @@ router.get("/getDefaultRoom", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -131,6 +138,7 @@ router.post("/studioRegister", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -139,6 +147,7 @@ router.post("/studioRegister", (req, res) => {
         return common.isValid(req.body["userInfo"][name]);
     });
     if(!isSatify){
+        logger.warn("Parameters missed in 'userInfo'! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -152,6 +161,7 @@ router.post("/studioRegister", (req, res) => {
 });
 router.post("/checkMemberAndSave", (req, res) => {
     if(!req.body["userInfo"]){
+        logger.warn("Parameters missed! Expecting parameters: ", "userInfo");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -172,6 +182,7 @@ router.post("/checkMemberAndSave", (req, res) => {
 });
 router.get("/checkNickName", (req, res) => {
     if(common.isBlank(req.query["groupType"])){
+        logger.warn("Parameters missed! Expecting parameters: ", "groupType");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -233,6 +244,7 @@ router.post("/updateClientGroup", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }

@@ -26,6 +26,7 @@ var messageRoutes = require('./api/messageAPI');
 var pushInfoRoutes = require("./api/pushInfoAPI");
 var showTradeRoutes = require("./api/showTradeAPI");
 var studioRoutes = require("./api/studioAPI");
+var syllabusRoutes = require("./api/syllabusAPI");
 var zxFinanceRoutes = require('./api/zxFinanceAPI');                          //财经数据 API路由
 var uploadRoutes = require("./api/uploadAPI.js");                             //文件上传  API路由
 var noticeRoutes = require("./api/noticeAPI.js");                             //通知  API路由
@@ -84,6 +85,7 @@ exports.init = function(app){
     apiRoutes.use("/pushInfo", pushInfoRoutes);
     apiRoutes.use("/showTrade", showTradeRoutes);
     apiRoutes.use("/studio", studioRoutes);
+    apiRoutes.use("/syllabus", syllabusRoutes);
     apiRoutes.use("/upload/", uploadRoutes);
     apiRoutes.use("/zxFinanceData", zxFinanceRoutes);
     apiRoutes.use("/notice", noticeRoutes);
