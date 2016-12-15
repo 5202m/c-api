@@ -204,7 +204,7 @@ var articleService = {
             valid: 1,
             categoryId: params.code,
             platform: commonJs.getSplitMatchReg(params.platform),
-            publishStartDate: {"$lte": endDate, "$gt": startDate}
+            createDate: {"$lte": endDate, "$gt": startDate}
         };
         if(params.tag){
             searchObj["detailList.tag"] = params.tag;
