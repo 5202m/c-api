@@ -39,11 +39,20 @@ router.get('/getArticleCount', function(req, res) {
     var params= {
         code: req.query["code"],
         platform: req.query["platform"],
-        dateTime: req.query["dateTime"]
+        dateTime: req.query["dateTime"],
+        duration: req.query["duration"],
+        tag: req.query["tag"]
     };
     if(commonJs.isBlank(params.code)||commonJs.isBlank(params.platform)){
         res.json(null);
     }else{
+        if("class_note" == params.code){ //官网请求直播精华，应用位置直接修改为普通房间的直播精华（特殊处理）
+            if("24k_web" == params.platform || "24k_mobile" == params.platform){
+                params.platform = constant.studioDefRoom.studio
+            }else if("gwfx_web" == params.platform || "gwfx_mobile" == params.platform){
+                params.platform = constant.studioDefRoom.fxstudio
+            }
+        }
         articleService.getCountByDate(params,function(data){
             res.json(data);
         });

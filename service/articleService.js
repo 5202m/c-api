@@ -192,15 +192,24 @@ var articleService = {
      * @param callback
      */
     getCountByDate:function(params,callback){
-        var currDate=params.dateTime?new Date(params.dateTime):new Date();
-        var startDate=new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate());
-        article.count({
+        var endDate=params.dateTime?new Date(params.dateTime):new Date();
+        var startDate=null;
+        if(params.duration){
+            startDate=new Date(endDate.getTime() - params.duration);
+        }else{
+            startDate=new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+        }
+        var searchObj = {
             status: 1,
             valid: 1,
             categoryId: params.code,
             platform: commonJs.getSplitMatchReg(params.platform),
-            publishStartDate: {"$lte": currDate, "$gt": startDate}
-        }, function(err,rowNum){
+            publishStartDate: {"$lte": endDate, "$gt": startDate}
+        };
+        if(params.tag){
+            searchObj["detailList.tag"] = params.tag;
+        }
+        article.count(searchObj, function(err,rowNum){
             if(err){
                 logger.error("文档数量查询异常！", err);
                 callback(null);
