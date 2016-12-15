@@ -4,6 +4,7 @@
  */
 var config = {
     redisUrlObj:{ host: '192.168.35.236', port: 6379 },				//链接redis缓存客户端连接
+    pmApiUrl:'http://localhost:3000/api',
     webUiUrl:'http://192.168.9.72:5555/webui_login_token.ucs',//webUI对应token地址
     web24kPriceUrl:'http://www.24k.hk/public/datas/24k_price.xml',
     gwApiUrl:'https://192.168.35.236:8443/GwAPI_SIT',//gwApi地址

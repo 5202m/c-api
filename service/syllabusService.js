@@ -27,21 +27,25 @@ var syllabusService = {
      */
     getSyllabus : function(groupType, groupId, today, callback){
         groupId = groupId || "";
-        APIUtil.DBFindOne(chatSyllabus, {
-            query : {
-                groupType : groupType,
-                groupId : groupId,
-                isDeleted : 0,
-                publishStart : {$lte : today},
-                publishEnd : {$gt : today}
-            }
-        }, function(err, row){
+        var searchObj={
+            groupType : groupType,
+            groupId : groupId,
+            isDeleted : 0,
+            publishStart : {$lte : today},
+            publishEnd : {$gt : today}
+        };
+        var groupIdArr=null;
+        if(Common.isValid(groupId)){
+            groupIdArr=groupId.split(",");
+            searchObj.groupId={$in:groupIdArr};
+        }
+        chatSyllabus.find(searchObj,"groupType groupId courseType studioLink courses updateDate", function(err, row){
             if(err){
                 logger.error("查询聊天室课程安排失败!", err);
-                callback(ApiResult.result("查询聊天室课程安排失败!", null));
-                return;
+                callback(null);
+            }else{
+                callback(ApiResult.result(null, row?((groupIdArr && groupIdArr.length>1)?row:row[0]):null));
             }
-            callback(ApiResult.result(null, !row ? null : row.courses));
         });
     },
     /**

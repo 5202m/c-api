@@ -1,5 +1,5 @@
-//pushInfoAPI
-var logger =require("../../resources/logConf").getLogger("pushInfoAPI");
+//showTradeAPI
+var logger =require("../../resources/logConf").getLogger("showTradeAPI");
 var express = require('express');
 var router = express.Router();
 var showTradeService = require('../../service/showTradeService');

@@ -22,6 +22,12 @@ var common = {
         return ",".concat(val).concat(",");
     },
     /**
+     * 判断数组是否存在记录
+     */
+    checkArrExist:function(arr){
+        return arr && arr.length>0;
+    },
+    /**
      * 空判断
      * @param v
      * @returns {boolean}
