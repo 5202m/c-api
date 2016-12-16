@@ -14,6 +14,13 @@ var common = {
         arr.splice(index, 1);
     },
     /**
+     * 通过房间id提取房间组别类型
+     * @param roomId
+     */
+    getRoomType:function(roomId){
+        return  roomId.replace(/_+.*/g,"");
+    },
+    /**
      * 字符拼接
      * @param val
      * @returns {string}
@@ -164,6 +171,21 @@ var common = {
         var md5 = require('crypto').createHash('md5');
         md5.update(val);
         return md5.digest('hex');
+    },
+    /**
+     * 检查目标字符是否以源字符或源字符加下划线为前缀
+     * @param src
+     * @param target
+     * @returns {boolean|*}
+     */
+    hasPrefix:function(src,target){
+        return common.getPrefixReg(src).test(target);
+    },
+    /**
+     * 前缀正则
+     */
+    getPrefixReg:function(val){
+       return eval('/(^'+val+'$)|(^'+val+'_{1}.+)/g');
     },
     /**
      * 过滤内容，将HTML标签过滤，并且截取前150个字符。

@@ -4,6 +4,14 @@
  * date:2015/4/15
  */
 var constant = {
+    fromPlatform:{//来源平台,区分系统用户登录来源
+        pm_mis:'pm_mis',//后台
+        wechat:'wechat',//黄金微解盘
+        fxchat:'fxchat',//外汇微解盘
+        studio:'studio',//pm直播间
+        fxstudio:'fxstudio',//fx直播间
+        hxstudio:'hxstudio'//hx直播间
+    },
     'lang' : 'zh',
     'curPageNo' : 1,
     'pageSize' : 50,

@@ -7,6 +7,9 @@ var boUser = require('../models/boUser');//引入boUser数据模型
 var boMenu = require('../models/boMenu');//引入boMenu数据模型
 var boRole= require('../models/boRole');//引入boRole数据模型
 var chatGroup = require('../models/chatGroup');//引入chatGroup数据模型
+var chatPointsService=require('../service/chatPointsService');
+var constant = require('../constant/constant');//引入constant
+var common = require('../util/common'); 	
 
 /**
  * 定义用户服务类
@@ -34,8 +37,8 @@ var userService = {
      * 通过用户id提取信息
      * @param ids
      */
-    getUserList:function(ids,callback){
-        boUser.find({userNo:{$in:ids.split(",")}},"userNo userName position avatar",function(err,rows) {
+    getUserList:function(userNOs,callback){
+        boUser.find({userNo:{$in:userNOs.split(",")}},"userNo userName position avatar",function(err,rows) {
             callback(rows);
         });
     },
@@ -43,11 +46,12 @@ var userService = {
      * 批量下线房间用户在线状态
      * @param roomId
      */
-    batchOfflineStatus:function(roomId){
+    batchOfflineStatus:function(roomId, callback){
         var groupType=common.getRoomType(roomId);
         member.find({valid:1,'loginPlatform.chatUserGroup':{$elemMatch:{_id:groupType,"rooms":{$elemMatch:{'_id':roomId,onlineStatus:1}}}}},function(err,rowList){
             if(err || !rowList){
               logger.warn('batchOfflineStatus->fail or no offlineStatus row',err);
+              callback('batchOfflineStatus->fail or no offlineStatus row');
             }else{
                 var room=null,mRow=null,group=null,currDate=new Date();
                 for(var k in rowList){
@@ -67,6 +71,7 @@ var userService = {
                     }
                 }
                 logger.info("batchOfflineStatus->update rows["+roomId+"]:",rowList.length);
+                callback(rowList.length);
             }
         });
     },
@@ -259,7 +264,7 @@ var userService = {
     getMemberList:function(id,callback){
         member.findById(id,function (err,members) {
             if(err!=null){
-                callback(null);
+                callback({isOK:false,msg:"getMemberList fail!"});
             }
             callback(members);
         });
@@ -306,7 +311,7 @@ var userService = {
                             hasRow=row.loginPlatform.chatUserGroup.id(userInfo.groupType)?true:false;
                         }
                     }
-                    console.log("createUser->userInfo:"+JSON.stringify(userInfo));
+                    logger.info("createUser->userInfo:"+JSON.stringify(userInfo));
                     userService.createChatUserGroupInfo(userInfo,hasRow,function(isOK){
                         callback(isOK);
                     });
@@ -514,24 +519,20 @@ var userService = {
      * @param userInfo
      * @param isAllowPass 是否允许通过
      */
-    checkUserLogin:function(userInfo,isAllowPass,callback){
-        if(isAllowPass){
-            callback(true);
+    checkUserLogin:function(userInfo, callback){
+        var searchObj={};
+        if(constant.fromPlatform.pm_mis==userInfo.fromPlatform){
+            searchObj={_id:userInfo.groupType,accountNo:(common.isBlank(userInfo.accountNo)?userInfo.userId:userInfo.accountNo)};
         }else{
-            var searchObj={};
-            if(constant.fromPlatform.pm_mis==userInfo.fromPlatform){
-                searchObj={_id:userInfo.groupType,accountNo:(common.isBlank(userInfo.accountNo)?userInfo.userId:userInfo.accountNo)};
-            }else{
-                searchObj={_id:userInfo.groupType,userId:userInfo.userId};
-            }
-            member.findOne({'loginPlatform.chatUserGroup':{$elemMatch:searchObj}},"mobilePhone loginPlatform.chatUserGroup.$",function (err, row){
-                if(!err && row){
-                    callback(row);
-                }else{
-                    callback(null);
-                }
-            });
+            searchObj={_id:userInfo.groupType,userId:userInfo.userId};
         }
+        member.findOne({'loginPlatform.chatUserGroup':{$elemMatch:searchObj}},"mobilePhone loginPlatform.chatUserGroup.$",function (err, row){
+            if(!err && row){
+                callback(row);
+            }else{
+                callback(null);
+            }
+        });
     },
     /**
      * 通过手机号查找对应信息
@@ -674,8 +675,8 @@ var userService = {
      * @param params
      * @param callback
      */
-    getTeacherByUserId:function(params, callback){
-        var searchObj = {valid:1,status:0,userNo:params.userId};
+    getTeacherByUserId:function(userId, callback){
+        var searchObj = {valid:1,status:0,userNo: userId};
         boUser.findOne(searchObj, "userNo userName wechatCodeImg introductionImg introductionImgLink", function(err, row){
             if(err){
                 logger.error("getTeacherByUserId->get fail!"+err);
