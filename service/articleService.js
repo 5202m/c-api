@@ -21,15 +21,20 @@ var articleService = {
      * 查询单个文档信息（按照创建时间逆序）
      * @param code
      * @param platform
+     * @param tag
      * @param isAll
+     * @param callback
      */
-    findArticle : function(code, platform, isAll, callback){
+    findArticle : function(code, platform, tag, isAll, callback){
         var searchObj = {
             valid:1,
             platform:commonJs.getSplitMatchReg(platform),
             status:1,
             categoryId:code
         };
+        if(tag){
+            searchObj["detailList.tag"] = tag;
+        }
         if(!isAll){
             var currDate=new Date();
             searchObj.publishStartDate = {"$lte":currDate};

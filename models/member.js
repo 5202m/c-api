@@ -32,6 +32,7 @@ var mongoose = require('mongoose')
                 userType:{type:Number, default:0},//区分系统用户还是会员，0表示会员，1表示管理员，2、分析师
                 pwd:{type:String},//用户密码
                 vipUser:{type:Boolean, default:false},//vip用户
+                vipUserRemark:{type:String},//vip备注
                 clientGroup:{type:String},//客户组，详请见constant.clientGroup
                 createDate:Date,
                 gagDate:String,//禁言时间

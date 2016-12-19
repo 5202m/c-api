@@ -5,14 +5,14 @@
  */
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
-    ,signinSchema=new Schema(
-        {
-          userId:{type:String, index : true},//用户Id
-          avatar:String,//头像
-          groupType:{type:String, index : true},//组类别
-          signinTime : Date,//签到时间
-          historySignTime : [Date],//历史签到时间
-          signinDays:{type:Number, default:0}, //签到天数：0
-          serialSigDays:{type:Number, default:0} //连续签到天数：0
-        });
+    , signinSchema = new Schema({
+        userId: {type: String, index: true},//用户Id
+        avatar: String,//头像
+        groupType: {type: String, index: true},//组类别
+        signinTime: Date,//签到时间
+        historySignTime: [Date],//历史签到时间
+        signinDays: {type: Number, default: 0}, //签到天数：0
+        serialSigDays: {type: Number, default: 0}, //连续签到天数：0
+        valid: {type: Number} //是否删除：0 、删除；1、正常
+    });
 module.exports =mongoose.model('signin',signinSchema,'signin');
