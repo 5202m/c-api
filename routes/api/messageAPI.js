@@ -8,11 +8,13 @@ let APIUtil = require('../../util/APIUtil.js');
 
  
 router.get("/loadMsg", (req, res) => {
-    let requires = ["groupType", "groupId", "userType", "userId"];
+    let requires = ["groupType", "groupId", "userId"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+        console.log(req.query);
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -20,8 +22,7 @@ router.get("/loadMsg", (req, res) => {
     requires.forEach(function(name){
         userInfo[name] = req.query[name];
     });
-    userInfo.toUser = req.query.toUser;
-    
+    userInfo.toUser = req.query.toUser || {};
     messageService.loadMsg(
         userInfo, 
         req.query["lastPublishTime"],

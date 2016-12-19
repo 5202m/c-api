@@ -12,6 +12,7 @@ router.get("/getShowTrade", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+        logger.warn("[getShowTrade] Parameters missed! Expecting parameters: ", requires, req.query);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -26,11 +27,12 @@ router.get("/getShowTrade", (req, res) => {
 });
 
 router.get("/getShowTradeList", (req, res) => {
-    let requires = ["groupType", "userNo", "pageSize"];
+    let requires = ["groupType", "pageSize"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+        logger.warn("[getShowTradeList] Parameters missed! Expecting parameters: ", requires, req.query);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -56,6 +58,7 @@ router.post("/addShowTrade", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
+        logger.warn("[addShowTrade] Parameters missed! Expecting parameters: ", requires, req.body);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -69,6 +72,7 @@ router.post("/addShowTrade", (req, res) => {
 });
 router.get("/setShowTradePraise", (req, res) => {
     if(common.isBlank(req.query["praiseId"])){
+        logger.warn("[setShowTradePraise] Parameters missed! Expecting parameter: ", "praiseId");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -81,6 +85,7 @@ router.get("/setShowTradePraise", (req, res) => {
 });
 router.get("/getShowTradeByIds", (req, res) => {
     if(common.isBlank(req.query["tradeIds"])){
+        logger.warn("[addShowTrade] Parameters missed! Expecting parameter: ", "tradeIds");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }

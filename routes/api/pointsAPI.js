@@ -76,4 +76,22 @@ router.post('/add', function(req, res) {
     });
 });
 
+router.get("/getChatPointsConfig", (req, res) => {
+    let requires = ["groupType", "type", "item"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.query[name]);
+    });
+    if(!isSatify){
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    ChatPointsService.getChatPointsConfig(
+        req.query,
+        (data) => {
+            res.json(APIUtil.APIResult(null, data));
+        }
+    );
+});
+
 module.exports = router;

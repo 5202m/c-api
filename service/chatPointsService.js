@@ -309,6 +309,30 @@ var chatPointsService = {
             }
         }
         return result;
+    },
+
+    /**
+     * 查询积分配置表
+     * @param usrInfo
+     * @param callback
+     */
+    getChatPointsConfig:function(params,callback) {
+        var searchObj = {"groupType": params.groupType,"type":params.type,"item" : params.item, isDeleted:0, status: 1};
+        if(params.item instanceof Array){
+            searchObj = {"groupType": params.groupType,"type":params.type,"item" : {$in:params.item}, isDeleted:0, status: 1};
+        }
+        ChatPointsConfig.find(searchObj, "", function (err, row) {
+             if(err){
+                 logger.error("获取积分配置表失败! >>getChatPointsConfig:", err);
+                 callback(null);
+             }else{
+                 if(params.item instanceof Array) {
+                     callback(row);
+                 }else{
+                     callback(row[0]);
+                 }
+             }
+        })
     }
 };
 

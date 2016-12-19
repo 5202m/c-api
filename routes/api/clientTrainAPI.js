@@ -66,11 +66,8 @@ router.get("/getTrainAndClientNum", (req, res) => {
     );
 });
 router.get("/getTrainList", (req, res) => {
-    let requires = ["groupType", "teachId"];
-    let isSatify = requires.every((name) => {
-        return common.isValid(req.query[name]);
-    });
-    if(!isSatify){
+    if(common.isBlank(req.query["groupType"])){
+        logger.warn("Parameters missed! Expecting parameter: ", "groupType");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }

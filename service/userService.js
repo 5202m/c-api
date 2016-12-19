@@ -8,6 +8,7 @@ var boMenu = require('../models/boMenu');//引入boMenu数据模型
 var boRole= require('../models/boRole');//引入boRole数据模型
 var chatGroup = require('../models/chatGroup');//引入chatGroup数据模型
 var chatPointsService=require('../service/chatPointsService');
+var visitorService=require('../service/visitorService');
 var constant = require('../constant/constant');//引入constant
 var common = require('../util/common'); 	
 

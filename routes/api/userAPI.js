@@ -8,7 +8,7 @@ let APIUtil = require('../../util/APIUtil.js');
 
 router.get("/getUserInfo", (req, res) => {
     if(common.isBlank(req.query["id"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "id");
+        logger.warn("[getUserInfo] Parameters missed! Expecting parameters: ", "id");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -22,7 +22,7 @@ router.get("/getUserInfo", (req, res) => {
 });
 router.get("/getUserInfoByUserNo", (req, res) => {
     if(common.isBlank(req.query["userNo"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "userNo");
+        logger.warn("[getUserInfoByUserNo] Parameters missed! Expecting parameters: ", "userNo");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -36,7 +36,7 @@ router.get("/getUserInfoByUserNo", (req, res) => {
 });
 router.get("/getUserList", (req, res) => {
     if(common.isBlank(req.query["userNOs"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "userNOs");
+        logger.warn("[getUserList] Parameters missed! Expecting parameters: ", "userNOs");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -50,7 +50,7 @@ router.get("/getUserList", (req, res) => {
 });
 router.get("/batchOfflineStatus", (req, res) => {
     if(common.isBlank(req.query["roomId"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "roomId");
+        logger.warn("[batchOfflineStatus] Parameters missed! Expecting parameters: ", "roomId");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -68,7 +68,7 @@ router.get("/verifyRule", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[verifyRule] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -87,7 +87,7 @@ router.get("/verifyRule", (req, res) => {
 });
 router.get("/getMemberList", (req, res) => {
     if(common.isBlank(req.query["id"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "id");
+        logger.warn("[getMemberList] Parameters missed! Expecting parameters: ", "id");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -101,7 +101,7 @@ router.get("/getMemberList", (req, res) => {
 });
 router.get("/getAuthUsersByGroupId", (req, res) => {
     if(common.isBlank(req.query["groupId"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "groupId");
+        logger.warn("[getAuthUsersByGroupId] Parameters missed! Expecting parameters: ", "groupId");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -119,7 +119,7 @@ router.post("/createUser", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[createUser] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -137,7 +137,7 @@ router.get("/joinNewRoom", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[joinNewRoom] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -150,12 +150,13 @@ router.get("/joinNewRoom", (req, res) => {
     );
 });
 router.post("/updateMemberInfo", (req, res) => {
-     let requires = ["mobilePhone", "userId", "accountNo", "ip", "groupType", "nickname", "roleNo", "clientGroup", "groupId"];
+     let requires = ["groupType", "nickname", "clientGroup", "groupId"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        console.log(req.body);
+        logger.warn("[updateMemberInfo] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -168,21 +169,18 @@ router.post("/updateMemberInfo", (req, res) => {
     );
 });
 router.post("/updateChatUserGroupStatus", (req, res) => {
-    let requires = ["userInfo", "sendMsgCount"];
-    let isSatify = requires.every((name) => {
-        return common.isValid(req.body[name]);
-    });
-    if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+    if(common.isBlank(req.body["userInfo"])){
+        logger.warn("[updateChatUserGroupStatus] Parameters missed! Expecting parameters: ", "userInfo");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    requires = ["fromPlatform", "userId", "groupType", "groupId"];
-    isSatify = requires.every((name) => {
+    let requires = ["userId", "groupType", "groupId"];
+    let isSatify = requires.every((name) => {
         return common.isValid(req.body["userInfo"][name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters in 'userInfo': ", requires);
+        console.log(req.body["userInfo"]);
+        logger.warn("[updateChatUserGroupStatus] Parameters missed! Expecting parameters in 'userInfo': ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -201,7 +199,7 @@ router.get("/checkUserLogin", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[checkUserLogin] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -216,7 +214,7 @@ router.get("/checkUserLogin", (req, res) => {
 // router.get("/getMemberByTel", (req, res) => {});
 router.get("/getRoomCsUser", (req, res) => {
     if(common.isBlank(req.query["roomId"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "roomId");
+        logger.warn("[getRoomCsUser] Parameters missed! Expecting parameters: ", "roomId");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -230,7 +228,7 @@ router.get("/getRoomCsUser", (req, res) => {
 });
 router.get("/getRoomCsUserList", (req, res) => {
     if(common.isBlank(req.query["roomId"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "roomId");
+        logger.warn("[getRoomCsUserList] Parameters missed! Expecting parameters: ", "roomId");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -243,12 +241,12 @@ router.get("/getRoomCsUserList", (req, res) => {
     );
 });
 router.get("/checkRoomStatus", (req, res) => {
-    let requires = ["userId", "groupId", "currCount"];
+    let requires = ["groupId", "currCount"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[checkRoomStatus] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -268,7 +266,7 @@ router.get("/modifyNickname", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyNickname] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -288,7 +286,7 @@ router.post("/modifyAvatar", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyAvatar] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -302,7 +300,7 @@ router.post("/modifyAvatar", (req, res) => {
 });
 router.get("/getTeacherList", (req, res) => {
     if(common.isBlank(req.query["groupId"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "groupId");
+        logger.warn("[getTeacherList] Parameters missed! Expecting parameters: ", "groupId");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -316,7 +314,7 @@ router.get("/getTeacherList", (req, res) => {
 });
 router.get("/getTeacherByUserId", (req, res) => {
     if(common.isBlank(req.query["userId"])){
-        logger.warn("Parameters missed! Expecting parameters: ", "userId");
+        logger.warn("[getTeacherByUserId] Parameters missed! Expecting parameters: ", "userId");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -334,7 +332,7 @@ router.post("/modifyUserName", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyUserName] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -343,7 +341,7 @@ router.post("/modifyUserName", (req, res) => {
         return common.isValid(req.body["userInfo"][name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyUserName] Parameters missed! Expecting parameters: ", requires);
         logger.warn("Your 'userInfo' is: ", JSON.stringify(req.body["userInfo"]));
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -353,7 +351,7 @@ router.post("/modifyUserName", (req, res) => {
         return common.isValid(req.body["params"][name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyUserName] Parameters missed! Expecting parameters: ", requires);
         logger.warn("Your 'params' is: ", JSON.stringify(req.body["params"]));
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -372,7 +370,7 @@ router.post("/modifyEmail", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyEmail] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -389,7 +387,7 @@ router.post("/modifyPwd", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyPwd] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -398,7 +396,7 @@ router.post("/modifyPwd", (req, res) => {
         return common.isValid(req.body["userInfo"][name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyPwd] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -407,7 +405,7 @@ router.post("/modifyPwd", (req, res) => {
         return common.isValid(req.body["params"][name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyPwd] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -425,7 +423,7 @@ router.get("/getClientGroupByMId", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
-        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[getClientGroupByMId] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }

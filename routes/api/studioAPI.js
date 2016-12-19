@@ -7,7 +7,7 @@ let common = require('../../util/common');
 let APIUtil = require('../../util/APIUtil.js');
 
 router.get("/getIndexLoadData", (req, res) => {
-    let requires = ["groupType", "userId", "groupId"];
+    let requires = ["groupType", "groupId"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
@@ -96,7 +96,7 @@ router.get("/getStudioByGroupId", (req, res) => {
     );
 });
 router.get("/checkGroupAuth", (req, res) => {
-    let requires = ["groupId", "clientGroup", "userId"];
+    let requires = ["groupId", "clientGroup"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
@@ -157,7 +157,7 @@ router.post("/studioRegister", (req, res) => {
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
-    );
+    ); 
 });
 router.post("/checkMemberAndSave", (req, res) => {
     if(!req.body["userInfo"]){
@@ -165,11 +165,13 @@ router.post("/checkMemberAndSave", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    let requires = ["mobilePhone", "groupType", "groupId"];
+    let requires = ["mobilePhone", "groupType"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body["userInfo"][name]);
     });
     if(!isSatify){
+        console.log(req.body);
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
