@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/pm_api"
+    "start": "node ./bin/pm_api",
+    "debug": "node --debug-brk ./bin/pm_api"
   },
   "dependencies": {
     "async": "^1.4.0",

@@ -420,16 +420,24 @@ var userService = {
                 callback(true);
             });
         }else{
-            var jsonStr={
-                _id:userInfo.groupType,userId:userInfo.userId,avatar:userInfo.avatar,nickname:userInfo.nickname,pwd:userInfo.pwd,
-                thirdId : userInfo.thirdId,
-                clientGroup:userInfo.clientGroup,accountNo:userInfo.accountNo,userType:(userInfo.userType||constant.roleUserType.member), roleNo:userInfo.roleNo,
-                createDate:new Date(),
-                rooms:[{
-                    _id:userInfo.groupId,
-                    onlineStatus:(userInfo.onlineStatus||1),
-                    onlineDate:new Date()
-                }]
+            var jsonStr = {
+                _id: userInfo.groupType,
+                userId: userInfo.userId,
+                avatar: userInfo.avatar,
+                nickname: userInfo.nickname,
+                pwd: userInfo.pwd,
+                thirdId: userInfo.thirdId,
+                clientGroup: userInfo.clientGroup,
+                accountNo: userInfo.accountNo,
+                userType: (userInfo.userType || constant.roleUserType.member),
+                roleNo: userInfo.roleNo,
+                createDate: new Date(),
+                rooms: [{
+                        _id: userInfo.groupId,
+                        onlineStatus: (userInfo.onlineStatus || 1),
+                        onlineDate: new Date()
+                    }
+                ]
             };
             member.findOneAndUpdate({valid:1,'mobilePhone':userInfo.mobilePhone,'loginPlatform.chatUserGroup._id':{$ne:userInfo.groupType}},{'$push':{'loginPlatform.chatUserGroup':jsonStr}},function(err,row){
                 var isSuccess=!err && row;

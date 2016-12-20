@@ -114,11 +114,12 @@ router.get("/getAuthUsersByGroupId", (req, res) => {
     );
 });
 router.post("/createUser", (req, res) => {
-    let requires = ["mobilePhone", "userId", "accountNo", "ip", "groupType", "nickname", "roleNo", "clientGroup", "groupId"];
+    let requires = ["groupType", "groupId", "accountNo", "mobilePhone"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
+        console.log(req.body);
         logger.warn("[createUser] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
