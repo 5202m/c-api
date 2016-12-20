@@ -3,6 +3,7 @@ var logger =require("../../resources/logConf").getLogger("chatPraiseAPI");
 var express = require('express');
 var router = express.Router();
 var common = require('../../util/common');
+var errorMessage = require('../../util/errorMessage');
 var chatPraiseService = require("../../service/chatPraiseService");
 var ApiResult = require('../../util/APIUtil.js').APIResult;
 
