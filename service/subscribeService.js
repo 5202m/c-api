@@ -195,7 +195,9 @@ var subscribeService = {
                     time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
                     courseTime : data.startTime,
                     teacherName : data.lecturer,
-                    groupName : data.groupName
+                    groupName : data.groupName,
+                    title : data.title,
+                    context : data.context
                 };
                 break;
 
@@ -287,7 +289,9 @@ var subscribeService = {
                     time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
                     teacherName : data.lecturer,
                     courseTime : data.startTime,
-                    groupName : data.groupName
+                    groupName : data.groupName,
+                    title : data.title,
+                    context : data.context
                 };
                 break;
 
