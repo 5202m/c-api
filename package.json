@@ -1,6 +1,6 @@
 {
   "name": "pm_api",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node ./bin/pm_api",
@@ -30,5 +30,10 @@
     "ftp" : "^0.3.10",
     "nodemailer" : "2.3.1",
     "images" : "2.2.0"
+  },
+  apidoc: {
+      "title": "Chat Room API Project",
+      "url" : "http://pmchat.24k.hk/studio",
+      "description": "It's a project designed for other teams usage, provides a centralized data accessing API, so that other teams can build their own APPs."
   }
 }

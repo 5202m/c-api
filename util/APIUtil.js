@@ -213,20 +213,24 @@ var APIResult = function(error, data, page){
         if(page){
             loc_result.page = page;
         }
-    }else if(typeof error === "object" && error instanceof Error){
+        return loc_result;
+    }
+    
+    if(typeof error === "object" && error instanceof Error){
         loc_result.result = 1;
         loc_result.errcode = "-1";
         loc_result.errmsg = error.message;
+        return loc_result;
+    }
+    
+    loc_result.result = 1;
+    var loc_error = ErrorMessage[error];
+    if(loc_error){
+        loc_result.errcode = loc_error.errcode;
+        loc_result.errmsg = loc_error.errmsg;
     }else{
-        loc_result.result = 1;
-        var loc_error = ErrorMessage[error];
-        if(loc_error){
-            loc_result.errcode = loc_error.errcode;
-            loc_result.errmsg = loc_error.errmsg;
-        }else{
-            loc_result.errcode = "-1";
-            loc_result.errmsg = typeof error == "string" ? error : "未知错误";
-        }
+        loc_result.errcode = "-1";
+        loc_result.errmsg = typeof error == "string" ? error : "未知错误";
     }
     //logger.info("[APIResult] %s", JSON.stringify(loc_result));
 
