@@ -1,4 +1,5 @@
 var chatSyllabus = require('../models/chatSyllabus');//引入chatSyllabus数据模型
+var chatGroup = require('../models/chatGroup');//引入chatGroup数据模型
 var chatSyllabusHis = require('../models/chatSyllabusHis');//引入chatSyllabusHis数据模型
 var boUser = require('../models/boUser');//引入boUser数据模型
 var ArticleService = require('../service/articleService');//引入ArticleService服务类
@@ -505,7 +506,30 @@ var syllabusService = {
                     }
                 }
             }
-            callback(loc_result);
+            //查询房间名称信息
+            APIUtil.DBFind(chatGroup, {
+                query : {
+                    valid : 1,
+                    status : {$ne : "0"},
+                    _id : {$in : Object.keys(loc_groupMap)}
+                },
+                fieldIn : ["_id", "groupType", "name"]
+            }, function(err, rooms){
+                var roomsMap = {};
+                if(err){
+                    logger.error("查询聊天室房间名称失败!", err);
+                }else if(rooms){
+                    for(var i = 0, lenI = rooms.length; i < lenI; i++){
+                        roomsMap[rooms[i]._id] = rooms[i];
+                    }
+                }
+                var courseTmp = null;
+                for(var i = 0, lenI = loc_result.length; i < lenI; i++){
+                    courseTmp = loc_result[i];
+                    courseTmp.groupName = roomsMap[courseTmp.groupId] || "";
+                }
+                callback(loc_result);
+            });
         });
     },
 
