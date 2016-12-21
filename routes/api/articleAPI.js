@@ -10,7 +10,7 @@
  *		"msg": "没有指定参数!"
  *	}
  */
-/*
+/**
  * @apiDefine ParametersDataBrokenError
  * 
  * @apiError ParametersDataBroken 参数数据格式错误，无法完成请求。
@@ -41,7 +41,7 @@ let APIUtil = require('../../util/APIUtil'); 	 	   //引入API工具类js
 let ApiResult = require('../../util/ApiResult');       //引起聊天室工具类js
 
 /**
- * @api {get} /article/getGroupArticles 根据栏目code-->提取文档资讯列表
+ * @api {get} /article/getGroupArticles 获取分组文档资讯列表
  * @apiName getGroupArticles
  * @apiGroup article
  *
@@ -53,7 +53,7 @@ let ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
  *
- * @apiSampleRequest http://www.pathOfYourSite.com/api/article/getGroupArticles?code=download&platform=studio_market
+ * @apiSampleRequest http://pmchat.24k.hk/api/article/getGroupArticles?code=download&platform=studio_market
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -91,7 +91,7 @@ router.get('/getGroupArticles', (req, res) => {
 });
 
 /**
- * @api {get} /article/getArticleCount 根据栏目code-->提取文档资讯列表
+ * @api {get} /article/getArticleCount 获取文档资讯列表条数
  * @apiName getArticleCount
  * @apiGroup article
  *
@@ -102,7 +102,7 @@ router.get('/getGroupArticles', (req, res) => {
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
  *
- * @apiSampleRequest http://www.pathOfYourSite.com/api/article/getArticleCount?code=download&platform=studio_market
+ * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleCount?code=download&platform=studio_market
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -137,7 +137,7 @@ router.get('/getArticleCount', (req, res) => {
 });
 
 /**
- * @api {get} /article/getArticleList.json|.xml 根据栏目code-->提取文档资讯列表
+ * @api {get} /article/getArticleList.json|.xml 获取文档资讯列表
  * @apiName getArticleList
  * @apiGroup article
  *
@@ -168,7 +168,7 @@ router.get('/getArticleCount', (req, res) => {
  *          }
  *      }
  *
- * @apiSampleRequest http://www.pathOfYourSite.com/api/article/getArticleList.json?code=download&platform=studio_market&pageNo=1&pageSize=10
+ * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleList.json?code=download&platform=studio_market&pageNo=1&pageSize=10
  * @apiUse ParametersMissedError
  */
 router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
@@ -224,7 +224,7 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest http://www.pathOfYourSite.com/api/article/getArticleInfo?id=download
+ * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleInfo?id=download
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -250,7 +250,7 @@ router.get('/getArticleInfo', function(req, res) {
 });
 
 /**
- * @api {post} /article/add 根据ID提取文档信息
+ * @api {post} /article/add 提交添加文档信息
  * @apiName add
  * @apiGroup article
  *
@@ -266,7 +266,7 @@ router.get('/getArticleInfo', function(req, res) {
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest http://www.pathOfYourSite.com/api/article/getArticleInfo
+ * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleInfo
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -320,7 +320,7 @@ router.post('/add', function(req, res){
 });
 
 /**
- * @api {post} /article/modify 根据ID提取文档信息
+ * @api {post} /article/modify 修改文档信息
  * @apiName modify
  * @apiGroup article
  *
@@ -331,7 +331,7 @@ router.post('/add', function(req, res){
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest http://www.pathOfYourSite.com/api/article/getArticleInfo?id=download
+ * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleInfo?id=download
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -385,7 +385,7 @@ router.post('/modify',function(req, res){
 });
 
 /**
- * @api {get} /article/modifyPraiseOrDownloads 根据ID提取文档信息
+ * @api {get} /article/modifyPraiseOrDownloads 更新点赞数或下载次数
  * @apiName modifyPraiseOrDownloads
  * @apiGroup article
  *
@@ -395,7 +395,7 @@ router.post('/modify',function(req, res){
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest http://www.pathOfYourSite.com/api/article/getArticleInfo?id=download
+ * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleInfo?id=download
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {

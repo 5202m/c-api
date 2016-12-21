@@ -6,6 +6,7 @@
 var logger =require("../resources/logConf").getLogger("indexAPI");
 var constant =require("../constant/constant");
 var express = require('express');
+var path = require('path');
 var indexRouter = express.Router();
 indexRouter.get('/', function(req, res) {
     res.render('index');
@@ -37,7 +38,8 @@ var chatPraiseRoutes = require("./api/chatPraiseAPI.js");
  * @param app
  */
 exports.init = function(app){
-	app.use('/', indexRouter);
+    app.use('/apidoc', express.static(path.join(__dirname, '../apidoc/')));
+    app.use('/', indexRouter);
     app.use('/api',apiRoutes);
     //设置跨域访问
     apiRoutes.all('/common|upload/*', function(req, res, next) {
