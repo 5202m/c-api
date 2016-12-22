@@ -261,10 +261,10 @@ router.get("/checkRoomStatus", (req, res) => {
         }
     );
 });
-router.get("/modifyNickname", (req, res) => {
+router.post("/modifyNickname", (req, res) => {
     let requires = ["mobilePhone", "groupType", "nickname"];
     let isSatify = requires.some((name) => {
-        return common.isValid(req.query[name]);
+        return common.isValid(req.body[name]);
     });
     if(!isSatify){
         logger.warn("[modifyNickname] Parameters missed! Expecting parameters: ", requires);
@@ -273,9 +273,9 @@ router.get("/modifyNickname", (req, res) => {
     }
     
     userService.modifyNickname(
-        req.query["mobilePhone"],
-        req.query["groupType"],
-        req.query["nickname"],          
+        req.body["mobilePhone"],
+        req.body["groupType"],
+        req.body["nickname"],          
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
