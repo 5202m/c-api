@@ -62,10 +62,10 @@ router.get("/batchOfflineStatus", (req, res) => {
         }
     );
 });
-router.get("/verifyRule", (req, res) => {
+router.post("/verifyRule", (req, res) => {
     let requires = ["clientGroup", "nickname", "isWh", "userType", "groupId", "content"];
     let isSatify = requires.every((name) => {
-        return common.isValid(req.query[name]);
+        return common.isValid(req.body[name]);
     });
     if(!isSatify){
         logger.warn("[verifyRule] Parameters missed! Expecting parameters: ", requires);
@@ -74,12 +74,12 @@ router.get("/verifyRule", (req, res) => {
     }
     
     userService.verifyRule(
-        req.query["clientGroup"],
-        req.query["nickname"],
-        req.query["isWh"], 
-        req.query["userType"],
-        req.query["groupId"],   
-        req.query["content"],         
+        req.body["clientGroup"],
+        req.body["nickname"],
+        req.body["isWh"], 
+        req.body["userType"],
+        req.body["groupId"],   
+        req.body["content"],         
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
