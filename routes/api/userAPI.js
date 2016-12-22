@@ -195,7 +195,7 @@ router.post("/updateChatUserGroupStatus", (req, res) => {
     );
 });
 router.get("/checkUserLogin", (req, res) => {
-    let requires = ["userId", "groupType", "fromPlatform"];
+    let requires = ["userId", "groupType"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
@@ -263,7 +263,7 @@ router.get("/checkRoomStatus", (req, res) => {
 });
 router.get("/modifyNickname", (req, res) => {
     let requires = ["mobilePhone", "groupType", "nickname"];
-    let isSatify = requires.every((name) => {
+    let isSatify = requires.some((name) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
@@ -347,7 +347,7 @@ router.post("/modifyUserName", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    requires = ["userName", "item", "ip"];
+    requires = ["userName", "ip"];
     isSatify = requires.every((name) => {
         return common.isValid(req.body["params"][name]);
     });
