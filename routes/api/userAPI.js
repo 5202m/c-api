@@ -63,7 +63,7 @@ router.get("/batchOfflineStatus", (req, res) => {
     );
 });
 router.post("/verifyRule", (req, res) => {
-    let requires = ["clientGroup", "nickname", "isWh", "userType", "groupId", "content"];
+    let requires = ["clientGroup", "nickname", "userType", "groupId", "content"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
