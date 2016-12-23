@@ -225,14 +225,14 @@ var subscribeService = {
                     for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
                         templateParam.dataList.push({
-                            symbol         : attachData.symbol,
-                            symbolLabel    : attachData.name,
-                            direction      : attachData.upordown,
+                            symbol         : attachData.symbol || "",
+                            symbolLabel    : attachData.name || "",
+                            direction      : attachData.upordown || "",
                             directionLabel : attachData.upordown == "down" ? "看跌" : "看涨",
-                            open           : attachData.open,
-                            profit         : attachData.profit,
-                            loss           : attachData.loss,
-                            description    : attachData.description
+                            open           : attachData.open || "",
+                            profit         : attachData.profit || "",
+                            loss           : attachData.loss || "",
+                            description    : attachData.description || ""
                         });
                     }
                 }
@@ -319,14 +319,14 @@ var subscribeService = {
                     for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
                         templateParam.dataList.push({
-                            symbol         : attachData.symbol,
-                            symbolLabel    : attachData.name,
-                            direction      : attachData.upordown,
+                            symbol         : attachData.symbol || "",
+                            symbolLabel    : attachData.name || "",
+                            direction      : attachData.upordown || "",
                             directionLabel : attachData.upordown == "down" ? "看跌" : "看涨",
-                            open           : attachData.open,
-                            profit         : attachData.profit,
-                            loss           : attachData.loss,
-                            description    : attachData.description
+                            open           : attachData.open || "",
+                            profit         : attachData.profit || "",
+                            loss           : attachData.loss || "",
+                            description    : attachData.description || ""
                         });
                     }
                 }
