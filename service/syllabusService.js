@@ -520,7 +520,7 @@ var syllabusService = {
                     logger.error("查询聊天室房间名称失败!", err);
                 }else if(rooms){
                     for(var i = 0, lenI = rooms.length; i < lenI; i++){
-                        roomsMap[rooms[i]._id] = rooms[i];
+                        roomsMap[rooms[i]._id] = rooms[i].name || "";
                     }
                 }
                 var courseTmp = null;
