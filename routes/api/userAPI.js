@@ -119,7 +119,6 @@ router.post("/createUser", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        console.log(req.body);
         logger.warn("[createUser] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -156,7 +155,6 @@ router.post("/updateMemberInfo", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        console.log(req.body);
         logger.warn("[updateMemberInfo] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -180,7 +178,6 @@ router.post("/updateChatUserGroupStatus", (req, res) => {
         return common.isValid(req.body["userInfo"][name]);
     });
     if(!isSatify){
-        console.log(req.body["userInfo"]);
         logger.warn("[updateChatUserGroupStatus] Parameters missed! Expecting parameters in 'userInfo': ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;

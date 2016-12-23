@@ -205,11 +205,11 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
             }
         }
         articleService.getArticlePage(params,function(page){
-            var result = APIUtil.APIResult(null, page);
             if(req.path.indexOf('.xml')!=-1){
-        	result = common.toXML(result);
+                res.end(ApiResult.result(null,page,ApiResult.dataType.xml));
+            }else{
+                res.json(ApiResult.result(null,page));
             }
-            res.json(result);
         });
     }
 });

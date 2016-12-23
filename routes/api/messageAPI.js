@@ -13,7 +13,6 @@ router.get("/loadMsg", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
-        console.log(req.query);
         logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;

@@ -170,7 +170,6 @@ router.post("/checkMemberAndSave", (req, res) => {
         return common.isValid(req.body["userInfo"][name]);
     });
     if(!isSatify){
-        console.log(req.body);
         logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
