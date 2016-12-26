@@ -34,14 +34,16 @@ router.get("/loadMsg", (req, res) => {
 router.post("/saveMsg", (req, res) => {
     let msgData = req.body["messageData"];
     if(!msgData){
+	logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    let requires = ["userId", "nickname", "accountNo", "userType", "position", "groupId", "groupType", "mobilePhone"];
+    let requires = ["userId", "nickname", "groupId", "groupType"];
     let isSatify = requires.every((name) => {
         return common.isValid(msgData["fromUser"][name]);
     });
     if(!isSatify){
+	logger.warn("Parameters missed! Expecting parameters in msgData['fromUser']: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -73,6 +75,7 @@ router.get("/getWhUseMsgCount", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+	logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -95,6 +98,7 @@ router.get("/loadBigImg", (req, res) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+	logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -110,6 +114,7 @@ router.get("/loadBigImg", (req, res) => {
 router.post("/deleteMsg", (req, res) => {
     let isSatify = req.body && "publishTimeArr" in req.body;
     if(!isSatify){
+	logger.warn("Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
