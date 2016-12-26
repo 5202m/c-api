@@ -150,7 +150,7 @@ router.get("/joinNewRoom", (req, res) => {
     );
 });
 router.post("/updateMemberInfo", (req, res) => {
-     let requires = ["groupType", "nickname", "clientGroup", "groupId"];
+     let requires = ["groupType", "nickname", "groupId"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
