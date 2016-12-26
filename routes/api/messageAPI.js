@@ -25,7 +25,7 @@ router.get("/loadMsg", (req, res) => {
     messageService.loadMsg(
         userInfo, 
         req.query["lastPublishTime"],
-        req.query["allowWhisper"],   
+        (req.query["allowWhisper"] === true),   
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
