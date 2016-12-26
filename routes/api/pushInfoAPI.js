@@ -27,11 +27,13 @@ router.get("/getPushInfo", (req, res) => {
     );
 });
 router.get("/checkPushInfo", (req, res) => {
-    let requires = ["groupType", "roomId", "clientGroup", "position", "filterTime"];
+    let requires = ["groupType", "roomId", "position"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
     if(!isSatify){
+	console.log(req.query);
+    	logger.warn("[checkPushInfo] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -39,7 +41,7 @@ router.get("/checkPushInfo", (req, res) => {
     pushInfoService.checkPushInfo(
         req.query["groupType"],
         req.query["roomId"], 
-        req.query["clientGroup"],
+        req.query["clientGroup"] || "",
         req.query["position"],
         req.query["filterTime"],   
         (data) => {
