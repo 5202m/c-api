@@ -316,19 +316,27 @@ var syllabusService = {
             return;
         }
         syllabusService.getLecturerInfoMap(userNoArr, function(lecturerMap){
-            var lecturerTmp, avatarArr, courseTmp;
+            var lecturerTmp, avatarArr, courseTmp,userNameArr,positionArr,intaroductionArr,tagArr;
             for(var i = 0,lenI = !courseArr ? 0 : courseArr.length; i < lenI; i++){
                 courseTmp = courseArr[i];
                 if(!courseTmp){
                     continue;
                 }
-                avatarArr = [];
+                avatarArr =[], userNameArr = [], positionArr = [], intaroductionArr = [] , tagArr = [];
                 for(var j = 0,lenJ = courseTmp.userNoArr.length; j < lenJ; j++){
                     lecturerTmp = lecturerMap[courseTmp.userNoArr[j]];
                     avatarArr.push((lecturerTmp && lecturerTmp.avatar) ? lecturerTmp.avatar : "");
+                    userNameArr.push((lecturerTmp && lecturerTmp.userName) ? lecturerTmp.userName : "");
+                    positionArr.push((lecturerTmp && lecturerTmp.position) ? lecturerTmp.position : "");
+                    intaroductionArr.push((lecturerTmp && lecturerTmp.introduction) ? lecturerTmp.introduction : "");
+                    tagArr.push((lecturerTmp && lecturerTmp.tag) ? lecturerTmp.tag : "");
                 }
                 delete courseTmp["userNoArr"];
                 courseTmp.avatar = avatarArr.join(",");
+                courseTmp.userName = userNameArr.join(",");
+                courseTmp.position = positionArr.join(",");
+                courseTmp.introduction = intaroductionArr.join(",");
+                courseTmp.tag = tagArr.join(",");
             }
             callback(courseArr);
         });
@@ -597,9 +605,10 @@ var syllabusService = {
      * @param groupType
      * @param groupId
      * @param lecturerIds
+     * @param hasCurr
      * @param callback
      */
-    getNextCources : function(date, groupType, groupId, lecturerIds, callback){
+    getNextCources : function(date, groupType, groupId, lecturerIds, hasCurr, callback){
         Async.parallel({
             lecturers: function(callbackTmp){
                 syllabusService.getLecturerInfoMap(lecturerIds, function(analystMap){
@@ -630,7 +639,7 @@ var syllabusService = {
                     var row = rows[0];
                     try{
                         var courses = JSON.parse(row.courses);
-                        result = syllabusService.getNextCourseMap(courses, date);
+                        result = syllabusService.getNextCourseMap(courses, date, hasCurr);
                     }catch(e){}
                     callbackTmp(null, result);
                 });
@@ -661,10 +670,14 @@ var syllabusService = {
                         resultTmp.lecturer   = courseTmp.lecturer;
                         resultTmp.courseType = courseTmp.courseType;
                         resultTmp.title      = courseTmp.title;
+                        resultTmp.isNext     = courseTmp.isNext;
                     }
                     if(lecturerMap.hasOwnProperty(lecturerIdTmp)){
                         resultTmp.avatar     = lecturerMap[lecturerIdTmp].avatar;
                         resultTmp.lecturer     = lecturerMap[lecturerIdTmp].userName;
+                        resultTmp.tag  = lecturerMap[lecturerIdTmp].tag||'';
+                        resultTmp.introduction  = lecturerMap[lecturerIdTmp].introduction||'';
+                        resultTmp.position  = lecturerMap[lecturerIdTmp].position||'';
                     }
                     result.push(resultTmp);
                 }
@@ -694,7 +707,7 @@ var syllabusService = {
             'userNo':{$in : lecturerIds},
             'status':0,
             'valid':1
-        }, "_id userNo userName avatar" , function(err, rows){
+        }, "_id userNo userName avatar tag introduction position" , function(err, rows){
             if(err || !rows || rows.length == 0){
                 callback(result);
                 return;
@@ -712,9 +725,10 @@ var syllabusService = {
      * 将课程表转化为分析师为key，课程为val的map
      * @param coursesObj
      * @param date
+     * @param hasCurr
      * @returns {*}
      */
-    getNextCourseMap : function(coursesObj, date){
+    getNextCourseMap : function(coursesObj, date, hasCurr){
         var result = {};
         if(!coursesObj||!coursesObj.days||!coursesObj.timeBuckets){
             return result;
@@ -728,14 +742,14 @@ var syllabusService = {
         var loc_courseDate = null;
         for(i = 0; i < days.length; i++){
             tmpDay = (days[i].day + 6) % 7;
-            if(days[i].status==0 || tmpDay < currDay){
+            if((days[i].status==0 || tmpDay < currDay) && !hasCurr){
                 continue;
             }
             loc_courseDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
             loc_courseDate = loc_courseDate.getTime() + (tmpDay - currDay) * 86400000;
             for(k in timeBuckets){
                 tmBk=timeBuckets[k];
-                if(tmpDay == currDay && tmBk.startTime <= currTime){
+                if(tmpDay == currDay && tmBk.startTime <= currTime && !hasCurr){
                     continue;
                 }
                 courseObj = tmBk.course[i];
@@ -753,7 +767,8 @@ var syllabusService = {
                                 lecturerId : idTmp,
                                 lecturer : names[j],
                                 courseType : courseObj.courseType,
-                                title : courseObj.title
+                                title : courseObj.title,
+                                isNext : tmBk.startTime <= currTime
                             };
                         }
                     }
