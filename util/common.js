@@ -21,6 +21,13 @@ var common = {
 	return xml;
     },
     /**
+     * 链接正则
+     * @returns {Object}
+     */
+    urlReg:function(){
+        return /(http|https):\/\/[A-Za-z0-9]+\.[A-Za-z0-9].+/g;
+    },
+    /**
      * 通过房间id提取房间组别类型
      * 
      * @param roomId
