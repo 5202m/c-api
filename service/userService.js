@@ -133,7 +133,9 @@ var userService = {
      * @param callback
      */
     verifyRule:function(clientGroup,nickname, isWh,userType,groupId,content,callback){
-        var isImg=content.msgType!='text',contentVal=content.value;
+	content = JSON.parse(content);
+        var isImg=content.msgType!='text',
+        	contentVal=content.value;
         if(common.isBlank(contentVal)){
             callback({isOK:false,tip:"发送的内容有误，已被拒绝!"});
             return;
