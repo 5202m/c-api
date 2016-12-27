@@ -68,17 +68,24 @@ router.post("/verifyRule", (req, res) => {
         return common.isValid(req.body[name]);
     });
     if(!isSatify){
-        logger.warn("[verifyRule] Parameters missed! Expecting parameters: ");
+        logger.warn("[verifyRule] Parameters missed! Expecting parameters: ", requires, req.body);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
+    let userInfo = {
+	    clientGroup: req.body["clientGroup"] || "",
+	    nickname: req.body["nickname"], 
+	    userType: req.body["userType"],
+	    groupId: req.body["groupId"],
+    };
+    let params = {
+	    isWh: req.body["isWh"], 
+	    speakNum: req.body["speakNum"]
+    };
     
     userService.verifyRule(
-        req.body["clientGroup"] || "",
-        req.body["nickname"],
-        req.body["isWh"], 
-        req.body["userType"],
-        req.body["groupId"],   
+	userInfo,
+	params,  
         req.body["content"],         
         (data) => {
             res.json(APIUtil.APIResultFromData(data));

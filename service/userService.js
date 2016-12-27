@@ -132,10 +132,16 @@ var userService = {
      * @param content
      * @param callback
      */
-    verifyRule:function(clientGroup,nickname, isWh,userType,groupId,content,callback){
+    verifyRule:function(userInfo,params,content,callback){
 	content = JSON.parse(content);
-        var isImg=content.msgType!='text',
-        	contentVal=content.value;
+	var isImg=content.msgType!='text',
+		contentVal=content.value;
+        var clientGroup=userInfo.clientGroup,
+            nickname=userInfo.nickname, 
+            userType=userInfo.userType,
+            groupId=userInfo.groupId;
+        var isWh=params.isWh,
+        	speakNum=Number(params.speakNum);
         if(common.isBlank(contentVal)){
             callback({isOK:false,tip:"发送的内容有误，已被拒绝!"});
             return;
@@ -205,9 +211,13 @@ var userService = {
                         beforeVal=beforeVal.replace(/,|，/g,'|');//逗号替换成|，便于统一使用正则表达式
                         if(type=='visitor_filter'){
                             if(visitorSpeak.allowed && isVisitor && eval('/'+beforeVal+'/').test(nickname)){
-                                callback({isOK:false,tip:tip});
+                                callback({isOK:false,type:"visitorGag",tip:tip});
                                 return;
                             }
+                        }
+                        if(type=='speak_num_set' && visitorSpeak.allowed && speakNum>0 && Number(beforeVal)<=speakNum){//发言次数限制(针对游客）
+                            callback({isOK:false,tip:tip});
+                            return;
                         }
                         if(type=='keyword_filter'){//过滤关键字或过滤链接
                             if(eval('/'+beforeVal+'/').test(contentVal)){
