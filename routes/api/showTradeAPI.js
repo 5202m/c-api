@@ -66,7 +66,7 @@ router.post("/addShowTrade", (req, res) => {
     showTradeService.addShowTrade(
         req.body,    
         (data) => {
-            res.json(APIUtil.APIResultFromData(data));
+            res.json(APIUtil.APIResult(null, data));
         }
     );
 });
