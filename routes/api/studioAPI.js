@@ -325,7 +325,7 @@ router.get("/getUserInfoByUserNo", (req, res) => {
     );
 });
 router.get("/getShowTeacher", (req, res) => {
-    let requires = ["groupType", "groupId", "authorId"];
+    let requires = ["authorId", "groupId"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
@@ -338,7 +338,7 @@ router.get("/getShowTeacher", (req, res) => {
         {
             groupType: req.query["groupType"],
             groupId: req.query["groupId"],
-            authorId: req.query["authorId"]
+            authorId: req.query["authorId"] || ""
         },
         (data) => {
             res.json(APIUtil.APIResult(null, data));
