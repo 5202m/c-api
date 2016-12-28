@@ -96,7 +96,7 @@ router.get("/getStudioByGroupId", (req, res) => {
     );
 });
 router.get("/checkGroupAuth", (req, res) => {
-    let requires = ["groupId", "clientGroup"];
+    let requires = ["groupId"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
@@ -106,6 +106,7 @@ router.get("/checkGroupAuth", (req, res) => {
         return;
     }
     studioService.checkGroupAuth(
+	req.query["roomType"],   
         req.query["groupId"],       
         req.query["clientGroup"],
         req.query["userId"],

@@ -6,9 +6,9 @@ var userService = require('../service/userService');//引入userService
 var chatPraiseService = require('../service/chatPraiseService');//引入chatPraiseService
 var constant = require('../constant/constant');//引入constant
 var logger=require('../resources/logConf').getLogger('syllabusService');//引入log4js
-var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
-var Utils = require('../util/Utils'); 	 	            //引入工具类js
-var Common = require('../util/common'); 	 	            //引入公共工具类js
+var APIUtil = require('../util/APIUtil');                      //引入API工具类js
+var Utils = require('../util/Utils');                      //引入工具类js
+var common = require('../util/common');                      //引入公共工具类js
 var ApiResult = require('../util/ApiResult');
 var errorMessage = require('../util/errorMessage.js');
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -28,28 +28,28 @@ var syllabusService = {
      * @param today
      * @param callback
      */
-    getSyllabus : function(groupType, groupId, today, callback){
-        groupId = groupId || "";
-        var searchObj={
-            groupType : groupType,
-            groupId : groupId,
-            isDeleted : 0,
-            publishStart : {$lte : today},
-            publishEnd : {$gt : today}
-        };
-        var groupIdArr=null;
-        if(Common.isValid(groupId)){
-            groupIdArr=groupId.split(",");
-            searchObj.groupId={$in:groupIdArr};
-        }
-        chatSyllabus.find(searchObj,"groupType groupId courseType studioLink courses updateDate", function(err, row){
-            if(err){
-                logger.error("查询聊天室课程安排失败!", err);
-                callback(null);
-            }else{
-                callback(row?((groupIdArr && groupIdArr.length>1)?row:row[0]):null);
+    getSyllabus : function(groupType, groupId, callback){
+            groupId = groupId || "";
+            var loc_dateNow = new Date();
+            var searchObj={
+                groupType : groupType,
+                isDeleted : 0,
+                publishStart : {$lte : loc_dateNow},
+                publishEnd : {$gt : loc_dateNow}
+            };
+            var groupIdArr=null;
+            if(common.isValid(groupId)){
+                groupIdArr=groupId.split(",");
+                searchObj.groupId={$in:groupIdArr};
             }
-        });
+            chatSyllabus.find(searchObj,"groupType groupId courseType studioLink courses updateDate", function(err, row){
+                if(err){
+                    logger.error("查询聊天室课程安排失败!", err);
+                    callback(null);
+                }else{
+                    callback(row?((groupIdArr && groupIdArr.length>1)?row:row[0]):null);
+                }
+            });
     },
     /**
      * 通过参数提取课程信息,包括课程分析师的个人信息
@@ -361,7 +361,7 @@ var syllabusService = {
     isValidCourse : function(course){
         return course
             && course.status!=0
-            && !Common.isBlank(course.lecturerId)
+            && !common.isBlank(course.lecturerId)
             && course.courseType != 2;
     },
     /**

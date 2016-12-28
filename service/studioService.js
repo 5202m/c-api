@@ -37,7 +37,6 @@ var studioService = {
             userId: userId,
             groupType: groupType
         };
-        var today = new Date();
         async.parallel({
                 studioList: function(callback){
                     if(isGetRoomList){
@@ -50,7 +49,7 @@ var studioService = {
                 },
                 syllabusResult: function(callback){
                     if(isGetSyllabus){
-                        syllabusService.getSyllabus(userInfo.groupType, groupId, today, function(data){
+                        syllabusService.getSyllabus(userInfo.groupType, groupId, function(data){
                             callback(null, data.data);
                         });
                     }else{
@@ -93,12 +92,38 @@ var studioService = {
      * @param callback
      */
     getRoomList:function(groupType,callback){
-        chatGroup.find({valid:1,status:{$in:[1,2]},groupType:groupType}).select({traninClient:1,status:1,clientGroup:1,remark:1,name:1,level:1,groupType:1,talkStyle:1,whisperRoles:1,chatRules:1,openDate:1,defTemplate:1,roomType:1,defaultAnalyst:1}).sort({'sequence':'asc'}).exec(function (err,rows) {
-            if(err){
-                logger.error("getStudioList fail:"+err);
-            }
-            callback(rows);
-        });
+	chatGroup.find({
+	    valid: 1,
+	    status: {
+	        $in: [1, 2]
+	    },
+	    groupType: groupType
+	})
+	.select({
+	    traninClient: 1,
+	    status: 1,
+	    clientGroup: 1,
+	    remark: 1,
+	    name: 1,
+	    level: 1,
+	    groupType: 1,
+	    talkStyle: 1,
+	    whisperRoles: 1,
+	    chatRules: 1,
+	    openDate: 1,
+	    defTemplate: 1,
+	    roomType: 1,
+	    defaultAnalyst: 1
+	})
+	.sort({
+	    'sequence': 'asc'
+	})
+	.exec(function (err, rows) {
+	    if (err) {
+	        logger.error("getStudioList fail:" + err);
+	    }
+	    callback(rows);
+	});
     },
     /**
      * 提取客户组列表
@@ -146,15 +171,30 @@ var studioService = {
     /**
      * 检查用户组权限
      */
-    checkGroupAuth:function(groupId,clientGroup,userId,callback){
-        var searchObj = {'_id':groupId, valid:1,
-                $or : [{'clientGroup':common.getSplitMatchReg(clientGroup), roomType : {$ne : "train"}},
-                    {'clientGroup':common.getSplitMatchReg(clientGroup), roomType : "train", "traninClient" : {$elemMatch : {isAuth : 1, clientId : userId}}}]};
-        chatGroup.find(searchObj).count(function (err,rowNum) {
+    checkGroupAuth:function(roomType, groupId,clientGroup,userId,callback){
+	var searchObj = {valid:1};
+        if(roomType){
+            searchObj.roomType = roomType;
+        }else if(groupId){
+            searchObj._id = groupId;
+        }
+        if(userId){
+            searchObj.$or = [
+                {'clientGroup':common.getSplitMatchReg(clientGroup), status : 1},
+                {'clientGroup':common.getSplitMatchReg(clientGroup), status : 2, traninClient : {$elemMatch : {isAuth : 1, clientId : userId}}} //授权访问
+            ];
+        }else{
+            searchObj.clientGroup = common.getSplitMatchReg(clientGroup);
+            searchObj.status = 1;//有效
+        }
+        if(common.isBlank(clientGroup) && searchObj.clientGroup){
+            delete searchObj.clientGroup;
+        }
+        chatGroup.findOne(searchObj, function(err, group){
             if(err){
                 logger.warn("checkGroupAuth->not auth:"+err);
             }
-            callback(rowNum>0);
+            callback(group);
         });
     },
 

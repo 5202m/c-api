@@ -600,7 +600,7 @@ var userService = {
      * @returns {boolean}
      */
     checkRoomStatus:function(userId,groupId,currCount,callback){
-        chatGroup.findOne({_id:groupId,valid:1,status:{$in:[1,2]}},"status openDate maxCount valid roomType traninClient",function(err,row){
+	chatGroup.findOne({_id:groupId,valid:1,status:{$in:[1,2]}},"status openDate maxCount valid roomType traninClient",function(err,row){
             if(!row || err){
                 callback(false);
                 return;
@@ -615,7 +615,7 @@ var userService = {
                 if(row.traninClient){
                     for(var i=0;i<row.traninClient.length;i++){
                         if(row.traninClient[i].clientId==userId){
-                            ret=row.roomType=='train'?(row.traninClient[i].isAuth==1):true;
+                            ret=row.traninClient[i].isAuth==1;
                             break;
                         }
                     }

@@ -16,11 +16,9 @@ router.get("/getSyllabus", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    let nowDay = new Date(req.query["today"] - 0);
     syllabusService.getSyllabus(
         req.query["groupType"],
-        req.query["groupId"],
-        nowDay,         
+        req.query["groupId"],        
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
