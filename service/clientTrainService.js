@@ -179,31 +179,51 @@ var clientTrainService = {
      * @param isAll
      * @param callback
      */
-    getTrainList:function(groupType,teachId,isAll,callback){
-        var searchObj={"groupType":groupType,roomType:'train'};
-        var limit=50,searchFields="_id status defaultAnalyst point openDate clientGroup name traninClient label remark";
-        if(!isAll){
-            searchObj.status={$in:[1,2]};
+    getTrainList: function (groupType, teachId, isAll, callback) {
+        var searchObj = {
+            "groupType": groupType,
+            roomType: 'train',
+            valid: 1
+        };
+        var limit = 50,
+        searchFields = "_id status defaultAnalyst point openDate clientGroup name traninClient label remark";
+        if (!isAll) {
+            searchObj.status = {
+                $in: [1, 2]
+            };
         }
-        if(teachId){
-            searchObj["defaultAnalyst.userNo"]=teachId;
-            limit=2;
-            searchFields+=" traninClient";
+        if (teachId) {
+            searchObj["defaultAnalyst.userNo"] = teachId;
+            limit = 2;
+            searchFields += " traninClient";
         }
-        chatGroup.find(searchObj).select(searchFields).limit(limit).sort({'createDate':'desc'}).exec(function(err,rooms){
-            if(err){
+        chatGroup.find(searchObj).select(searchFields).limit(limit).sort({
+            'createDate': 'desc'
+        }).exec(function (err, rooms) {
+            if (err) {
                 logger.error("获取房间列表失败! >>getChatGroupList:", err);
                 callback(null);
-            }else{
-                var tmList=[];
-                var row=null,currDate = common.formatterDate(new Date(),'-');
-                if(rooms && rooms.length>0){
-                    for(var i=0;i<rooms.length;i++){
-                        row=rooms[i];
-                        var openDate = JSON.parse(row.openDate)||{};
-                        var isEnd = (openDate.endDate<currDate)||false;
-                        tmList.push({"_id":row._id,name:row.name,clientSize:(row.traninClient?row.traninClient.length:0),allowInto:common.dateTimeWeekCheck(row.openDate, false,true),
-                            clientGroup:row.clientGroup,defaultAnalyst:row.defaultAnalyst,status:row.status,isEnd:isEnd, label:row.label,remark:row.remark});
+            } else {
+                var tmList = [];
+                var row = null,
+                currDate = common.formatterDate(new Date(), '-');
+                if (rooms && rooms.length > 0) {
+                    for (var i = 0; i < rooms.length; i++) {
+                        row = rooms[i];
+                        var openDate = JSON.parse(row.openDate) || {};
+                        var isEnd = (openDate.endDate < currDate) || false;
+                        tmList.push({
+                            "_id": row._id,
+                            name: row.name,
+                            clientSize: (row.traninClient ? row.traninClient.length : 0),
+                            allowInto: common.dateTimeWeekCheck(row.openDate, false, true),
+                            clientGroup: row.clientGroup,
+                            defaultAnalyst: row.defaultAnalyst,
+                            status: row.status,
+                            isEnd: isEnd,
+                            label: row.label,
+                            remark: row.remark
+                        });
                     }
                 }
                 callback(tmList);
