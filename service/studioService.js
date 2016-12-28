@@ -50,7 +50,7 @@ var studioService = {
                 syllabusResult: function(callback){
                     if(isGetSyllabus){
                         syllabusService.getSyllabus(userInfo.groupType, groupId, function(data){
-                            callback(null, data.data);
+                            callback(null, data);
                         });
                     }else{
                         callback(null,null);
