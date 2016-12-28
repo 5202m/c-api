@@ -742,14 +742,16 @@ var syllabusService = {
         var loc_courseDate = null;
         for(i = 0; i < days.length; i++){
             tmpDay = (days[i].day + 6) % 7;
-            if((days[i].status==0 || tmpDay < currDay) && !hasCurr){
+            if(days[i].status==0 || tmpDay < currDay){
                 continue;
             }
             loc_courseDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
             loc_courseDate = loc_courseDate.getTime() + (tmpDay - currDay) * 86400000;
             for(k in timeBuckets){
                 tmBk=timeBuckets[k];
-                if(tmpDay == currDay && tmBk.startTime <= currTime && !hasCurr){
+                if(tmpDay == currDay &&
+                    (tmBk.endTime <= currTime ||
+                    (tmBk.startTime <= currTime && !hasCurr))){
                     continue;
                 }
                 courseObj = tmBk.course[i];
