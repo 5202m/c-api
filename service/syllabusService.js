@@ -770,7 +770,7 @@ var syllabusService = {
                                 lecturer : names[j],
                                 courseType : courseObj.courseType,
                                 title : courseObj.title,
-                                isNext : tmBk.startTime <= currTime
+                                isNext : tmBk.startTime >= currTime
                             };
                         }
                     }
