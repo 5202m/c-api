@@ -201,6 +201,7 @@ var subscribeService = {
                 };
                 break;
 
+            case subscribeService.subscribeType.shoutTrade :
             case subscribeService.subscribeType.strategy :
                 attachDataArr = data.remark;
                 if(attachDataArr){
@@ -295,6 +296,7 @@ var subscribeService = {
                 };
                 break;
 
+            case subscribeService.subscribeType.shoutTrade :
             case subscribeService.subscribeType.strategy :
                 attachDataArr = data.remark;
                 if(attachDataArr){
@@ -446,9 +448,11 @@ var subscribeService = {
             }
             switch (tag) {
                 case "trading_strategy":
+                    result = subscribeService.subscribeType.strategy;
+                    break;
                 case "shout_single":
                 case "resting_order":
-                    result = subscribeService.subscribeType.strategy;
+                    result = subscribeService.subscribeType.shoutTrade;
                     break;
             }
         }
