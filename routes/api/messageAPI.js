@@ -34,7 +34,7 @@ router.get("/loadMsg", (req, res) => {
 router.post("/saveMsg", (req, res) => {
     let msgData = req.body["messageData"];
     if(!msgData){
-	logger.warn("Parameters missed! Expecting parameters: ", requires);
+        logger.warn("Parameters missed! Expecting parameters: msgData");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
@@ -43,7 +43,7 @@ router.post("/saveMsg", (req, res) => {
         return common.isValid(msgData["fromUser"][name]);
     });
     if(!isSatify){
-	logger.warn("Parameters missed! Expecting parameters in msgData['fromUser']: ", requires);
+        logger.warn("Parameters missed! Expecting parameters in msgData['fromUser']: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
