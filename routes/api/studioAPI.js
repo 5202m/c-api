@@ -7,7 +7,7 @@ let common = require('../../util/common');
 let APIUtil = require('../../util/APIUtil.js');
 
 router.get("/getIndexLoadData", (req, res) => {
-    let requires = ["groupType", "groupId"];
+    let requires = ["groupType"];//, "groupId"
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
