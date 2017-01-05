@@ -11,6 +11,7 @@ var chatPointsService=require('../service/chatPointsService');
 var visitorService=require('../service/visitorService');
 var constant = require('../constant/constant');//引入constant
 var common = require('../util/common'); 	
+let Deferred = common.Deferred;
 
 /**
  * 定义用户服务类
@@ -133,7 +134,7 @@ var userService = {
      * @param callback
      */
     verifyRule:function(userInfo,params,content,callback){
-	content = JSON.parse(content);
+	var deferred = new Deferred();
 	var isImg=content.msgType!='text',
 		contentVal=content.value;
         var clientGroup=userInfo.clientGroup,
@@ -143,13 +144,13 @@ var userService = {
         var isWh=params.isWh,
         	speakNum=Number(params.speakNum);
         if(common.isBlank(contentVal)){
-            callback({isOK:false,tip:"发送的内容有误，已被拒绝!"});
+            deferred.reject({isOK:false,tip:"发送的内容有误，已被拒绝!"});
             return;
         }
         contentVal = contentVal.replace(/(<(label|label) class="dt-send-name" tid="[^>"]+">@.*<\/label>)|(<(img|IMG)\s+src="[^>"]+face\/[^>"]+"\s*>)|(<a href="[^>"]+" target="_blank">.*<\/a>)/g,'');
         if(!isImg){//如果是文字，替换成链接
             if(/<[^>]*>/g.test(contentVal)){ //过滤特殊字符
-                callback({isOK:false,tip:"有特殊字符，已被拒绝!"});
+        	deferred.reject({isOK:false,tip:"有特殊字符，已被拒绝!"});
                 return;
             }
         }
@@ -157,15 +158,15 @@ var userService = {
         //预定义规则
         chatGroup.findOne({_id:groupId,valid:1,status:{$in:[1,2]}},function (err,row) {
             if(err||!row){
-                callback({isOK:false,tip:'系统异常，房间不存在！',leaveRoom:true});
+        	deferred.reject({isOK:false,tip:'系统异常，房间不存在！',leaveRoom:true});
                 return;
             }
             if(constant.roleUserType.member<parseInt(userType)){//后台用户无需使用规则
-                callback({isOK:true,tip:'',talkStyle:row.talkStyle,whisperRoles:row.whisperRoles});
+        	deferred.resolve({isOK:true,tip:'',talkStyle:row.talkStyle,whisperRoles:row.whisperRoles});
                 return;
             }
             if(!common.dateTimeWeekCheck(row.openDate, true)){
-                callback({isOK:false,tip:'房间开放时间结束！',leaveRoom:true});
+        	deferred.reject({isOK:false,tip:'房间开放时间结束！',leaveRoom:true});
                 return;
             }
             var ruleArr=row.chatRules,resultTip=[],beforeVal='',type='',tip='',clientGroupVal='';
@@ -183,18 +184,18 @@ var userService = {
                 if(isWh){
                     if(type=='whisper_allowed'){
                         if(!isPass){
-                            callback({isOK:false,tip:tip});
+                            deferred.reject({isOK:false,tip:tip});
                         }else{
-                            callback({isOK:true,tip:'',talkStyle:row.talkStyle,whisperRoles:row.whisperRoles});
+                            deferred.resolve({isOK:true,tip:'',talkStyle:row.talkStyle,whisperRoles:row.whisperRoles});
                         }
                         return;
                     }
                 }else{
                     if(isPass && type=='speak_not_allowed'){//禁言
-                        callback({isOK:false,tip:tip});
+                	deferred.reject({isOK:false,tip:tip});
                         return;
                     }else if(!isPass && type=='speak_allowed'){//允许发言
-                        callback({isOK:false,tip:tip});
+                	deferred.resolve({isOK:false,tip:tip});
                         return;
                     }else if(!visitorSpeak.allowed && isVisitor && type=='visitor_filter'){//允许游客发言（默认游客不允许发言）
                         visitorSpeak.allowed = isPass;
@@ -202,7 +203,7 @@ var userService = {
                     }
                     if(isImg && isPass && type=='img_not_allowed'){//禁止发送图片
                         if(common.isBlank(clientGroupVal) || (common.isValid(clientGroupVal) && common.containSplitStr(clientGroupVal, clientGroup))) {
-                            callback({isOK: false, tip: tip});
+                            deferred.reject({isOK: false, tip: tip});
                             return;
                         }
                     }
@@ -211,24 +212,24 @@ var userService = {
                         beforeVal=beforeVal.replace(/,|，/g,'|');//逗号替换成|，便于统一使用正则表达式
                         if(type=='visitor_filter'){
                             if(visitorSpeak.allowed && isVisitor && eval('/'+beforeVal+'/').test(nickname)){
-                                callback({isOK:false,type:"visitorGag",tip:tip});
+                        	deferred.reject({isOK:false,type:"visitorGag",tip:tip});
                                 return;
                             }
                         }
                         if(type=='speak_num_set' && visitorSpeak.allowed && speakNum>0 && Number(beforeVal)<=speakNum){//发言次数限制(针对游客）
-                            callback({isOK:false,tip:tip});
+                            deferred.reject({isOK:false,tip:tip});
                             return;
                         }
                         if(type=='keyword_filter'){//过滤关键字或过滤链接
                             if(eval('/'+beforeVal+'/').test(contentVal)){
-                                callback({isOK:false,tip:tip});
+                        	deferred.reject({isOK:false,tip:tip});
                                 return;
                             }
                         }
                         if(type=='url_not_allowed'){//禁止链接
                             var val=beforeVal.replace(/\//g,'\\/').replace(/\./g,'\\.');
                             if(eval('/'+val+'/').test(contentVal)){
-                                callback({isOK:false,tip:tip});
+                        	deferred.reject({isOK:false,tip:tip});
                                 return;
                             }
                         }
@@ -250,26 +251,27 @@ var userService = {
                 }
             }
             if(isWh){ //私聊不校验规则
-                callback({isOK:true,tip:resultTip.join(";"),talkStyle:row.talkStyle,whisperRoles:row.whisperRoles});
+        	deferred.resolve({isOK:true,tip:resultTip.join(";"),talkStyle:row.talkStyle,whisperRoles:row.whisperRoles});
                 return;
             }
             if(isVisitor && !visitorSpeak.allowed){
-                callback({isOK:false,tip:visitorSpeak.tip});
+        	deferred.reject({isOK:false,tip:visitorSpeak.tip});
                 return;
             }
             if(!isImg && urlArr.length>0 && common.urlReg().test(contentVal)){
                 var val=urlArr.join("|").replace(/\//g,'\\\/').replace(/\./g,'\\.');
                 if(!eval('/'+val+'/').test(contentVal)){
-                    callback({isOK:false,tip:urlTipArr.join(";")});
+                    deferred.reject({isOK:false,tip:urlTipArr.join(";")});
                     return;
                 }
             }
             if(needApproval){//需要审批
-                callback({isOK:false,needApproval:true,tip:needApprovalTip});//需要审批，设置为true
+        	deferred.reject({isOK:false,needApproval:true,tip:needApprovalTip});//需要审批，设置为true
                 return;
             }
-            callback({isOK:true,tip:resultTip.join(";"),talkStyle:row.talkStyle,whisperRoles:row.whisperRoles});
+            deferred.resolve({isOK:true,tip:resultTip.join(";"),talkStyle:row.talkStyle,whisperRoles:row.whisperRoles});
         });
+        return deferred.promise;
     },
     /**
      * 提取会员信息
@@ -540,7 +542,11 @@ var userService = {
      * @param userInfo
      * @param isAllowPass 是否允许通过
      */
-    checkUserLogin:function(userInfo, callback){
+    checkUserLogin:function(userInfo, isAllowPass, callback){
+	if(isAllowPass){
+            callback(true);
+            return;
+        }
         var searchObj={};
         if(constant.fromPlatform.pm_mis==userInfo.fromPlatform){
             searchObj={_id:userInfo.groupType,accountNo:(common.isBlank(userInfo.accountNo)?userInfo.userId:userInfo.accountNo)};

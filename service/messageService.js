@@ -3,6 +3,7 @@ var logger=require('../resources/logConf').getLogger('messageService');//引入l
 var common = require('../util/common');//引入common类
 var constant = require('../constant/constant');//引入constant
 var visitorService=require('../service/visitorService');
+let Deferred = common.Deferred;
 
 /**
  * 聊天室服务类
@@ -218,6 +219,7 @@ var messageService ={
      * 保存内容到数据库中
      */
     saveMsg:function(data,userNoArr, callback){
+	var deferred = new Deferred();
         var userInfo=data.fromUser;
         var content=data.content;
         var Model = chatMessage.db();
@@ -253,9 +255,9 @@ var messageService ={
         chatMessageModel.save(function(err){
             if (err) {
                 logger.error("save chatMessage Failure!! >>saveTrain:", err);
-                callback({isOK:false, msg:'save chatMessage Failure'});
+                deferred.reject({isOK:false, msg:'save chatMessage Failure'});
             }else{
-                callback({isOK:true, msg: 'save chatMessage success!'});
+        	deferred.resolve({isOK:true, msg: 'save chatMessage success!'});
             }
             logger.info('save chatMessage success!');
         });

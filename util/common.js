@@ -266,7 +266,19 @@ var common = {
     isMobilePhone : function(val) {
 	return /(^[0-9]{11})$|(^86(-){0,3}[0-9]{11})$/.test(val);
     },
-
+    /**
+     * 判断客户端是否手机
+     * @param userAgent
+     */
+    isMobile: function (userAgent) {
+        if (userAgent && userAgent.headers) {
+            userAgent = userAgent.headers["user-agent"];
+        }
+        if (!userAgent) {
+            return false;
+        }
+        return /(iphone|ipod|ipad|android|mobile|playbook|bb10|meego)/.test(userAgent.toLowerCase());
+    },
     /**
      * 在数组中查找匹配对象下标
      * 
@@ -486,6 +498,21 @@ var common = {
 	    break;
 	}
 	return date;
+    },
+    Deferred: function () {
+        var _resolve;
+        var _reject;
+        this.promise = new Promise(function (resolve, reject) {
+                _resolve = resolve;
+                _reject = reject;
+            }
+                .bind(this));
+        this.resolve = function (value) {
+            _resolve.call(this.promise, value);
+        };
+        this.reject = function (value) {
+            _reject.call(this.promise, value);
+        };
     },
 
     /**

@@ -202,7 +202,7 @@ var visitorService = {
     getByClientStoreId:function(groupType,groupId,clientStoreId,callback){
         chatVisitor.findOne({groupType:groupType,roomId:groupId,valid : 1,clientStoreId:clientStoreId}).select("nickname visitorId clientStoreId offlineDate").exec(function(err, data){
             if (err||!data){
-                logger.warn('getByClientStoreId fail',err);
+                logger.warn('getByClientStoreId fail', err, JSON.stringify({groupType:groupType,roomId:groupId,valid : 1,clientStoreId:clientStoreId}));
                 callback(null);
             }else{
                 callback(data.offlineDate);

@@ -126,4 +126,16 @@ router.get("/getShowTrade", function(req, res) {
         res.json(result);
     });
 });
+
+router.get("/getRoomOnlineTotalNum", function(req, res) {
+    var groupId = req.query["groupId"];
+    if(!groupId){
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+        return;
+    }
+    chatService.getRoomOnlineTotalNum(groupId, function(data){
+        res.json(ApiResult.result(null, data));
+    });
+});
+
 module.exports = router;

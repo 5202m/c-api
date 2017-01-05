@@ -42,7 +42,7 @@ exports.init = function(app){
     app.use('/', indexRouter);
     app.use('/api',apiRoutes);
     //设置跨域访问
-    apiRoutes.all('/common|upload/*', function(req, res, next) {
+    apiRoutes.all('/common|upload|message/*', function(req, res, next) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "X-Requested-With,X_Requested_With");
         res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");

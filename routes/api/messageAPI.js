@@ -4,7 +4,8 @@ var router = express.Router();
 var messageService = require('../../service/messageService');
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage');
-let APIUtil = require('../../util/APIUtil.js');
+var APIUtil = require('../../util/APIUtil.js');
+var chatService = require("../../service/chatService");
 
  
 router.get("/loadMsg", (req, res) => {
@@ -142,6 +143,53 @@ router.get("/getLastTwoDaysMsg", (req, res) => {
             res.json(APIUtil.APIResultFromData(data));
         }
     );
+});
+
+//验证
+router.post("/join",(req, res)=> {
+    let data = req.body;
+    chatService.join({
+        userAgent:data.userAgent,
+        userInfo:data.userInfo,
+        lastPublishTime:data.lastPublishTime,
+        allowWhisper:data.allowWhisper,
+        fUserTypeStr:data.fUserTypeStr,
+        fromPlatform:data.fromPlatform,
+        ip:req.connection.remoteAddress
+    });
+    res.json({code:200});
+});
+//发送消息
+router.post("/sendMsg",(req, res)=> {
+    let data = req.body.data;
+    chatService.acceptMsg(data);
+    res.json({code:200});
+});
+//加载私聊消息
+router.post("/getWhMsg", (req, res)=> {
+    let userInfo = req.body.data;
+    chatService.getWHMsg(userInfo);
+    res.json({code:200});
+});
+//断开连接
+router.post("/disconnect",(req,res)=>{
+    disconnect(req,res);
+});
+function disconnect(req,res){
+    let data = req.body.data;
+    chatService.disconnect(data.msgData[0]);
+    res.json({code:200});
+}
+//接收到socket消息  目前只处理断开消息
+router.post("/",(req,res)=>{
+    let data = req.body.data;
+    if(data){
+        if(data.msgType == 'disconnect'){
+            disconnect(req,res);
+        }
+    }else{
+        res.json({code:500});
+    }
 });
 
 module.exports = router;

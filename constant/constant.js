@@ -132,6 +132,12 @@ var constant = {
             //register:1,
             //visitor:1
         }
+    },
+    pushInfoPosition:{//信息推送位置
+        taskbar:0,//任务栏
+        whBox:1,//私聊框
+        talkBox:3,//公聊框
+        videoBox:4//视频框
     }
 };
 
