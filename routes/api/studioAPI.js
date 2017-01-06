@@ -24,9 +24,9 @@ router.get("/getIndexLoadData", (req, res) => {
         req.query["userId"],
         req.query["groupType"],
         req.query["groupId"], 
-        isGetRoomList,
-        isGetSyllabus,  
-        isGetMember,        
+        isGetRoomList === "true",
+        isGetSyllabus === "true",  
+        isGetMember === "true",        
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -143,7 +143,7 @@ router.post("/studioRegister", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    requires = ["mobilePhone", "nickname", "groupId"];
+    requires = ["mobilePhone", "groupType"];
     isSatify = requires.every((name) => {
         return common.isValid(req.body["userInfo"][name]);
     });

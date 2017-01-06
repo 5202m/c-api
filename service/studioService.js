@@ -35,7 +35,8 @@ var studioService = {
     getIndexLoadData:function(userId, groupType,groupId,isGetRoomList,isGetSyllabus,isGetMember,dataCallback){
         var userInfo = {
             userId: userId,
-            groupType: groupType
+            groupType: groupType,
+            isLogin: isGetMember
         };
         async.parallel({
                 studioList: function(callback){
@@ -70,11 +71,25 @@ var studioService = {
                             if (!err && row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                                 var group = row.loginPlatform.chatUserGroup.id(userInfo.groupType);
                                 if (group) {
+                                    userInfo.userId = group.userId;
                                     userInfo.avatar = group.avatar;
+                                    userInfo.userType = group.userType;
+                                    userInfo.vipUser = group.vipUser;
                                     userInfo.clientGroup = group.vipUser ? constant.clientGroup.vip:group.clientGroup;
                                     userInfo.nickname = group.nickname;
                                     userInfo.accountNo=group.accountNo;
+                                    userInfo.mobilePhone=row.mobilePhone;
                                 }
+                            } else {
+                                logger.warn("memberInfo error", err, row, JSON.stringify({
+                                    valid: 1,
+                                    'loginPlatform.chatUserGroup': {
+                                        $elemMatch: {
+                                            _id: userInfo.groupType,
+                                            userId: userInfo.userId
+                                        }
+                                    }
+                                }));
                             }
                             callback(null, userInfo);
                         });
@@ -264,7 +279,10 @@ var studioService = {
                 }
             }
             studioService.setClientInfo(row,userInfo,function(resultTmp){
+                resultTmp.groupId = userInfo.groupId;
                 callback(resultTmp);
+                logger.info("studioService.setClientInfo >>> userInfo = ", JSON.stringify(userInfo));
+                logger.info("studioService.setClientInfo >>> resultTmp = ", JSON.stringify(resultTmp));
             });
             if(common.isValid(userInfo.item)) {
                 //注册积分
