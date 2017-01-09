@@ -77,6 +77,8 @@ var studioService = {
                                     userInfo.vipUser = group.vipUser;
                                     userInfo.clientGroup = group.vipUser ? constant.clientGroup.vip:group.clientGroup;
                                     userInfo.nickname = group.nickname;
+                                    userInfo.userName = group.userName;
+                                    userInfo.email = group.email;
                                     userInfo.accountNo=group.accountNo;
                                     userInfo.mobilePhone=row.mobilePhone;
                                 }

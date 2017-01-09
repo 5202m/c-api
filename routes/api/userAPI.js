@@ -401,16 +401,16 @@ router.post("/modifyPwd", (req, res) => {
         return common.isValid(req.body["userInfo"][name]);
     });
     if(!isSatify){
-        logger.warn("[modifyPwd] Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyPwd] Parameters missed! Expecting parameters in req.body[\"userInfo\"]: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    requires = ["password", "newPwd", "item", "ip"];
+    requires = ["password", "newPwd"];
     isSatify = requires.every((name) => {
         return common.isValid(req.body["params"][name]);
     });
     if(!isSatify){
-        logger.warn("[modifyPwd] Parameters missed! Expecting parameters: ", requires);
+        logger.warn("[modifyPwd] Parameters missed! Expecting parameters in req.body[\"params\"]: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
