@@ -10,47 +10,66 @@ class MessageApi {
             join:"join",
             leave:"leave",
             setUUID:"setUUID",
-            init:"init"
+            init:"init",
+            onlineList:"onlineList"
         }
     }
     send(data){
         this._go(data);
     }
-    buildData(namespace,msgType,sendMsgType,ext,...msgData){
+    buildData(namespace,eventType,msgType,ext,...msgData){
         namespace = this._buildNamespace(namespace);
+        ext.msgType = msgType;
+        ext.msgData = msgData;
         return {
             namespace: namespace,
             msg: {
-                ext: ext,
-                msgType: msgType,
-                sendMsgType:sendMsgType,
-                msgData: msgData
+                eventType:eventType,
+                ext:ext
             }
         };
     }
     buildUserExt(socketId,uuid){
-        let ext = {toUser:true};
+        let ext = {toUser:{}};
         if(socketId){
-            ext.socketId = socketId;
+            ext.toUser.socketId = socketId;
         }
         if(uuid){
-            ext.uuid = uuid;
+            ext.toUser.uuid = uuid;
         }
         return ext;
     }
+    buildFormUserExt(socketId,uuid){
+        let ext = {form:{}};
+        if(socketId){
+            ext.form.socketId = socketId;
+        }
+        if(uuid){
+            ext.form.uuid = uuid;
+        }
+        return ext;
+    }
+    buildRoomExt(room){
+        return {toRoom:{room:room}};
+    }
+
+    buildNamespaceExt(namespace){
+        return {toNamespace:{namespace:namespace}};
+    }
+
     _go(data) {
-	let path = `${config.chatSocketUrl}/chat/msg`;
-	request.post({
-                url: path,
-                form: {data:JSON.stringify(data)}
-            }, (error, response, data)=>{
-                if (error) {
-                    logger.error("消息发送失败, ", path);
-                } else {
-                    logger.info(data);
+        let path = `${config.chatSocketUrl}/api/chat/msg`;
+        request.post({
+                    url: path,
+                    form: {data:JSON.stringify(data)}
+                }, (error, response, data)=>{
+                    if (error) {
+                        logger.error("消息发送失败, ", path);
+                    } else {
+                        logger.info(data);
+                    }
                 }
-            }
-        );
+            );
     }
 
     checkUserIsOnline(namespace,room,uuid){
@@ -61,7 +80,7 @@ class MessageApi {
             room:room,
             uuid:uuid
         }
-        let path = `${config.chatSocketUrl}/chat/isOnline`;
+        let path = `${config.chatSocketUrl}/api/chat/isOnline`;
         request.get({
                 url: path,
                 form: {data:JSON.stringify(data)}
@@ -70,7 +89,7 @@ class MessageApi {
                     deferred.reject(error);
                 }else{
                     data = JSON.parse(data);
-                    if(data.code == 200){
+                    if(data.result == 0){
                         deferred.resolve(data.data.online);
                     }else{
                         deferred.reject(data);
@@ -84,11 +103,12 @@ class MessageApi {
     getRoomUserCount(namespace,room){
         let deferred = new common.Deferred();
         namespace = this._buildNamespace(namespace);
-        let path = `${config.chatSocketUrl}/chat/onlineCount`;
+        let path = `${config.chatSocketUrl}/api/chat/onlineCount`;
         let data = {
             namespace:namespace,
             room:room
         }
+        console.log(path);
         logger.info("Getting data from ", path, JSON.stringify(data));
         request.get({
                 url: path + "?data=" + JSON.stringify(data)
@@ -97,7 +117,7 @@ class MessageApi {
                     deferred.reject(error);
                 }else{
                     data = JSON.parse(data);
-                    if(data.code == 200){
+                    if(data.result == 0){
                         deferred.resolve(data.data.count);
                     }else{
                         deferred.reject(data);

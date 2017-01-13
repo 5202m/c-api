@@ -44,7 +44,7 @@ class NoticeMessage{
                                         namespace,
                                         messageApi.msgType.sendMsg,
                                         "notice",
-                                        {room:room},
+                                        messageApi.buildRoomExt(room),
                                         {type: this.noticeType.removeMsg, data: msgIds}
         );
     }
@@ -66,7 +66,7 @@ class NoticeMessage{
                                         namespace,
                                         messageApi.msgType.sendMsg,
                                         "notice",
-                                        {room:room},
+                                        messageApi.buildRoomExt(room),
                                         {type: this.noticeType.pushInfo, data: {position:position, ids:ids, delete:true}}
         );
     }
@@ -88,7 +88,7 @@ class NoticeMessage{
                                     namespace,
                                     messageApi.msgType.sendMsg,
                                     "notice",
-                                    {room:room},
+                                    messageApi.buildRoomExt(room),
                                     {type: this.noticeType.pushInfo, data:data}
         );
     }
@@ -111,7 +111,7 @@ class NoticeMessage{
                                     namespace,
                                     messageApi.msgType.sendMsg,
                                     "notice",
-                                    {room:room},
+                                    messageApi.buildRoomExt(room),
                                     {type: this.noticeType.articleInfo, data:data}
         );
     }
@@ -135,7 +135,7 @@ class NoticeMessage{
                                     namespace,
                                     messageApi.msgType.sendMsg,
                                     "notice",
-                                    {room:room},
+                                    messageApi.buildRoomExt(room),
                                     {type: this.noticeType.leaveRoom, flag:flag}
         );
     }
@@ -160,11 +160,34 @@ class NoticeMessage{
                                     namespace,
                                     messageApi.msgType.sendMsg,
                                     "notice",
-                                    {toUser:true,uuid:uuid},
+                                    messageApi.buildUserExt(null,uuid),
                                     {type: this.noticeType.leaveRoom, flag:flag}
         );
     }
+    /**
+     * 重复登录退出房间
+     * @param groupType
+     * @param uuid
+     * @param flag
+     */
+    leaveRoomByOtherLogin(groupType,uuid) {
+        messageApi.send(this.buildLeaveRoomByOtherLogin(groupType,uuid,this.leaveRoomFlag.otherLogin));
+    }
 
+    /****
+     * 重复登录退出房间 消息体构造
+     * @param uuid
+     * @param flag
+     */
+    buildLeaveRoomByOtherLogin(namespace,uuid, flag){
+        return messageApi.buildData(
+            namespace,
+            messageApi.msgType.sendMsg,
+            "notice",
+            messageApi.buildUserExt(null,uuid),
+            {type: this.noticeType.leaveRoom, flag:flag}
+        );
+    }
     /****
      * 发送在线人数消息
      * @param baseData
@@ -185,7 +208,7 @@ class NoticeMessage{
                             namespace,
                             messageApi.msgType.sendMsg,
                             "notice",
-                            {room:room},
+                            messageApi.buildRoomExt(room),
                             {type: this.noticeType.onlineNum, data: {onlineUserInfo: userInfo, online: online}}
         );
     }
@@ -208,7 +231,7 @@ class NoticeMessage{
     buildWhChatPushInfo(namespace,to,info){
         let ext = {};
         if(to.room){
-            ext.toom = to.room;
+            ext = messageApi.buildRoomExt(to.room)
         }else{
             ext = messageApi.buildUserExt(to.socketId,to.uuid);
         }
@@ -239,7 +262,7 @@ class NoticeMessage{
     buildChatPushInfo(namespace,to,info){
         let ext = {};
         if(to.room){
-            ext.toom = to.room;
+            ext = messageApi.buildRoomExt(to.room)
         }else{
             ext = messageApi.buildUserExt(to.socketId,to.uuid);
         }
@@ -272,7 +295,7 @@ class NoticeMessage{
     buildVideoPushInfo(namespace,to,info){
         let ext = {};
         if(to.room){
-            ext.toom = to.room;
+            ext = messageApi.buildRoomExt(to.room)
         }else{
             ext = messageApi.buildUserExt(to.socketId,to.uuid);
         }
@@ -310,12 +333,12 @@ class NoticeMessage{
 
     modifyRulePushInfo(namespace,room,ruleInfo){
         messageApi.send(messageApi.buildData(namespace,messageApi.msgType.sendMsg,"notice",
-            {room:room},{type: this.noticeType.modifyRule, data:ruleInfo}));
+            messageApi.buildRoomExt(room),{type: this.noticeType.modifyRule, data:ruleInfo}));
     }
 
     showTradePushInfo(namespace,tradeInfoResult){
         messageApi.send(messageApi.buildData(namespace,messageApi.msgType.sendMsg,"notice",
-            {namespace:true},{type: this.noticeType.showTrade,data:tradeInfoResult}));
+            messageApi.buildNamespaceExt(namespace),{type: this.noticeType.showTrade,data:tradeInfoResult}));
     }
 }
 module.exports = new NoticeMessage();

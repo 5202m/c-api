@@ -101,7 +101,7 @@ class ChatMessage{
             namespace,
             messageApi.msgType.sendMsg,
             "sendMsg",
-            {room:room},
+            messageApi.buildRoomExt(room),
             data
         );
     }

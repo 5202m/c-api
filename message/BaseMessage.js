@@ -7,13 +7,8 @@ class BaseMessage{
     }
 
     buildJoin(namespace,socketId,uuid,room){
-        let ext = {room:room};
-        if(socketId){
-            ext.socketId = socketId;
-        }
-        if(uuid){
-            ext.uuid = uuid;
-        }
+        let ext = messageApi.buildFormUserExt(socketId,uuid);
+        ext.room = room;
         return messageApi.buildData(
                                     namespace,
                                     messageApi.msgType.join,
@@ -26,13 +21,8 @@ class BaseMessage{
         messageApi.send(this.buildLeave(namespace,socketId,uuid,room));
     }
     buildLeave(namespace,socketId,uuid,room){
-        let ext = {room:room};
-        if(socketId){
-            ext.socketId = socketId;
-        }
-        if(uuid){
-            ext.uuid = uuid;
-        }
+        let ext = messageApi.buildFormUserExt(socketId,uuid);
+        ext.room = room;
         return messageApi.buildData(
                                     namespace,
                                     messageApi.msgType.leave,
@@ -46,26 +36,39 @@ class BaseMessage{
     }
 
     buildSetUUID(namespace,socketId,uuid){
+        let ext = messageApi.buildFormUserExt(socketId,uuid);
         return messageApi.buildData(
             namespace,
             messageApi.msgType.setUUID,
             undefined,
-            {socketId:socketId,uuid:uuid},
+            ext,
             undefined
         );
     }
 
-    initSocket(namespace,socketId,uuid,online,event){
-        messageApi.send(this.buildInitSocket(namespace,socketId,uuid,online,event));
+    initSocket(namespace,socketId,uuid,event,user){
+        messageApi.send(this.buildInitSocket(namespace,socketId,uuid,event,user));
     }
 
-    buildInitSocket(namespace,socketId,uuid,online,event){
-        return messageApi.buildData(namespace,messageApi.msgType.init,undefined,{socketId:socketId},{
-            uuid:uuid,
-            online:online,
-            event:event
-        });
+    buildInitSocket(namespace,socketId,uuid,event,user){
+        let ext = messageApi.buildFormUserExt(socketId);
+        ext.uuid = uuid;
+        ext.user = user;
+        ext.event = event;
+        return messageApi.buildData(namespace,messageApi.msgType.init,undefined,ext);
     }
+
+    onlineList(namespace,room,socketId,uuid){
+
+        messageApi.send(this.buildOnlineList(namespace,room,socketId,uuid));
+    }
+    buildOnlineList(namespace,room,socketId,uuid){
+        let ext = messageApi.buildUserExt(socketId,uuid);
+        ext.key = "onlineUserList";
+        ext.room = room;
+        return messageApi.buildData(namespace,messageApi.msgType.onlineList,undefined,ext);
+    }
+
 
     checkUserIsOnline(namespace,room,uuid){
         return messageApi.checkUserIsOnline(namespace,room,uuid);
