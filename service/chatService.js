@@ -43,8 +43,9 @@ var chatService ={
         var uuid = chatService.getUserUUId(userInfo);
         //更新在线状态
         userInfo.onlineStatus=1;
-        userInfo.onlineDate=new Date();
-
+        userInfo.onlineDate = new Date();
+        //通知重复登录
+        noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,uuid);
         userService.updateMemberInfo(userInfo,function(sendMsgCount,dbMobile,offlineDate){
             //发送在线通知
             var onlineNumMsg = noticeMessage.buildSendOnlineNum(userInfo.groupType,userInfo.groupId,userInfo,true);
@@ -54,23 +55,20 @@ var chatService ={
             var joinMsg = baseMessage.buildJoin(userInfo.groupType,userInfo.socketId,uuid,userInfo.groupId);
             //推送服务时间
             var serverTimeMsg = noticeMessage.buildServerTimePushInfo(userInfo.groupType,userInfo.socketId,uuid);
+            //获取在线列表
+            var onlineUserList = baseMessage.buildOnlineList(userInfo.groupType,userInfo.groupId,userInfo.socketId,uuid);
             //初始化socket 配置执行事件、设置属性、断开后事件。
             baseMessage.initSocket(
                 userInfo.groupType,
                 userInfo.socketId,
                 uuid,  //设置uuid
                 {
-                    user:userInfo,  //设置socket绑定的userInfo信息
-                    push:{
-                        room:userInfo.groupId, //获取该房间下所有userInfo信息
-                        key:"onlineUserList"   //对应消息key
-                    }
-                },
-                {
-                    now:[serverTimeMsg,joinMsg,onlineNumMsg],    //需要马上执行的消息 获取服务器时间，加入房间，发送在线通知
+                    now:[serverTimeMsg,joinMsg,onlineNumMsg,onlineUserList],    //需要马上执行的消息 获取服务器时间，加入房间，发送在线通知
                     disconnect:[offlineNumMsg]   //断开连接后执行的消息  发送离线通知
-                }
+                },
+                userInfo
             );
+
             //直播间创建访客记录
             if(parseInt(userInfo.userType)<=constant.roleUserType.member){
                 var vrRow={
