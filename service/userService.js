@@ -933,6 +933,16 @@ var userService = {
             }
             callback(null, result);
         });
+    },
+    /**
+     * 获取分析师列表
+     * @param systemCategory
+     * @param callback
+     */
+    getAnalystList:function(systemCategory, callback){
+        boUser.find({valid:1,status:0,systemCategory:systemCategory,'role.roleNo':common.getPrefixReg("analyst")},"userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag",function(err,rows) {
+            callback(rows);
+        });
     }
 };
 
