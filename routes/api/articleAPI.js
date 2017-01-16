@@ -5,7 +5,7 @@
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 200 OK
- *     -{
+ *     {
  *		"result": "1000",
  *		"msg": "没有指定参数!"
  *	}
@@ -17,7 +17,7 @@
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 200 OK
- *     -{
+ *     {
  *		"result": "2003",
  *		"msg": "参数数据错误！"
  *	} 
@@ -53,7 +53,9 @@ let ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
  *
- * @apiSampleRequest http://pmchat.24k.hk/api/article/getGroupArticles?code=download&platform=studio_market
+ * @apiSampleRequest /api/article/getGroupArticles
+ * @apiExample Example usage:
+ *  /api/article/getGroupArticles?code=download&platform=studio_market
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -62,7 +64,7 @@ let ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
  *          "pageNo": 1,
  *          "pageSize": 50,
  *          "totalRecords": 0,
- *          -"data": [
+ *          "data": [
  *          ]
  *      }
  *
@@ -102,14 +104,16 @@ router.get('/getGroupArticles', (req, res) => {
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
  *
- * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleCount?code=download&platform=studio_market
+ * @apiSampleRequest /api/article/getArticleCount?code=download&platform=studio_market
+ * @apiExample Example usage:
+ *  /api/article/getArticleCount?code=download&platform=studio_market
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *          "result": 0,
  *          "errcode": "0",
  *          "errmsg": "",
- *          -"data": {
+ *          "data": {
  *          	"count": 0
  *          }
  *      }
@@ -163,12 +167,14 @@ router.get('/getArticleCount', (req, res) => {
  *          "result": 0,
  *          "errcode": "0",
  *          "errmsg": "",
- *          -"data": {
+ *          "data": {
  *          	"count": 0
  *          }
  *      }
  *
- * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleList.json?code=download&platform=studio_market&pageNo=1&pageSize=10
+ * @apiSampleRequest /api/article/getArticleList.json
+ * @apiExample Example usage:
+ *  /api/article/getArticleList.json?code=download&platform=studio_market&pageNo=1&pageSize=10
  * @apiUse ParametersMissedError
  */
 router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
@@ -224,14 +230,20 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleInfo?id=download
+ * @apiSampleRequest /api/article/getArticleInfo
+ * @apiExample Example usage:
+ *  /api/article/getArticleInfo?id=download
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "id": "download"
+ *     }
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *          "result": 0,
  *          "errcode": "0",
  *          "errmsg": "",
- *          -"data": {
+ *          "data": {
  *          	...
  *          }
  *      }
@@ -266,14 +278,20 @@ router.get('/getArticleInfo', function(req, res) {
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleInfo
+ * @apiSampleRequest /api/article/add
+ * @apiParamExample {json} Request-Example:
+ *     data: {
+ *       "publishStartDate": "download",
+ *       "publishEndDate": "download",
+ *       "detailList": "这是一套基础教学，帮助不了解外汇操作者的入门学习。 可以点击上方的集数，来了解相关的教学内容。"
+ *     }
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *          "result": 0,
  *          "errcode": "0",
  *          "errmsg": "",
- *          -"data": {
+ *          "data": {
  *          	...
  *          }
  *      }
@@ -324,21 +342,21 @@ router.post('/add', function(req, res){
  * @apiName modify
  * @apiGroup article
  *
- * @apiParam {String} query 请求体中的query字段，json字符串.
+ * @apiParam {String} query 请求体中的query字段，json字符串，用于为Mongodb传入额外的query选项.
  * @apiParam {String} data 请求体中的data字段，json字符串.
- * @apiParam {String} field 请求体中的data字段.
+ * @apiParam {String} [field] 请求体中的data字段.
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleInfo?id=download
+ * @apiSampleRequest /api/article/modify
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *          "result": 0,
  *          "errcode": "0",
  *          "errmsg": "",
- *          -"data": {
+ *          "data": {
  *          	...
  *          }
  *      }
@@ -385,7 +403,7 @@ router.post('/modify',function(req, res){
 });
 
 /**
- * @api {get} /article/modifyPraiseOrDownloads 更新点赞数或下载次数
+ * @api {post} /article/modifyPraiseOrDownloads 更新点赞数或下载次数
  * @apiName modifyPraiseOrDownloads
  * @apiGroup article
  *
@@ -395,14 +413,14 @@ router.post('/modify',function(req, res){
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest http://pmchat.24k.hk/api/article/getArticleInfo?id=download
+ * @apiSampleRequest /api/article/modifyPraiseOrDownloads
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *          "result": 0,
  *          "errcode": "0",
  *          "errmsg": "",
- *          -"data": {
+ *          "data": {
  *          	...
  *          }
  *      }

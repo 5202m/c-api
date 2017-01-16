@@ -1,6 +1,7 @@
 {
-      "name": "Chat Room API Project",
+      "name": "直播间API项目",
       "version": "0.0.1",
-      "url" : "http://pmchat.24k.hk/studio",
-      "description": "It's a project designed for other teams usage, provides a centralized data accessing API, so that other teams can build their own APPs."
+      "url" : "http://pmchat.24k.hk/api",
+      "description": "此项目用于为其他项目提供高性能的API来访问数据库以及其他资源。",
+      "sampleUrl": "http://192.168.35.81:3000"
   }

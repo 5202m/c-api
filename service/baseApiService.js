@@ -130,28 +130,6 @@ var baseApiService = {
     },
 
     /**
-     * 检查点赞记录是否已经点赞
-     * @param clientId
-     * @param praiseId
-     * @param fromPlatform
-     * @param callback
-     */
-    checkChatPraise:function(clientId,praiseId,fromPlatform,callback){
-        request.post({url:this.formatApiUrl('/chat/checkChatPraise'), form:{clientId:clientId,praiseId:praiseId,fromPlatform:fromPlatform}},function(err, response, data){
-            if (err){
-                callback(false);
-            }else{
-                try{
-                    callback(JSON.parse(data).result);
-                }catch(e){
-                    logger.error("checkChatPraise fail:"+e);
-                    callback(false);
-                }
-            }
-        });
-    },
-
-    /**
      * 获取CFTC持仓比例数据
      */
     get24kCftc: function(callback){
