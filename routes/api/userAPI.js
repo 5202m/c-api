@@ -440,4 +440,17 @@ router.get("/getClientGroupByMId", (req, res) => {
     );
 });
 
+router.get("/getAnalystList", (req, res) => {
+    let systemCategory = req.query["systemCategory"];
+    if(common.isBlank(systemCategory)){
+        logger.warn("[getAnalystList] Parameters missed! Expecting parameters: ", "systemCategory");
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    userService.getAnalystList(systemCategory, (data) => {
+            res.json(APIUtil.APIResult(null, data));
+        }
+    );
+});
+
 module.exports = router;

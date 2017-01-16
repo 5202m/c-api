@@ -17,7 +17,7 @@ router.get("/getIndexLoadData", (req, res) => {
         return;
     }
     let isGetRoomList = req.query["isGetRoomList"] || false,
-        isGetSyllabus = req.query["isGetSyllabus"] || false,
+        isGetSyllabus = req.query["isGetSyllabus"] || true,
         isGetMember = req.query["isGetMember"] || false;
     
     studioService.getIndexLoadData(
