@@ -83,6 +83,7 @@ var syllabusService = {
                         loc_courses = JSON.parse(rowTmp.courses);
                         isNext = rowTmp.publishStart > today;
                         loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, isNext ? rowTmp.publishStart : today, isNext, flag=='SN');
+                        index ++;
                     }
                     //补充课程表信息（分析师头像）
                     syllabusService.fillLecturerInfo(loc_result, function(courseArr){
