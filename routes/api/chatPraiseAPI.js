@@ -76,8 +76,7 @@ router.get("/getPraiseNum", function(req, res){
     var praiseId = req.query["praiseId"],
         type = req.query["type"],
         platfrom = req.query["platfrom"];
-    if(common.isBlank(praiseId)
-        ||common.isBlank(type)
+    if(common.isBlank(type)
         ||common.isBlank(platfrom)){
         res.json(ApiResult(errorMessage.code_1000, null));
     }else{

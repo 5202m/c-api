@@ -9,6 +9,7 @@ var boRole= require('../models/boRole');//引入boRole数据模型
 var chatGroup = require('../models/chatGroup');//引入chatGroup数据模型
 var chatPointsService=require('../service/chatPointsService');
 var visitorService=require('../service/visitorService');
+var chatPraiseService=require('../service/chatPraiseService');
 var constant = require('../constant/constant');//引入constant
 var common = require('../util/common'); 	
 let Deferred = common.Deferred;
@@ -681,7 +682,7 @@ var userService = {
         this.getAuthUsersByGroupId(params.groupId,function(result){
             if(result){
                 var searchObj = {valid:1,status:0,'role.roleNo':common.getPrefixReg("analyst"),userNo:{$in:result}};
-                if(params.hasQRCode) {
+                if(common.isValid(params.hasQRCode)) {
                     searchObj.wechatCodeImg = {$nin: [null, '']};
                 }
                 boUser.find(searchObj, "userNo userName wechatCodeImg",function(err, row){
@@ -940,7 +941,7 @@ var userService = {
      * @param callback
      */
     getAnalystList:function(systemCategory, callback){
-        boUser.find({valid:1,status:0,systemCategory:systemCategory,'role.roleNo':common.getPrefixReg("analyst")},"userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag",function(err,rows) {
+        boUser.find({valid:1,status:0,systemCategory:systemCategory,'role.roleNo':common.getPrefixReg("analyst")},"userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag introduction",function(err,rows) {
             callback(rows);
         });
     }
