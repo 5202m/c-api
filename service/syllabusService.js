@@ -59,7 +59,7 @@ var syllabusService = {
         var result={remark:'',authors:[]};
         Async.parallel({
                 courseRemark: function(callback){
-                    syllabusService.getSyllabus(params.groupType,params.groupId, new Date(),function(rows){
+                    syllabusService.getSyllabus(params.groupType,params.groupId,function(rows){
                         var remark='';
                         if(rows){
                             var courses=rows.courses;
