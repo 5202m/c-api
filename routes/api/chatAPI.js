@@ -186,10 +186,6 @@ router.get("/getRoomOnlineTotalNum", function(req, res) {
     });
 });
 
-/**
- * 检查客户是否已经点赞
- * 已点赞返回false，否则返回true
- */
 router.post("/checkChatPraise", function(req, res) {
     var clientId=req.body.clientId,
         praiseId=req.body.praiseId,
@@ -200,6 +196,42 @@ router.post("/checkChatPraise", function(req, res) {
         chatService.checkChatPraise(clientId,praiseId,fromPlatform,function(isOK){
             res.json(ApiResult.result(null, isOK));
         });
+    }
+});
+
+router.post("/acceptMsg", function(req, res) {
+    let requires = ["fromUser", "content", "uiId"];
+    let isSatify = requires.every(name => {
+        return common.isValid(req.body[name]);
+    });
+    if(!isSatify){
+        logger.warn("[acceptMsg] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try{
+        chatService.acceptMsg(req.body);
+        res.json(ApiResult.result(null, true));
+    } catch (e){
+        res.json(ApiResult.result(e, false));
+    }
+});
+
+router.post("/removeMsg", function(req, res) {
+    let requires = ["groupId", "msgIds"];
+    let isSatify = requires.every(name => {
+        return common.isValid(req.body[name]);
+    });
+    if(!isSatify){
+        logger.warn("[removeMsg] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try{
+        chatService.removeMsg(req.body.groupId, req.body.msgIds);
+        res.json(ApiResult.result(null, true));
+    } catch (e){
+        res.json(ApiResult.result(e, false));
     }
 });
 
