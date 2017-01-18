@@ -317,10 +317,14 @@ var chatService ={
                                 function saveMsg(online){
                                     data.content.msgStatus=online?1:0; //1:0;判断信息是否离线或在线
                                     data.content.maxValue=imgMaxValue;
-                                    messageService.saveMsg({fromUser: userSaveInfo, content: data.content});
+                                    messageService.saveMsg({fromUser: userSaveInfo, content: data.content})
+                                        .then(data => {logger.info(data);})
+                                        .catch(e => {logger.error("saveMsg 失败.", e);});
                                 }
                         }else{
-                            messageService.saveMsg({fromUser: userSaveInfo, content: data.content});
+                            messageService.saveMsg({fromUser: userSaveInfo, content: data.content})
+                                .then(data => {logger.info(data)})
+                                .catch(e => {logger.error("saveMsg 失败.", e);});
                             data.content.maxValue="";
                             chatMessage.sendMsgByRoom(userInfo.groupType,groupId,{fromUser:userInfo,content:data.content})
                         }
