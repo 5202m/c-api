@@ -186,4 +186,21 @@ router.get("/getRoomOnlineTotalNum", function(req, res) {
     });
 });
 
+/**
+ * 检查客户是否已经点赞
+ * 已点赞返回false，否则返回true
+ */
+router.post("/checkChatPraise", function(req, res) {
+    var clientId=req.body.clientId,
+        praiseId=req.body.praiseId,
+        fromPlatform=req.body.fromPlatform;
+    if(common.isBlank(clientId)||common.isBlank(praiseId)||common.isBlank(fromPlatform)){
+        res.json(ApiResult.result(null, true));
+    }else{
+        chatService.checkChatPraise(clientId,praiseId,fromPlatform,function(isOK){
+            res.json(ApiResult.result(null, isOK));
+        });
+    }
+});
+
 module.exports = router;
