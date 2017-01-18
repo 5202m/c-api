@@ -10,10 +10,10 @@ var chatPraiseService ={
     /**
      * 提取点赞内容
      */
-    getPraiseNum:function(praiseId,type,platfrom,callback){
+    getPraiseNum:function(userId,type,platfrom,callback){
         let searchObj = {praiseType:type,fromPlatform:platfrom};
-        if(common.isValid(praiseId)){
-            let praiseId=praiseId.split(",");
+        if(common.isValid(userId)){
+            let praiseId=userId.indexOf(',')>-1?userId.split(","):userId;
             searchObj.praiseId = {$in:praiseId};
         }
         chatPraise.find(searchObj,function(err,rows){
