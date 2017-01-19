@@ -33,6 +33,7 @@ var zxFinanceRoutes = require('./api/zxFinanceAPI');                          //
 var uploadRoutes = require("./api/uploadAPI.js");                             //文件上传  API路由
 var noticeRoutes = require("./api/noticeAPI.js");                             //通知  API路由
 var chatPraiseRoutes = require("./api/chatPraiseAPI.js");
+var visitorRoutes = require("./api/visitorAPI.js");
 /**
  * 初始化入口
  * @param app
@@ -94,4 +95,5 @@ exports.init = function(app){
     apiRoutes.use("/zxFinanceData", zxFinanceRoutes);
     apiRoutes.use("/notice", noticeRoutes);
     apiRoutes.use("/chatPraise", chatPraiseRoutes);
+    apiRoutes.use("/visitor", visitorRoutes);
 };
