@@ -133,6 +133,9 @@ var constant = {
             //visitor:1
         }
     },
+    chatGroup:{
+        dict_chat_group_type: 'chat_group_type'//组类别
+    },
     pushInfoPosition:{//信息推送位置
         taskbar:0,//任务栏
         whBox:1,//私聊框
