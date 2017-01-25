@@ -279,13 +279,6 @@ router.post("/setUserGroupThemeStyle", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    try{
-        JSON.parse(req.body["defTemplate"]);
-    } catch(e){
-        logger.warn("Parameters 'defTemplate' error! Expecting JSON String: ", req.body["defTemplate"]);
-        res.json(APIUtil.APIResult("code_1000", null));
-        return;
-    };
     studioService.setUserGroupThemeStyle(
         req.body["userInfo"],       
         req.body["defTemplate"],
