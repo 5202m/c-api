@@ -72,7 +72,7 @@ router.post('/saveSubscribe', function(req, res){
         return;
     }
     SubscribeService.saveSubscribe(params, (data) => {
-        res.json(APIUtil.APIResultFromData(data));
+        res.json(APIUtil.APIResult(null, data));
     });
 });
 
@@ -99,7 +99,7 @@ router.post('/modifySubscribe', function(req, res) {
         return;
     }
     SubscribeService.modifySubscribe(params, (data) => {
-        res.json(APIUtil.APIResultFromData(data));
+        res.json(APIUtil.APIResult(null, data));
     });
 });
 
@@ -119,7 +119,7 @@ router.post('/saveSubscribe4UTM', function(req, res) {
         return;
     }
     SubscribeService.saveSubscribe4UTM(params.groupType, params.userId, params.subscribeType, params.isAdd, (data) => {
-        res.json(APIUtil.APIResultFromData(data));
+        res.json(APIUtil.APIResult(null, data));
     });
     
 });
@@ -133,7 +133,7 @@ router.get('/getSubscribeTypeList', function(req, res) {
         res.json(APIUtil.APIResult("code_1000", null));
     }
     SubscribeService.getSubscribeTypeList(params, (data) => {
-        res.json(APIUtil.APIResultFromData(data));
+        res.json(APIUtil.APIResult(null, data));
     });
     
 });
