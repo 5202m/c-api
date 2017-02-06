@@ -665,7 +665,7 @@ var subscribeService = {
                                     logger.error('modifySubscribe=>fail!' + err1);
                                     callback({isOK: false, msg: '修改订阅失败'});
                                 } else {
-                                    chatSubscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
+                                    subscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
                                 }
                             });
                         } else {
@@ -678,7 +678,7 @@ var subscribeService = {
                             logger.error('modifySubscribe=>fail!' + err1);
                             callback({isOK: false, msg: '修改订阅失败'});
                         } else {
-                            chatSubscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
+                            subscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
                         }
                     });
                 }
