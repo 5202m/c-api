@@ -1,6 +1,7 @@
 var logger = require('../resources/logConf').getLogger("noticeService");
 var Config = require('../resources/config');
 var Common = require('../util/common');
+var chatMessage = require("../message/ChatMessage");
 /**
  * 财经日历信息推送服务类
  * author Alan.wu
@@ -14,11 +15,11 @@ var noticeService ={
     init: function () {
         if(noticeService.socket==null) {
             try {
-                noticeService.socket = require('socket.io-client')(Config.noticeSocketClient);
+                /*noticeService.socket = require('socket.io-client')(Config.noticeSocketClient);
                 noticeService.socket.on('disconnect', function (socket) {
                     logger.info('socket.io-client disconnect');
                     noticeService.socket = null;
-                });
+                });*/
             }catch (e){
                 logger.error('noticeService.socket:'+e);
             }
@@ -33,7 +34,9 @@ var noticeService ={
         noticeService.init();
         try {
             logger.info('noticeService.send[API-notice]:', JSON.stringify({type: type, data: data}));
-            noticeService.socket.emit('API-notice', {type: type, data: data});
+            //noticeService.socket.emit('API-notice', {type: type, data: data});
+            //TODO 此处为临时写死使用fxFinance 应根据实际直播间 命名空间
+            chatMessage.sendMsgByNamespace("/fxFinance",type,data);
         }catch(e){
             logger.error('noticeService.send error:'+e);
         }

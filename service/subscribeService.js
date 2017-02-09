@@ -649,7 +649,9 @@ var subscribeService = {
                 if(params.noticeCycle=='week') {
                     params.endDate = common.DateAdd('w', 1, new Date(row.startDate));//结束时间，1周
                 }else if(params.noticeCycle=='month'){
-                    params.endDate = common.DateAdd('M', 1, new Date(row.startDate));//极速时间，1月
+                    params.endDate = common.DateAdd('M', 1, new Date(row.startDate));//结束时间，1月
+                }else if(params.noticeCycle=='year'){
+                    params.endDate = common.DateAdd('y', 1, new Date(row.startDate));//结束时间，1年(暂时供手机版使用)
                 }
                 var setObj = { '$set': {'analyst': params.analyst,'noticeType':params.noticeType,endDate:params.endDate,point:params.point, updateDate : new Date()}};
                 if(common.isBlank(params.analyst) || common.isBlank(params.noticeType)){

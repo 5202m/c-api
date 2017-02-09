@@ -105,6 +105,32 @@ class ChatMessage{
             data
         );
     }
+
+    /****
+     * 发送消息到命名空间
+     * @param namespace
+     * @param data
+     */
+    sendMsgByNamespace(namespace,msgType,data){
+        messageApi.send(this.buildSendMsgByNamespace(namespace,msgType,data));
+    }
+
+    /*****
+     * 发送消息到命名空间 消息体构造
+     * @param namespace
+     * @param data
+     * @returns {{namespace, msg}|*}
+     */
+    buildSendMsgByNamespace(namespace,msgType,data){
+        return messageApi.buildData(
+            namespace,
+            messageApi.msgType.sendMsg,
+            msgType,
+            messageApi.buildNamespaceExt(namespace),
+            data
+        );
+    }
+
     send(namespace,event,ext,data){
         messageApi.send(messageApi.buildData(namespace,'sendMsg',event,ext,data));
     }
