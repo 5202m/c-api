@@ -11,16 +11,18 @@
  *  }
  */
 /**
- * @apiDefine ParametersDataBrokenError
+ * @apiDefine ParameterNotAvailableJSONError
  * 
- * @apiError ParametersDataBroken 参数数据格式错误，无法完成请求。
+ * @apiError ParameterNotAvailableJSONError 参数数据不是合法的JSON字符串。
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 200 OK
  *     {
- *      "result": "2003",
- *      "msg": "参数数据错误！"
- *  } 
+ *          "result": 1,
+ *          "errcode": "10",
+ *          "errmsg": "操作异常!",
+ *          "data": null
+ *      } 
  */
 /**
  * @apiDefine CommonResultDescription
@@ -32,10 +34,12 @@
 var express = require('express');
 var router = express.Router();
 var common = require('../../util/common');
+var logger =require("../../resources/logConf").getLogger("chatAPI");
 var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
 var userService = require('../../service/userService');
 var ApiResult = require('../../util/ApiResult');
+let APIUtil = require('../../util/APIUtil'); 	 	   //引入API工具类js
 
 /**
  * @api {get} /chat/getMessageList 获取聊天信息
@@ -234,29 +238,75 @@ router.post("/removeMsg", function(req, res) {
         res.json(ApiResult.result(e, false));
     }
 });
-
+/**
+ * @api {post} /chat/leaveRoom 离开房间，强制用户下线
+ * @apiName leaveRoom
+ * @apiGroup chat
+ *
+ * @apiParam {String} groupIds 分组ID列表，逗号分隔
+ * @apiParam {String} userIds 用户ID列表，逗号分隔
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/leaveRoom
+ * @apiParamExample {json} Request-Example:
+ *     {groupIds: "fxstudio_50",
+ *      userIds: "eugene_ana"}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/leaveRoom", (req, res) => {
-    let requires = ["groupIds"];
-    let isSatify = requires.every(name => {
-        return common.isValid(req.body[name]);
-    });
-    if(!isSatify){
-        logger.warn("[leaveRoom] Parameters missed! Expecting parameters: ", requires);
+    let groupIds = req.body["groupIds"];
+    let userIds = req.body["userIds"];
+    if(common.isBlank(groupIds)){
+        logger.warn("[leaveRoom] Parameters missed! Expecting parameter: groupIds");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
     try{
         if(common.isValid(userIds)){//存在用户id
-            chatService.leaveRoomByUserId(groupIds, userIds, chatService.leaveRoomFlag.forcedOut);
+            chatService.leaveRoomByUserId(groupIds,userIds);
         }else{//不存在用户id，则通知房间所有用户下线
-            chatService.leaveRoom(groupIds, chatService.leaveRoomFlag.roomClose);
+            chatService.leaveRoom(groupIds);
         }
         res.json(ApiResult.result(null, {isOK: true}));
     } catch (e){
         res.json(ApiResult.result(e, {isOK: false}));
     }
 });
-
+/**
+ * @api {post} /chat/submitPushInfo 提交推送消息
+ * @apiName submitPushInfo
+ * @apiGroup chat
+ *
+ * @apiParam {String} infoStr 消息体
+ * @apiParam {String} isValid 是否有效 ？ 字面解释，实际效果未知。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/submitPushInfo
+ * @apiParamExample {json} Request-Example:
+ *     {infoStr: '{"roomIds": "fxstudio_50"}',
+ *      isValid: true}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/submitPushInfo", function(req, res) {
     let infoStr = req.body["infoStr"];
     let isValid = req.body["isValid"];
@@ -272,7 +322,32 @@ router.post("/submitPushInfo", function(req, res) {
         res.json(ApiResult.result(e, {isOK: false}));
     } 
 });
-
+/**
+ * @api {post} /chat/removePushInfo 删除推送消息
+ * @apiName submitPushInfo
+ * @apiGroup chat
+ *
+ * @apiParam {String} ids 消息ID列表，用逗号分隔
+ * @apiParam {String} roomIds 房间ID列表，用逗号分隔。
+ * @apiParam {String} position 消息位置。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/submitPushInfo
+ * @apiParamExample {json} Request-Example:
+ *     {infoStr: '{"roomIds": "fxstudio_50"}',
+ *      isValid: true}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/removePushInfo", function(req, res) {
     let ids=req.body["ids"];
     let roomIds=req.body["roomIds"];
@@ -283,19 +358,51 @@ router.post("/removePushInfo", function(req, res) {
         return;
     }
     try{
-        chatService.removePushInfo(position, roomIds, ids);
+        chatService.removePushInfo(position, roomIds || "", ids);
         res.json(ApiResult.result(null, {isOK: true}));
     } catch (e){
-        res.json(ApiResult.result(e, {isOK: false}));
+        logger.error("[removePushInfo] faile: ", e);
+        res.json(ApiResult.result(null, {isOK: false}));
     } 
 });
-
+/**
+ * @api {post} /chat/noticeArticle 文章添加/更新提醒
+ * @apiName noticeArticle
+ * @apiGroup chat
+ *
+ * @apiParam {String} article 文章体
+ * @apiParam {String} opType 文章操作类型
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/noticeArticle
+ * @apiParamExample {json} Request-Example:
+ *     {article: '{"platform": "fxstudio_50"}',
+ *      opType: 'add'}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ * @apiUse ParameterNotAvailableJSONError
+ */
 router.post("/noticeArticle", function(req, res) {
     let articleJSON=req.body["article"];
     let opType=req.body["opType"];
     if(common.isBlank(articleJSON)){
         logger.warn("[noticeArticle] Parameters missed! Expecting parameter: articleJSON");
         res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try {
+        tradeInfoArray = JSON.parse(tradeInfoJSON);
+    } catch (e) {
+        res.json(APIUtil.APIResult("code_10", null));
         return;
     }
     try{
@@ -305,7 +412,30 @@ router.post("/noticeArticle", function(req, res) {
         res.json(ApiResult.result(e, {isOK: false}));
     } 
 });
-
+/**
+ * @api {post} /chat/showTradeNotice 显示交易提醒
+ * @apiName showTradeNotice
+ * @apiGroup chat
+ *
+ * @apiParam {String} tradeInfo 交易信息
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/showTradeNotice
+ * @apiParamExample {json} Request-Example:
+ *     {tradeInfo: '[{"groupType":"fx","boUser":{"telephone":"18122222222"},"createUser":"eugene_ana","createIp":"127.0.0.1"},{"groupType":"fx","boUser":{"telephone":"18133333333"},"createUser":"eugene_ana","createIp":"127.0.0.1"}]'}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ * @apiUse ParameterNotAvailableJSONError
+ */
 router.post("/showTradeNotice", function(req, res) {
     let tradeInfoJSON=req.body["tradeInfo"];
     if(common.isBlank(tradeInfoJSON)){
@@ -353,7 +483,32 @@ router.post("/showTradeNotice", function(req, res) {
     });
     res.json(ApiResult.result(null, {isOK: true}));
 });
-
+/**
+ * @api {post} /chat/modifyRuleNotice 修改规则
+ * @apiName modifyRuleNotice
+ * @apiGroup chat
+ *
+ * @apiParam {String} ruleInfo 规则信息
+ * @apiParam {String} roomIds 需要应用规则的房间列表，逗号分隔
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/modifyRuleNotice
+ * @apiParamExample {json} Request-Example:
+ *     {ruleInfo: "{}",
+ *      roomIds: "fxstudio_50"}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ * @apiUse ParameterNotAvailableJSONError
+ */
 router.post("/modifyRuleNotice", function(req, res) {
     let ruleInfo = req.body["ruleInfo"];
     let roomIds = req.body["roomIds"];

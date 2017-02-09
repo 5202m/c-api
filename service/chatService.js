@@ -370,6 +370,7 @@ var chatService ={
             }
         }catch(e){
             logger.error("removePushInfo fail",e);
+            throw new Error(e);
         }
     },
     /**
