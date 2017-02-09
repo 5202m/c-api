@@ -320,14 +320,17 @@ router.post("/showTradeNotice", function(req, res) {
         return;
     }
     let tradeInfoResult = [],
-        mobileArr=[];
-    tradeInfoArray.forEach(tradeInfo => {
+        mobileArr=[],
+        tradeInfo = null;
+    tradeInfoArray.forEach(trade => {
+        tradeInfo = trade;
         if(tradeInfo.tradeType == 2){ //客户晒单
             mobileArr.push(tradeInfo.boUser.telephone);
         }
     });
     userService.getClientGroupByMId(mobileArr, tradeInfo.groupType, function(mbObj){
-        tradeInfoArray.forEach(tradeInfo => {
+        tradeInfoArray.forEach(trade => {
+            tradeInfo = trade;
             if(tradeInfo.tradeType == 2){ //客户晒单
                 tradeInfoResult.push(tradeInfo);
                 chatPointsService.add({
@@ -345,14 +348,7 @@ router.post("/showTradeNotice", function(req, res) {
             }
         });
         if(tradeInfoResult.length>0){
-            chatService.sendMsgToSpace(
-                tradeInfo.groupType,
-                "notice",
-                {
-                    type: chatService.noticeType.showTrade,
-                    data: tradeInfoResult
-                }
-            );
+            chatService.showTrade(tradeInfo.groupType, tradeInfoResult);
         }
     });
     res.json(ApiResult.result(null, {isOK: true}));
@@ -374,7 +370,7 @@ router.post("/modifyRuleNotice", function(req, res) {
     }
     roomIds=roomIds.split(",");
     for(var i in roomIds){
-        chatService.sendMsgToRoom(true, null, roomIds[i], "notice", {type:"modifyRule", data:ruleInfo}, null);
+        chatService.modifyRulePushInfo(roomIds[i],ruleInfo);
     }
     res.json(ApiResult.result(null, {isOK: true}));
 });
