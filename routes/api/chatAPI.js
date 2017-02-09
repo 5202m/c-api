@@ -235,4 +235,148 @@ router.post("/removeMsg", function(req, res) {
     }
 });
 
+router.post("/leaveRoom", (req, res) => {
+    let requires = ["groupIds"];
+    let isSatify = requires.every(name => {
+        return common.isValid(req.body[name]);
+    });
+    if(!isSatify){
+        logger.warn("[leaveRoom] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try{
+        if(common.isValid(userIds)){//存在用户id
+            chatService.leaveRoomByUserId(groupIds, userIds, chatService.leaveRoomFlag.forcedOut);
+        }else{//不存在用户id，则通知房间所有用户下线
+            chatService.leaveRoom(groupIds, chatService.leaveRoomFlag.roomClose);
+        }
+        res.json(ApiResult.result(null, {isOK: true}));
+    } catch (e){
+        res.json(ApiResult.result(e, {isOK: false}));
+    }
+});
+
+router.post("/submitPushInfo", function(req, res) {
+    let infoStr = req.body["infoStr"];
+    let isValid = req.body["isValid"];
+    if(common.isBlank(infoStr)){
+        logger.warn("[submitPushInfo] Parameters missed! Expecting parameter: infoStr");
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try{
+        chatService.submitPushInfo(infoStr , isValid);
+        res.json(ApiResult.result(null, {isOK: true}));
+    } catch (e){
+        res.json(ApiResult.result(e, {isOK: false}));
+    } 
+});
+
+router.post("/removePushInfo", function(req, res) {
+    let ids=req.body["ids"];
+    let roomIds=req.body["roomIds"];
+    let position=req.body["position"];
+    if(common.isBlank(ids)){
+        logger.warn("[removePushInfo] Parameters missed! Expecting parameter: ids");
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try{
+        chatService.removePushInfo(position, roomIds, ids);
+        res.json(ApiResult.result(null, {isOK: true}));
+    } catch (e){
+        res.json(ApiResult.result(e, {isOK: false}));
+    } 
+});
+
+router.post("/noticeArticle", function(req, res) {
+    let articleJSON=req.body["article"];
+    let opType=req.body["opType"];
+    if(common.isBlank(articleJSON)){
+        logger.warn("[noticeArticle] Parameters missed! Expecting parameter: articleJSON");
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try{
+        chatService.noticeArticle(articleJSON , opType);
+        res.json(ApiResult.result(null, {isOK: true}));
+    } catch (e){
+        res.json(ApiResult.result(e, {isOK: false}));
+    } 
+});
+
+router.post("/showTradeNotice", function(req, res) {
+    let tradeInfoJSON=req.body["tradeInfo"];
+    if(common.isBlank(tradeInfoJSON)){
+        logger.warn("[showTradeNotice] Parameters missed! Expecting parameter: tradeInfoJSON");
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try {
+        tradeInfoArray = JSON.parse(tradeInfoJSON);
+    } catch (e) {
+        res.json(APIUtil.APIResult("code_10", null));
+        return;
+    }
+    let tradeInfoResult = [],
+        mobileArr=[];
+    tradeInfoArray.forEach(tradeInfo => {
+        if(tradeInfo.tradeType == 2){ //客户晒单
+            mobileArr.push(tradeInfo.boUser.telephone);
+        }
+    });
+    userService.getClientGroupByMId(mobileArr, tradeInfo.groupType, function(mbObj){
+        tradeInfoArray.forEach(tradeInfo => {
+            if(tradeInfo.tradeType == 2){ //客户晒单
+                tradeInfoResult.push(tradeInfo);
+                chatPointsService.add({
+                    clientGroup: mbObj[tradeInfo.boUser.telephone],
+                    groupType: tradeInfo.groupType,
+                    groupType: tradeInfo.groupType,
+                    userId: tradeInfo.boUser.telephone,
+                    item: 'daily_showTrade',
+                    val: 0,
+                    isGlobal: false,
+                    remark: '',
+                    opUser: tradeInfo.createUser,
+                    opIp: tradeInfo.createIp
+                }, result => true);
+            }
+        });
+        if(tradeInfoResult.length>0){
+            chatService.sendMsgToSpace(
+                tradeInfo.groupType,
+                "notice",
+                {
+                    type: chatService.noticeType.showTrade,
+                    data: tradeInfoResult
+                }
+            );
+        }
+    });
+    res.json(ApiResult.result(null, {isOK: true}));
+});
+
+router.post("/modifyRuleNotice", function(req, res) {
+    let ruleInfo = req.body["ruleInfo"];
+    let roomIds = req.body["roomIds"];
+    if(common.isBlank(ruleInfo)){
+        logger.warn("[modifyRuleNotice] Parameters missed! Expecting parameter: ruleInfo");
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    try{
+        ruleInfo=JSON.parse(ruleInfo);
+    }catch (e){
+        res.json(APIUtil.APIResult("code_10", null));
+        return;
+    }
+    roomIds=roomIds.split(",");
+    for(var i in roomIds){
+        chatService.sendMsgToRoom(true, null, roomIds[i], "notice", {type:"modifyRule", data:ruleInfo}, null);
+    }
+    res.json(ApiResult.result(null, {isOK: true}));
+});
+
 module.exports = router;
