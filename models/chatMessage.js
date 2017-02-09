@@ -16,7 +16,10 @@ let chatMessageSchema = new Schema(
       groupId:{type:String,index:true},//组别Id
       content:{//内容
           msgType:String, //信息类型 text,img缩略图的值。
-          value:String//默认值，
+          value:String,//默认值，
+          msgStatus: Number,
+          maxValue: String,
+          needMax: Number
       },
       toUser:{ //@用户
          userId:String,

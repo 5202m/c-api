@@ -317,10 +317,14 @@ var chatService ={
                                 function saveMsg(online){
                                     data.content.msgStatus=online?1:0; //1:0;判断信息是否离线或在线
                                     data.content.maxValue=imgMaxValue;
-                                    messageService.saveMsg({fromUser: userSaveInfo, content: data.content});
+                                    messageService.saveMsg({fromUser: userSaveInfo, content: data.content})
+                                        .then(data => {logger.info(data);})
+                                        .catch(e => {logger.error("saveMsg 失败.", e);});
                                 }
                         }else{
-                            messageService.saveMsg({fromUser: userSaveInfo, content: data.content});
+                            messageService.saveMsg({fromUser: userSaveInfo, content: data.content})
+                                .then(data => {logger.info(data)})
+                                .catch(e => {logger.error("saveMsg 失败.", e);});
                             data.content.maxValue="";
                             chatMessage.sendMsgByRoom(userInfo.groupType,groupId,{fromUser:userInfo,content:data.content})
                         }
@@ -479,7 +483,24 @@ var chatService ={
      */
     getUserUUId:function(userInfo){
         return userInfo.userId;
-    }
+    },
+    /**
+     * 检查客户是否已经点赞
+     * 已点赞返回false，否则返回true
+     */
+    checkChatPraise:function(clientId,praiseId,fromPlatform,callback){
+        var cacheClient=require('../cache/cacheClient');
+        var key='chatPraise_'+fromPlatform+'_'+clientId+'_'+praiseId;
+        cacheClient.hgetall(key,function(err,result){
+            if(!err && result){
+                callback(false);
+            }else{
+                cacheClient.hmset(key,'createTime',Date());
+                cacheClient.expire(key,24*3600);
+                callback(true);
+            }
+        });
+    },
 };
 chatService.init();
 //导出服务类

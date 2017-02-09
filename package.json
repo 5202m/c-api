@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/pm_api",
-    "debug": "node --debug=5850 ./bin/pm_api | node-inspector --web-port 8080 --debug-port 5850"
+    "debug": "node-inspector --web-port 3000 --debug-port 5850 | node --debug=5850 ./bin/pm_api"
   },
   "dependencies": {
     "async": "^1.4.0",

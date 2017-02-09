@@ -79,7 +79,7 @@ router.get("/setShowTradePraise", (req, res) => {
     showTradeService.setShowTradePraise(
         req.query,    
         (data) => {
-            res.json(APIUtil.APIResultFromData(data));
+            res.json(APIUtil.APIResult(null, data));
         }
     );
 });

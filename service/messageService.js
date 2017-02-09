@@ -173,8 +173,6 @@ var messageService ={
     },
     /**
      * 加载大图
-     * @param publishTime
-     * @param callback
      */
     loadBigImg:function(userId, publishTime, callback){
         chatMessage.db().findOne({userId:userId,publishTime:publishTime},{'content.maxValue':1},function (err,data) {
@@ -218,7 +216,7 @@ var messageService ={
     /**
      * 保存内容到数据库中
      */
-    saveMsg:function(data,userNoArr, callback){
+    saveMsg:function(data, userNoArr, callback){
 	var deferred = new Deferred();
         var userInfo=data.fromUser;
         var content=data.content;
@@ -252,15 +250,16 @@ var messageService ={
             createDate:new Date(),//创建日期
             valid:1
         });
-        chatMessageModel.save(function(err){
+        chatMessageModel.save(function(err, chatMessage, numAffected){
             if (err) {
-                logger.error("save chatMessage Failure!! >>saveTrain:", err);
+                logger.error("saveMsg Failure!! >>chatMessageModel.save:", err);
                 deferred.reject({isOK:false, msg:'save chatMessage Failure'});
             }else{
-        	deferred.resolve({isOK:true, msg: 'save chatMessage success!'});
+                deferred.resolve({isOK:true, msg: `save chatMessage success! Affect ${numAffected} messages.`});
             }
             logger.info('save chatMessage success!');
         });
+        return deferred.promise;
     },
     /**
      * 删除聊天记录

@@ -72,7 +72,7 @@ router.post('/saveSubscribe', function(req, res){
         return;
     }
     SubscribeService.saveSubscribe(params, (data) => {
-        res.json(APIUtil.APIResultFromData(data));
+        res.json(APIUtil.APIResult(null, data));
     });
 });
 
@@ -99,7 +99,7 @@ router.post('/modifySubscribe', function(req, res) {
         return;
     }
     SubscribeService.modifySubscribe(params, (data) => {
-        res.json(APIUtil.APIResultFromData(data));
+        res.json(APIUtil.APIResult(null, data));
     });
 });
 

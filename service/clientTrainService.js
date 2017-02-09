@@ -222,7 +222,8 @@ var clientTrainService = {
                             status: row.status,
                             isEnd: isEnd,
                             label: row.label,
-                            remark: row.remark
+                            remark: row.remark,
+                            openDate: JSON.parse(row.openDate)
                         });
                     }
                 }
