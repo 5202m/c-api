@@ -175,9 +175,13 @@ router.post("/checkMemberAndSave", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
+    let userInfo = req.body["userInfo"];
     studioService.checkMemberAndSave(
-        req.body["userInfo"],
+        userInfo,
         (data) => {
+            if(data){
+                data.userInfo = userInfo;
+            }
             res.json(APIUtil.APIResultFromData(data));
         }
     );
