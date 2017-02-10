@@ -3,7 +3,7 @@
  * Created by Alan.wu on 2015/4/18.
  */
 var config = {
-    redisUrlObj:{ host: '192.168.35.236', port: 6379 },				//链接redis缓存客户端连接
+    redisUrlObj:{ host: '192.168.35.81', port: 6379 },				//链接redis缓存客户端连接
     pmApiUrl:'http://localhost:3000/api',
     webUiUrl:'http://192.168.9.72:5555/webui_login_token.ucs',//webUI对应token地址
     web24kPriceUrl:'http://www.24k.hk/public/datas/24k_price.xml',
@@ -58,7 +58,7 @@ var config = {
     web24k: "http://www.24k.hk/public/datas", //24k数据公用host前缀
     fx678ApiUrl:"http://unews.fx678.com",
     noticeSocketClient:"http://192.168.35.81:3007", // socket客户端
-    socketServerUrl:{webSocket:'http://192.168.35.81:3007',socketIO:'http://192.168.35.81:3007',apiSocket:'http://192.168.35.91:3007'},
+    socketServerUrl:{webSocket:'http://192.168.35.81:3007',socketIO:'http://192.168.35.81:3007',apiSocket:'http://192.168.35.81:3007'},
     chatSocketUrl:'http://192.168.35.81:3007',  //socket 服务api地址
     symbolLongShortOpenPositionRatios: "http://192.168.75.40:8081/GwfxApi/RESTful/PublicManager" // 多空持仓比例
 };

@@ -17,7 +17,7 @@
     "jpush-sdk": "^3.2.1",
     "log4js": "^0.6.24",
     "mongoose": "^4.0.2",
-    "mongoose-unique-validator":"1.0.3",
+    "mongoose-unique-validator": "1.0.3",
     "node-schedule": "^0.2.6",
     "node-uuid": "^1.4.3",
     "redis": "^0.12.1",
@@ -27,8 +27,13 @@
     "socket.io-emitter": "^0.2.0",
     "socket.io-client": "^1.6.0",
     "xml2js": "^0.4.8",
-    "ftp" : "^0.3.10",
-    "nodemailer" : "2.3.1",
-    "images" : "2.2.0"
+    "ftp": "^0.3.10",
+    "nodemailer": "2.3.1",
+    "images": "2.2.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0",
+    "should": "^11.2.0",
+    "supertest": "^3.0.0"
   }
 }
