@@ -24,6 +24,7 @@ var errorMessage = {
     "code_1015" : {'errcode' : '1015','errmsg' : '账号或密码输入有误！'},
     "code_1016" : {'errcode' : '1016','errmsg' : '密码错误次数太多,请联系客服！'},
     "code_1017" : {'errcode' : '1017','errmsg' : '请输入用户名、手机号、邮箱、密码!'},
+    "code_1018" : {'errcode' : '1018','errmsg' : '该账号已被使用！'},
     "code_2001" : {'errcode' : "2001", 'errmsg' : "缺少参数！"},
     "code_2002" : {'errcode' : "2002", 'errmsg' : "参数类型错误！"},
     "code_2003" : {'errcode' : "2003", 'errmsg' : "参数数据错误！"},

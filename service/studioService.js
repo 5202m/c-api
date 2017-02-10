@@ -274,7 +274,7 @@ var studioService = {
                     var userGroup=row.loginPlatform.chatUserGroup;
                     for(var i = 0; i < userGroup.length; i++){
                         if(userGroup[i]._id === userInfo.groupType){
-                            result.error=errorMessage.code_200;
+                            result.error=errorMessage.code_1018;
                             callback(result);
                             return;
                         }
