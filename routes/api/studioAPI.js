@@ -77,7 +77,7 @@ router.post("/resetPwd", (req, res) => {
         req.query["newPwd"],     
         req.query["oldPwd"] || "",          
         (data) => {
-            res.json(APIUtil.APIResultFromData(data));
+            res.json(APIUtil.APIResult(null, data));
         }
     );
 });
