@@ -58,7 +58,7 @@ var config = {
     web24k: "http://www.24k.hk/public/datas", //24k数据公用host前缀
     fx678ApiUrl:"http://unews.fx678.com",
     noticeSocketClient:"http://192.168.35.81:3007", // socket客户端
-    socketServerUrl:{webSocket:'http://192.168.35.81:3007',socketIO:'http://192.168.35.81:3007',apiSocket:'http://192.168.35.81:3007'},
+    socketServerUrl:{webSocket:'http://192.168.35.81:3007',socketIO:'http://192.168.35.81:3007',apiSocket:'http://192.168.35.81:3007/fxFinance'},
     chatSocketUrl:'http://192.168.35.81:3007',  //socket 服务api地址
     symbolLongShortOpenPositionRatios: "http://192.168.75.40:8081/GwfxApi/RESTful/PublicManager" // 多空持仓比例
 };
