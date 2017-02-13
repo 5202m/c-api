@@ -80,20 +80,21 @@ class MessageApi {
             room:room,
             uuid:uuid
         }
-        let path = `${config.chatSocketUrl}/api/chat/isOnline`;
+        let path = `${config.chatSocketUrl}/api/chat/isOnline?data=`+JSON.stringify(data);
         request.get({
-                url: path,
-                form: {data:JSON.stringify(data)}
+                url: path
             }, (error, response, data)=>{
                 if(error){
                     deferred.reject(error);
                 }else{
-                    data = JSON.parse(data);
-                    if(data.result == 0){
+                    //TODO socket获取在线暂有问题
+                    /* data = JSON.parse(data);
+                   if(data.result == 0){
                         deferred.resolve(data.data.online);
                     }else{
                         deferred.reject(data);
-                    }
+                    }*/
+                    deferred.resolve(true);
                 }
             }
         );
@@ -108,7 +109,6 @@ class MessageApi {
             namespace:namespace,
             room:room
         }
-        console.log(path);
         logger.info("Getting data from ", path, JSON.stringify(data));
         request.get({
                 url: path + "?data=" + JSON.stringify(data)

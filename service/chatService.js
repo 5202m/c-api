@@ -32,9 +32,19 @@ var chatService ={
 		lastPublishTime=data.lastPublishTime, 
 		allowWhisper = data.allowWhisper,
 		fUserTypeStr=data.fUserTypeStr;
-        
+        try{
+            //数据格式转换
+            userInfo.userType = parseInt(userInfo.userType);
+            //删除不需要的数据
+            delete userInfo.roleNo;
+            delete userInfo.roleName;
+            delete userInfo.mobilePhone;
+            delete userInfo.mobile;
+            delete userInfo.email;
+        }catch(e){
+            logger.error("parseInt userInfo userType error");
+        }
         userInfo.isMobile=common.isMobile(userAgent);
-        
         if(common.isBlank(userInfo.groupType)){
             return false;
         }
@@ -45,7 +55,9 @@ var chatService ={
         userInfo.onlineStatus=1;
         userInfo.onlineDate = new Date();
         //通知重复登录
-        noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,uuid);
+        if(uuid){
+            noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,uuid);
+        }
         userService.updateMemberInfo(userInfo,function(sendMsgCount,dbMobile,offlineDate){
             //发送在线通知
             var onlineNumMsg = noticeMessage.buildSendOnlineNum(userInfo.groupType,userInfo.groupId,userInfo,true);
@@ -232,6 +244,10 @@ var chatService ={
      */
     acceptMsg:function(data){
         var userInfo=data.fromUser,groupId=userInfo.groupId;
+        userInfo.email = null;
+        userInfo.mobilePhone=null;//手机号码不能暴露
+        userInfo.mobile=null;
+        userInfo.accountNo = null;
         //如果首次发言需要登录验证(备注：微信取openId为userId，即验证openId）
         var toUser=userInfo.toUser,isWh=toUser && common.isValid(toUser.userId) && "1"==toUser.talkStyle;//私聊
         //如果是私聊游客或水军发言直接保存数据
