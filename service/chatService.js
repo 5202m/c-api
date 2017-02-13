@@ -56,7 +56,7 @@ var chatService ={
         userInfo.onlineDate = new Date();
         userService.updateMemberInfo(userInfo,function(sendMsgCount,dbMobile,offlineDate){
             //设置到redis中 userId 与socketId
-            var key = chatService.getRedisKey(userInfo.groupType,userInfo.userId);
+            var key = chatService.getRedisKey(userInfo.groupType,userInfo.groupId,userInfo.userId);
             var cacheClient = require("../cache/cacheClient");
             cacheClient.get(key,function(error,result){
                 if(!error && result){
@@ -331,7 +331,7 @@ var chatService ={
                                 groupType:userInfo.groupType
                             }
                             chatMessage.sendMsg(userInfo.groupType,userInfo.toUser.socketId,chatService.getUserUUId(newToUser),data);
-                            var key = chatService.getRedisKey(userInfo.groupType,userInfo.toUser.userId);
+                            var key = chatService.getRedisKey(userInfo.groupType,userInfo.groupId,userInfo.toUser.userId);
                             var cacheClient = require("../cache/cacheClient");
                             //获取最后一次登录的socket
                             cacheClient.get(key,function(error,result){
@@ -535,8 +535,8 @@ var chatService ={
             }
         });
     },
-    getRedisKey:function(groupType,userId){
-        return "chat_user_socket_"+groupType+"_"+userId;
+    getRedisKey:function(groupType,groupId,userId){
+        return "chat_socket_"+groupType+"_"+groupId+"_"+userId;
     }
 };
 chatService.init();
