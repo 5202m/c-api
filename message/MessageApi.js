@@ -78,23 +78,21 @@ class MessageApi {
         let data = {
             namespace:namespace,
             room:room,
-            uuid:uuid
+            uuid:namespace+"#"+uuid
         }
-        let path = `${config.chatSocketUrl}/api/chat/isOnline?data=`+JSON.stringify(data);
+        let path = `${config.chatSocketUrl}/api/chat/isOnline?data=`+encodeURIComponent(JSON.stringify(data));
         request.get({
                 url: path
             }, (error, response, data)=>{
                 if(error){
                     deferred.reject(error);
                 }else{
-                    //TODO socket获取在线暂有问题
-                    /* data = JSON.parse(data);
+                   data = JSON.parse(data);
                    if(data.result == 0){
                         deferred.resolve(data.data.online);
                     }else{
                         deferred.reject(data);
-                    }*/
-                    deferred.resolve(true);
+                    }
                 }
             }
         );
