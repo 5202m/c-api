@@ -54,11 +54,20 @@ var chatService ={
         //更新在线状态
         userInfo.onlineStatus=1;
         userInfo.onlineDate = new Date();
-        //通知重复登录
-        if(uuid){
-            noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,uuid);
-        }
         userService.updateMemberInfo(userInfo,function(sendMsgCount,dbMobile,offlineDate){
+            //设置到redis中 userId 与socketId
+            var key = chatService.getRedisKey(userInfo.groupType,userInfo.userId);
+            var cacheClient = require("../cache/cacheClient");
+            cacheClient.get(key,function(error,result){
+                if(!error && result){
+                    //通知老socket退出
+                    noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,result);
+                }
+            });
+            //设置最后登录的socket
+            cacheClient.set(key,userInfo.socketId);
+            //设置有效时间2天
+            cacheClient.expire(key, 1000*60*60*24*2);
             //发送在线通知
             var onlineNumMsg = noticeMessage.buildSendOnlineNum(userInfo.groupType,userInfo.groupId,userInfo,true);
             //离线后通知
@@ -322,14 +331,21 @@ var chatService ={
                                 groupType:userInfo.groupType
                             }
                             chatMessage.sendMsg(userInfo.groupType,userInfo.toUser.socketId,chatService.getUserUUId(newToUser),data);
-                            //TODO 离线消息存储
-                            baseMessage.checkUserIsOnline(userInfo.groupType,userInfo.groupId,chatService.getUserUUId(newToUser))
-                                .then(function(online){
-                                    saveMsg(online);
-                                },function(error){
-                                    saveMsg(false);
-                                    logger.error("获取用户在线信息失败.", error);
-                                });
+                            var key = chatService.getRedisKey(userInfo.groupType,userInfo.toUser.userId);
+                            var cacheClient = require("../cache/cacheClient");
+                            //获取最后一次登录的socket
+                            cacheClient.get(key,function(error,result){
+                                var socketId = userInfo.toUser.userId;
+                                if(!error && result){
+                                    socketId = result;
+                                }
+                                baseMessage.checkUserIsOnline(userInfo.groupType,userInfo.groupId,socketId)
+                                    .then(function(online){
+                                        saveMsg(true);//TODO 由于socket服务此方法有缺陷 导致查询不到  所以暂时统一修改为true 等socket服务重新部署修改回来即可 2017.2.13
+                                    },function(error){
+                                        saveMsg(false);
+                                        logger.error("获取用户在线信息失败.", error);
+                                    });
                                 function saveMsg(online){
                                     data.content.msgStatus=online?1:0; //1:0;判断信息是否离线或在线
                                     data.content.maxValue=imgMaxValue;
@@ -337,6 +353,7 @@ var chatService ={
                                         .then(data => {logger.info(data);})
                                         .catch(e => {logger.error("saveMsg 失败.", e);});
                                 }
+                            });
                         }else{
                             messageService.saveMsg({fromUser: userSaveInfo, content: data.content})
                                 .then(data => {logger.info(data)})
@@ -518,6 +535,9 @@ var chatService ={
             }
         });
     },
+    getRedisKey:function(groupType,userId){
+        return "chat_user_socket_"+groupType+"_"+userId;
+    }
 };
 chatService.init();
 //导出服务类

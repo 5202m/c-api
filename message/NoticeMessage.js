@@ -170,8 +170,8 @@ class NoticeMessage{
      * @param uuid
      * @param flag
      */
-    leaveRoomByOtherLogin(groupType,uuid) {
-        messageApi.send(this.buildLeaveRoomByOtherLogin(groupType,uuid,this.leaveRoomFlag.otherLogin));
+    leaveRoomByOtherLogin(groupType,socketId) {
+        messageApi.send(this.buildLeaveRoomByOtherLogin(groupType,socketId,this.leaveRoomFlag.otherLogin));
     }
 
     /****
@@ -179,12 +179,12 @@ class NoticeMessage{
      * @param uuid
      * @param flag
      */
-    buildLeaveRoomByOtherLogin(namespace,uuid, flag){
+    buildLeaveRoomByOtherLogin(namespace,socketId, flag){
         return messageApi.buildData(
             namespace,
             messageApi.msgType.sendMsg,
             "notice",
-            messageApi.buildUserExt(null,uuid),
+            messageApi.buildUserExt(socketId,null),
             {type: this.noticeType.leaveRoom, flag:flag}
         );
     }
