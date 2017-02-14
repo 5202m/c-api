@@ -156,7 +156,7 @@ router.post("/studioRegister", (req, res) => {
         req.body["userInfo"],       
         req.body["clientGroup"],
         (data) => {
-            res.json(APIUtil.APIResultFromData(data));
+            res.json(APIUtil.APIResult(null, data));
         }
     ); 
 });
