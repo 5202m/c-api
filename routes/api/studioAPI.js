@@ -72,10 +72,10 @@ router.post("/resetPwd", (req, res) => {
         return;
     }
     studioService.resetPwd(
-        req.query["groupType"],
-        req.query["mobilePhone"],
-        req.query["newPwd"],     
-        req.query["oldPwd"] || "",          
+        req.body["groupType"],
+        req.body["mobilePhone"],
+        req.body["newPwd"],     
+        req.body["oldPwd"] || "",          
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
