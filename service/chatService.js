@@ -58,12 +58,12 @@ var chatService ={
             //设置到redis中 userId 与socketId
             var key = chatService.getRedisKey(userInfo.groupType,userInfo.groupId,userInfo.userId);
             var cacheClient = require("../cache/cacheClient");
-            cacheClient.get(key,function(error,result){
-                if(!error && result){
-                    //通知老socket退出
-                    noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,result);
-                }
-            });
+            // cacheClient.get(key,function(error,result){
+            //     if(!error && result){
+            //         //通知老socket退出
+            //         noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,result);
+            //     }
+            // });
             //设置最后登录的socket
             cacheClient.set(key,userInfo.socketId);
             //设置有效时间2天

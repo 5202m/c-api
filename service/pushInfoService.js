@@ -39,7 +39,6 @@ var pushInfoService = {
      * @param callback
      */
     checkPushInfo:function(groupType,roomId,clientGroup,position,filterTime,callback){
-	filterTime = filterTime === "true";
         var rIds=[];
         rIds.push(roomId);
         var searchObj={position:position,valid:1,status:1,groupType:groupType,roomIds:{$in:rIds}};
