@@ -171,6 +171,14 @@ router.post("/getWhMsg", (req, res)=> {
     chatService.getWHMsg(userInfo);
     res.json({code:200});
 });
+//推送服务器时间
+router.post("/serverTime",(req,res)=>{
+    let data = req.body.data;
+    if(data.groupType && data.socketId){
+        chatService.sendServerTime(data.groupType,data.socketId);
+    }
+    res.json({code:200});
+});
 //断开连接
 router.post("/disconnect",(req,res)=>{
     disconnect(req,res);

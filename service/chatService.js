@@ -193,6 +193,14 @@ var chatService ={
             }
         });
     },
+    /****
+     * 发送服务器时间消息
+     * @param groupType
+     * @param socketId
+     */
+    sendServerTime:function(groupType,socketId){
+      noticeMessage.serverTimePushInfo(groupType,socketId);
+    },
     sendMsg:function(data){
         chatService.acceptMsg(data);
     },
