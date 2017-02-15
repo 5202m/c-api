@@ -58,12 +58,12 @@ var chatService ={
             //设置到redis中 userId 与socketId
             var key = chatService.getRedisKey(userInfo.groupType,userInfo.groupId,userInfo.userId);
             var cacheClient = require("../cache/cacheClient");
-            // cacheClient.get(key,function(error,result){
-            //     if(!error && result){
-            //         //通知老socket退出
-            //         noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,result);
-            //     }
-            // });
+            cacheClient.get(key,function(error,result){
+                if(!error && result){
+                    //通知老socket退出
+                    noticeMessage.leaveRoomByOtherLogin(userInfo.groupType,result);
+                }
+            });
             //设置最后登录的socket
             cacheClient.set(key,userInfo.socketId);
             //设置有效时间2天
@@ -349,7 +349,7 @@ var chatService ={
                                 }
                                 baseMessage.checkUserIsOnline(userInfo.groupType,userInfo.groupId,socketId)
                                     .then(function(online){
-                                        saveMsg(true);//TODO 由于socket服务此方法有缺陷 导致查询不到  所以暂时统一修改为true 等socket服务重新部署修改回来即可 2017.2.13
+                                        saveMsg(online);
                                     },function(error){
                                         saveMsg(false);
                                         logger.error("获取用户在线信息失败.", error);
