@@ -333,7 +333,7 @@ router.post('/add', function(req, res){
         return;
     }
     articleService.addArticle(loc_article, function(apiResult){
-	APIUtil.APIResult(null, apiResult, null);
+	    res.json(APIUtil.APIResult(null, apiResult, null));
     });
 });
 
