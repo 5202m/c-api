@@ -529,5 +529,53 @@ router.post("/modifyRuleNotice", function(req, res) {
     }
     res.json(ApiResult.result(null, {isOK: true}));
 });
+/**
+ * @api {post} /chat/sendNoticeArticle 修改规则
+ * @apiName sendNoticeArticle
+ * @apiGroup chat
+ *
+ * @apiParam {String} groupId 房间ID。
+ * @apiParam {String} article 文章体，json 字符串
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/sendNoticeArticle
+ * @apiParamExample {json} Request-Example:
+ *     {article: '{"platform": "fxstudio_50"}', groupId: 'fxstudio_50'}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ * @apiUse ParameterNotAvailableJSONError
+ */
+router.post("/sendNoticeArticle", function(req, res) {
+    let requires = ["groupId", "article"];
+    let isSatify = requires.every(name => {
+        return common.isValid(req.body[name]);
+    });
+    if(!isSatify){
+        logger.warn("[sendNoticeArticle] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    let article = req.body["article"],
+    groupId = req.body["groupId"];
+    try{
+        if(typeof article === "string"){
+            article = JSON.parse(article);
+        }
+    }catch (e){
+        res.json(APIUtil.APIResult("code_10", null));
+        return;
+    }
+    chatService.sendNoticeArticle(groupId, article);
+    res.json(ApiResult.result(null, {isOK: true}));
+});
 
 module.exports = router;
