@@ -264,7 +264,7 @@ var chatService ={
         userInfo.email = null;
         userInfo.mobilePhone=null;//手机号码不能暴露
         userInfo.mobile=null;
-        userInfo.accountNo = null;
+        //userInfo.accountNo = null;
         //如果首次发言需要登录验证(备注：微信取openId为userId，即验证openId）
         var toUser=userInfo.toUser,isWh=toUser && common.isValid(toUser.userId) && "1"==toUser.talkStyle;//私聊
         //如果是私聊游客或水军发言直接保存数据
