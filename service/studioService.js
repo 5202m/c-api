@@ -98,6 +98,15 @@ var studioService = {
                         return;
                     }
                     callback(null, userInfo);
+                },
+                pointsGlobal:function(callback){
+                    chatPointsService.getPointsInfo(userInfo.groupType,userInfo.mobilePhone,true,function(r){
+                        var point = 0;
+                        if(r && r.pointsGlobal){
+                            point = r.pointsGlobal
+                        }
+                        callback(null,point);
+                    });
                 }
             },
             function(err, results) {
