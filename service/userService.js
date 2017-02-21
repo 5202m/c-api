@@ -685,7 +685,7 @@ var userService = {
                 if(common.isValid(params.hasQRCode)) {
                     searchObj.wechatCodeImg = {$nin: [null, '']};
                 }
-                boUser.find(searchObj, "userNo userName wechatCodeImg",function(err, row){
+                boUser.find(searchObj, "userNo userName wechatCodeImg avatar",function(err, row){
                     if(err){
                         logger.error("getTeacherList->get fail!"+err);
                         callback(null);
