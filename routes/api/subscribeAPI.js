@@ -54,6 +54,7 @@ router.post('/saveSubscribe', function(req, res){
     var params = {
         groupType   : req.body["groupType"],
         type        : req.body["type"],
+        clientGroup : req.body["clientGroup"],
         userId      : req.body["userId"],
         analyst     : req.body["analyst"],
         noticeType  : req.body["noticeType"],
@@ -61,7 +62,7 @@ router.post('/saveSubscribe', function(req, res){
         endDate     : req.body["endDate"],
         point       : req.body["point"],
         userName    : req.body["userName"],
-        Ip          : req.body["Ip"]
+        Ip          : req.body["orip"]
     };
     var requires = ["groupType","type","userId","analyst","noticeType"];
     var isNotSatify = requires.every((name) => {
