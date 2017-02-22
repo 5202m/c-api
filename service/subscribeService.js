@@ -606,9 +606,20 @@ var subscribeService = {
             status      : 1 //状态：0 无效， 1 有效
         };
         if(params.point>0) {
-            var pointsParam = {clientGroup:params.clientGroup,groupType: params.groupType,userId: params.userId,item: 'prerogative_subscribe',val: -params.point,isGlobal: false,remark: params.pointsRemark,opUser: params.userName,opIp: params.Ip};
-            chatPointsService.add(pointsParam, function (err, result) {
-                if (!err) {
+            var pointsParam = {
+                clientGroup: params.clientGroup,
+                groupType: params.groupType,
+                userId: params.userId,
+                item: 'prerogative_subscribe',
+                val: -params.point,
+                isGlobal: false,
+                remark: params.pointsRemark,
+                opUser: params.userName,
+                opIp: params.Ip
+            };
+            chatPointsService.add(pointsParam, function (data) {
+                if (data.result === 0) {
+                    let result = data.data;
                     insertModel.pointsId = common.isBlank(result)?'':result._id;
                     new ChatSubscribe(insertModel).save(function (err) {
                         if (err) {
@@ -659,8 +670,9 @@ var subscribeService = {
                 }
                 if(params.point>0 && row.point<params.point){
                     var pointsParam = {clientGroup:params.clientGroup,groupType:params.groupType, userId:params.userId, item:'prerogative_subscribe', val:-(params.point-row.point), isGlobal:false, remark:params.pointsRemark, opUser:params.userName, opIp:params.Ip};
-                    chatPointsService.add(pointsParam,function(err, result) {
-                        if (!err) {
+                    chatPointsService.add(pointsParam,function(json) {
+                        if (json.result === 0) {
+                            var result = json.data;
                             setObj.pointsId = common.isBlank(result)?'':result._id;
                             ChatSubscribe.findOneAndUpdate(searchObj, setObj, function (err1, row1) {
                                 if (err1) {
@@ -670,8 +682,8 @@ var subscribeService = {
                                     subscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
                                 }
                             });
-                        } else {
-                            callback({isOK:false, msg: err.errmsg});
+                        } else if(json.result != 0){
+                            callback({isOK:true, msg: '修改订阅成功'});
                         }
                     });
                 }else {
@@ -738,6 +750,7 @@ var subscribeService = {
                 params.emails = email;
             }
             params.sign = common.getMD5(params.accountSid + config.token + params.timestamp);
+            logger.info(`Posting data to ${Config.utm.cstGroupUrl}...`);
             Request.post(Config.utm.cstGroupUrl, function (error, response, data) {
                 if (error || response.statusCode != 200 || !data) {
                     logger.error("<<saveSubscribe4UTM:保存客户分组异常，errMessage:", error);
