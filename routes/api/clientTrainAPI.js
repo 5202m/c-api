@@ -82,7 +82,7 @@ router.get("/getTrainList", (req, res) => {
     );
 });
 router.post("/addSignin", (req, res) => {
-    let requires = ["mobilePhone", "groupType", "avatar", "clientip"];
+    let requires = ["mobilePhone", "groupType", "clientip"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
@@ -99,7 +99,7 @@ router.post("/addSignin", (req, res) => {
         }, 
         req.body["clientip"],
         (data) => {
-            res.json(APIUtil.APIResultFromData(data));
+            res.json(APIUtil.APIResult(null, data));
         }
     );
 });
@@ -120,6 +120,27 @@ router.get("/getSignin", (req, res) => {
         },
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
+        }
+    );
+});
+router.post('/checkTodaySignin', (req, res) => {
+    let requires = ["mobilePhone", "groupType", "clientip"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.body[name]);
+    });
+    if(!isSatify){
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+
+    clientTrainService.checkTodaySignin(
+        {
+            mobilePhone: req.body["mobilePhone"],
+            groupType: req.body["groupType"]
+        },
+        req.body["clientip"],
+        (data) => {
+            res.json(APIUtil.APIResult(null, data));
         }
     );
 });

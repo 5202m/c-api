@@ -403,6 +403,42 @@ var clientTrainService = {
             function (error, result) {
                 dataCallback(result);
             })
+    },
+    /**
+     * 查询客户当天是否签到
+     */
+    checkTodaySignin : function(userInfo, clientip, callback) {
+        var searchObj = {userId: userInfo.mobilePhone, groupType: userInfo.groupType};
+        signin.findOne(searchObj, function (err, signinInfo) {
+            if (err) {
+                logger.error("查询签到数据失败!:", err);
+                callback({isOK: false, msg: '查询客户签到数据失败'});
+            } else {
+                if(signinInfo == null){
+                    signinInfo = new signin({
+                        userId: userInfo.mobilePhone,
+                        groupType: userInfo.groupType,
+                        avatar: userInfo.avatar,
+                        signinTime: null,
+                        historySignTime: [],
+                        signinDays: 0,
+                        serialSigDays: 0
+                    });
+                }
+                var today = new Date();
+                clientTrainService.checkSign(signinInfo, today, function(err, isSerial, isExist){
+                    if(err){
+                        callback({isOK: false, msg: '客户未签到'});
+                        return ;
+                    }else if(isExist){
+                        callback({isOK: true, msg: errorMessage.code_3002.errmsg});
+                        return;
+                    }else{
+                        callback({isOK: false, msg: '客户未签到'});
+                    }
+                });
+            }
+        });
     }
 };
 //导出服务类
