@@ -34,12 +34,12 @@
 var express = require('express');
 var router = express.Router();
 var common = require('../../util/common');
-var logger =require("../../resources/logConf").getLogger("chatAPI");
+var logger = require("../../resources/logConf").getLogger("chatAPI");
 var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
 var userService = require('../../service/userService');
 var ApiResult = require('../../util/ApiResult');
-let APIUtil = require('../../util/APIUtil'); 	 	   //引入API工具类js
+let APIUtil = require('../../util/APIUtil'); //引入API工具类js
 
 /**
  * @api {get} /chat/getMessageList 获取聊天信息
@@ -70,24 +70,24 @@ let APIUtil = require('../../util/APIUtil'); 	 	   //引入API工具类js
  * @apiUse ParametersMissedError
  */
 router.get(/^\/getMessageList(\.(json|xml))?$/, function(req, res) {
-    var params=req.query;
-    if(!params.pageNo||params.pageNo <= 0){
+    var params = req.query;
+    if (!params.pageNo || params.pageNo <= 0) {
         params.pageNo = 1;
     }
-    params.pageNo=parseInt(params.pageNo);
-    params.pageSize=parseInt(params.pageSize)||15;
-    if(isNaN(params.pageNo)||isNaN(params.pageSize)){
-        if(req.path.indexOf('.xml')!=-1){
-            res.end(ApiResult.result(errorMessage.code_1000,null,ApiResult.dataType.xml));
-        }else{
+    params.pageNo = parseInt(params.pageNo);
+    params.pageSize = parseInt(params.pageSize) || 15;
+    if (isNaN(params.pageNo) || isNaN(params.pageSize)) {
+        if (req.path.indexOf('.xml') != -1) {
+            res.end(ApiResult.result(errorMessage.code_1000, null, ApiResult.dataType.xml));
+        } else {
             res.json(ApiResult.result(errorMessage.code_1000));
         }
-    }else{
-        chatService.getMessagePage(params,function(page){
-            if(req.path.indexOf('.xml')!=-1){
-                res.end(ApiResult.result(null,page,ApiResult.dataType.xml));
-            }else{
-                res.json(ApiResult.result(null,page));
+    } else {
+        chatService.getMessagePage(params, function(page) {
+            if (req.path.indexOf('.xml') != -1) {
+                res.end(ApiResult.result(null, page, ApiResult.dataType.xml));
+            } else {
+                res.json(ApiResult.result(null, page));
             }
         });
     }
@@ -143,17 +143,72 @@ router.get(/^\/getMessageList(\.(json|xml))?$/, function(req, res) {
  */
 router.get("/getMemberInfo", function(req, res) {
     var params = {
-        groupType : req.query["groupType"],
-        mobilePhone : req.query["mobilePhone"],
-        userId : req.query["userId"]
+        groupType: req.query["groupType"],
+        mobilePhone: req.query["mobilePhone"],
+        userId: req.query["userId"]
     };
-    if(common.isBlank(params.groupType)||(common.isBlank(params.mobilePhone)&&common.isBlank(params.userId))){
-        res.json(ApiResult.result(errorMessage.code_1000));
-    }else{
-        userService.getMemberInfo(params, function(err, member){
+    if (common.isBlank(params.groupType) || (common.isBlank(params.mobilePhone) && common.isBlank(params.userId))) {
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+    } else {
+        userService.getMemberInfo(params, function(err, member) {
             res.json(member);
         });
     }
+});
+/**
+ * 查询分析师信息（点赞+胜率）
+ */
+router.get("/getAnalysts", function(req, res) {
+    var platform = req.query["platform"];
+    var analystIds = req.query["analystIds"];
+    if (common.isBlank(platform) || common.isBlank(analystIds)) {
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+    } else {
+        chatService.getAnalystInfo(platform, analystIds, function(analysts) {
+            res.json(analysts);
+        });
+    }
+});
+
+/**
+ * 分析师点赞
+ */
+router.post("/praiseAnalyst", function(req, res) {
+    var platform = req.body["platform"] || req.query["platform"];
+    var analystId = req.body["analystId"] || req.query["analystId"];
+    if (common.isBlank(analystId) || common.isBlank(platform)) {
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+    } else {
+        chatService.praiseAnalyst(platform, analystId, function(result) {
+            res.json(result);
+        });
+    }
+});
+
+/**
+ * 分析师晒单
+ */
+router.get("/getShowTrade", function(req, res) {
+    var params = {
+        platform: req.query["platform"],
+        userId: req.query["userId"],
+        tradeType: req.query["tradeType"] || 1,
+        onlyHis: req.query["onlyHis"] != 0,
+        num: req.query["num"]
+    };
+    if (!params.platform || !params.userId) {
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+        return;
+    }
+    if (params.num) {
+        params.num = parseInt(params.num, 10);
+        if (isNaN(params.num)) {
+            params.num = 2;
+        }
+    }
+    chatService.getShowTrade(params, function(result) {
+        res.json(result);
+    });
 });
 
 /**
@@ -181,23 +236,23 @@ router.get("/getMemberInfo", function(req, res) {
  */
 router.get("/getRoomOnlineTotalNum", function(req, res) {
     var groupId = req.query["groupId"];
-    if(!groupId){
+    if (!groupId) {
         res.json(ApiResult.result(errorMessage.code_1000, null));
         return;
     }
-    chatService.getRoomOnlineTotalNum(groupId, function(data){
+    chatService.getRoomOnlineTotalNum(groupId, function(data) {
         res.json(ApiResult.result(null, data));
     });
 });
 
 router.post("/checkChatPraise", function(req, res) {
-    var clientId=req.body.clientId,
-        praiseId=req.body.praiseId,
-        fromPlatform=req.body.fromPlatform;
-    if(common.isBlank(clientId)||common.isBlank(praiseId)||common.isBlank(fromPlatform)){
+    var clientId = req.body.clientId,
+        praiseId = req.body.praiseId,
+        fromPlatform = req.body.fromPlatform;
+    if (common.isBlank(clientId) || common.isBlank(praiseId) || common.isBlank(fromPlatform)) {
         res.json(ApiResult.result(null, true));
-    }else{
-        chatService.checkChatPraise(clientId,praiseId,fromPlatform,function(isOK){
+    } else {
+        chatService.checkChatPraise(clientId, praiseId, fromPlatform, function(isOK) {
             res.json(ApiResult.result(null, isOK));
         });
     }
@@ -208,15 +263,15 @@ router.post("/acceptMsg", function(req, res) {
     let isSatify = requires.every(name => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[acceptMsg] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    try{
+    try {
         chatService.acceptMsg(req.body);
         res.json(ApiResult.result(null, true));
-    } catch (e){
+    } catch (e) {
         res.json(ApiResult.result(e, false));
     }
 });
@@ -226,15 +281,15 @@ router.post("/removeMsg", function(req, res) {
     let isSatify = requires.every(name => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[removeMsg] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    try{
+    try {
         chatService.removeMsg(req.body.groupId, req.body.msgIds);
         res.json(ApiResult.result(null, true));
-    } catch (e){
+    } catch (e) {
         res.json(ApiResult.result(e, false));
     }
 });
@@ -266,20 +321,20 @@ router.post("/removeMsg", function(req, res) {
 router.post("/leaveRoom", (req, res) => {
     let groupIds = req.body["groupIds"];
     let userIds = req.body["userIds"];
-    if(common.isBlank(groupIds)){
+    if (common.isBlank(groupIds)) {
         logger.warn("[leaveRoom] Parameters missed! Expecting parameter: groupIds");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    try{
-        if(common.isValid(userIds)){//存在用户id
-            chatService.leaveRoomByUserId(groupIds,userIds);
-        }else{//不存在用户id，则通知房间所有用户下线
+    try {
+        if (common.isValid(userIds)) { //存在用户id
+            chatService.leaveRoomByUserId(groupIds, userIds);
+        } else { //不存在用户id，则通知房间所有用户下线
             chatService.leaveRoom(groupIds);
         }
-        res.json(ApiResult.result(null, {isOK: true}));
-    } catch (e){
-        res.json(ApiResult.result(e, {isOK: false}));
+        res.json(ApiResult.result(null, { isOK: true }));
+    } catch (e) {
+        res.json(ApiResult.result(e, { isOK: false }));
     }
 });
 /**
@@ -310,17 +365,17 @@ router.post("/leaveRoom", (req, res) => {
 router.post("/submitPushInfo", function(req, res) {
     let infoStr = req.body["infoStr"];
     let isValid = req.body["isValid"];
-    if(common.isBlank(infoStr)){
+    if (common.isBlank(infoStr)) {
         logger.warn("[submitPushInfo] Parameters missed! Expecting parameter: infoStr");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    try{
-        chatService.submitPushInfo(infoStr , isValid);
-        res.json(ApiResult.result(null, {isOK: true}));
-    } catch (e){
-        res.json(ApiResult.result(e, {isOK: false}));
-    } 
+    try {
+        chatService.submitPushInfo(infoStr, isValid);
+        res.json(ApiResult.result(null, { isOK: true }));
+    } catch (e) {
+        res.json(ApiResult.result(e, { isOK: false }));
+    }
 });
 /**
  * @api {post} /chat/removePushInfo 删除推送消息
@@ -349,21 +404,21 @@ router.post("/submitPushInfo", function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.post("/removePushInfo", function(req, res) {
-    let ids=req.body["ids"];
-    let roomIds=req.body["roomIds"];
-    let position=req.body["position"];
-    if(common.isBlank(ids)){
+    let ids = req.body["ids"];
+    let roomIds = req.body["roomIds"];
+    let position = req.body["position"];
+    if (common.isBlank(ids)) {
         logger.warn("[removePushInfo] Parameters missed! Expecting parameter: ids");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    try{
+    try {
         chatService.removePushInfo(position, roomIds || "", ids);
-        res.json(ApiResult.result(null, {isOK: true}));
-    } catch (e){
+        res.json(ApiResult.result(null, { isOK: true }));
+    } catch (e) {
         logger.error("[removePushInfo] faile: ", e);
-        res.json(ApiResult.result(null, {isOK: false}));
-    } 
+        res.json(ApiResult.result(null, { isOK: false }));
+    }
 });
 /**
  * @api {post} /chat/noticeArticle 文章添加/更新提醒
@@ -392,9 +447,9 @@ router.post("/removePushInfo", function(req, res) {
  * @apiUse ParameterNotAvailableJSONError
  */
 router.post("/noticeArticle", function(req, res) {
-    let articleJSON=req.body["article"];
-    let opType=req.body["opType"];
-    if(common.isBlank(articleJSON)){
+    let articleJSON = req.body["article"];
+    let opType = req.body["opType"];
+    if (common.isBlank(articleJSON)) {
         logger.warn("[noticeArticle] Parameters missed! Expecting parameter: articleJSON");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -405,12 +460,12 @@ router.post("/noticeArticle", function(req, res) {
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
-    try{
-        chatService.noticeArticle(articleJSON , opType);
-        res.json(ApiResult.result(null, {isOK: true}));
-    } catch (e){
-        res.json(ApiResult.result(e, {isOK: false}));
-    } 
+    try {
+        chatService.noticeArticle(articleJSON, opType);
+        res.json(ApiResult.result(null, { isOK: true }));
+    } catch (e) {
+        res.json(ApiResult.result(e, { isOK: false }));
+    }
 });
 /**
  * @api {post} /chat/showTradeNotice 显示交易提醒
@@ -437,8 +492,8 @@ router.post("/noticeArticle", function(req, res) {
  * @apiUse ParameterNotAvailableJSONError
  */
 router.post("/showTradeNotice", function(req, res) {
-    let tradeInfoJSON=req.body["tradeInfo"];
-    if(common.isBlank(tradeInfoJSON)){
+    let tradeInfoJSON = req.body["tradeInfo"];
+    if (common.isBlank(tradeInfoJSON)) {
         logger.warn("[showTradeNotice] Parameters missed! Expecting parameter: tradeInfoJSON");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -450,18 +505,18 @@ router.post("/showTradeNotice", function(req, res) {
         return;
     }
     let tradeInfoResult = [],
-        mobileArr=[],
+        mobileArr = [],
         tradeInfo = null;
     tradeInfoArray.forEach(trade => {
         tradeInfo = trade;
-        if(tradeInfo.tradeType == 2){ //客户晒单
+        if (tradeInfo.tradeType == 2) { //客户晒单
             mobileArr.push(tradeInfo.boUser.telephone);
         }
     });
-    userService.getClientGroupByMId(mobileArr, tradeInfo.groupType, function(mbObj){
+    userService.getClientGroupByMId(mobileArr, tradeInfo.groupType, function(mbObj) {
         tradeInfoArray.forEach(trade => {
             tradeInfo = trade;
-            if(tradeInfo.tradeType == 2){ //客户晒单
+            if (tradeInfo.tradeType == 2) { //客户晒单
                 tradeInfoResult.push(tradeInfo);
                 chatPointsService.add({
                     clientGroup: mbObj[tradeInfo.boUser.telephone],
@@ -477,11 +532,11 @@ router.post("/showTradeNotice", function(req, res) {
                 }, result => true);
             }
         });
-        if(tradeInfoResult.length>0){
+        if (tradeInfoResult.length > 0) {
             chatService.showTrade(tradeInfo.groupType, tradeInfoResult);
         }
     });
-    res.json(ApiResult.result(null, {isOK: true}));
+    res.json(ApiResult.result(null, { isOK: true }));
 });
 /**
  * @api {post} /chat/modifyRuleNotice 修改规则
@@ -512,22 +567,22 @@ router.post("/showTradeNotice", function(req, res) {
 router.post("/modifyRuleNotice", function(req, res) {
     let ruleInfo = req.body["ruleInfo"];
     let roomIds = req.body["roomIds"];
-    if(common.isBlank(ruleInfo)){
+    if (common.isBlank(ruleInfo)) {
         logger.warn("[modifyRuleNotice] Parameters missed! Expecting parameter: ruleInfo");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    try{
-        ruleInfo=JSON.parse(ruleInfo);
-    }catch (e){
+    try {
+        ruleInfo = JSON.parse(ruleInfo);
+    } catch (e) {
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
-    roomIds=roomIds.split(",");
-    for(var i in roomIds){
-        chatService.modifyRulePushInfo(roomIds[i],ruleInfo);
+    roomIds = roomIds.split(",");
+    for (var i in roomIds) {
+        chatService.modifyRulePushInfo(roomIds[i], ruleInfo);
     }
-    res.json(ApiResult.result(null, {isOK: true}));
+    res.json(ApiResult.result(null, { isOK: true }));
 });
 /**
  * @api {post} /chat/sendNoticeArticle 修改规则
@@ -559,23 +614,23 @@ router.post("/sendNoticeArticle", function(req, res) {
     let isSatify = requires.every(name => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[sendNoticeArticle] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
     let article = req.body["article"],
-    groupId = req.body["groupId"];
-    try{
-        if(typeof article === "string"){
+        groupId = req.body["groupId"];
+    try {
+        if (typeof article === "string") {
             article = JSON.parse(article);
         }
-    }catch (e){
+    } catch (e) {
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
     chatService.sendNoticeArticle(groupId, article);
-    res.json(ApiResult.result(null, {isOK: true}));
+    res.json(ApiResult.result(null, { isOK: true }));
 });
 
 module.exports = router;

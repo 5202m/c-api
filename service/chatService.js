@@ -8,6 +8,9 @@ var pushInfoService = require('../service/pushInfoService');
 var config = require('../resources/config'); //资源文件
 var async = require('async'); //引入async
 var redis = require('redis');
+var ChatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数据模型
+var BoUser = require('../models/boUser'); //引入boUser数据模型
+var ChatPraise = require('../models/chatPraise'); //引入chatPraise数据模型
 var noticeMessage = require("../message/NoticeMessage");
 var chatMessage = require("../message/ChatMessage");
 var baseMessage = require("../message/BaseMessage");
@@ -239,6 +242,166 @@ var chatService = {
      */
     clearAllData: function(callback) {
 
+    },
+    /**
+     * 提取分析师信息
+     * @param platform
+     * @param analystIds
+     * @param callback
+     */
+    getAnalystInfo: function(platform, analystIds, callback) {
+        var ids = analystIds.split(/\s*[,，]\s*/);
+        if (!ids || ids.length == 0) {
+            callback(null);
+            return;
+        }
+        async.parallel({
+            userInfo: function(callbackTmp) {
+                BoUser.find({
+                    userNo: { "$in": ids }
+                }, callbackTmp);
+            },
+            praise: function(callbackTmp) {
+                ChatPraise.find({
+                    fromPlatform: platform,
+                    praiseType: "user",
+                    praiseId: { $in: ids }
+                }, callbackTmp);
+            }
+        }, function(err, results) {
+            var userMap = {},
+                praiseMap = {};
+            var i, lenI;
+            for (i = 0, lenI = !results.userInfo ? 0 : results.userInfo.length; i < lenI; i++) {
+                userMap[results.userInfo[i].userNo] = results.userInfo[i];
+            }
+            for (i = 0, lenI = !results.praise ? 0 : results.praise.length; i < lenI; i++) {
+                praiseMap[results.praise[i].praiseId] = results.praise[i];
+            }
+            var result = [],
+                analyst, user;
+            for (i = 0, lenI = ids.length; i < lenI; i++) {
+                analyst = {
+                    userNo: ids[i],
+                    userName: "",
+                    position: "",
+                    avatar: "",
+                    introduction: "",
+                    wechatCode: "",
+                    tag: "",
+                    winRate: "",
+                    earningsM: "",
+                    praise: 0
+                };
+                if (userMap.hasOwnProperty(analyst.userNo)) {
+                    user = userMap[analyst.userNo];
+                    analyst.userName = user.userName;
+                    analyst.position = user.position;
+                    analyst.avatar = user.avatar;
+                    analyst.introduction = user.introduction;
+                    analyst.wechatCode = user.wechatCode;
+                    analyst.tag = user.tag;
+                    analyst.winRate = user.winRate;
+                    analyst.earningsM = user.earningsM;
+                }
+                if (praiseMap.hasOwnProperty(analyst.userNo)) {
+                    analyst.praise = praiseMap[analyst.userNo].praiseNum;
+                }
+                result.push(analyst);
+            }
+            callback(result);
+        });
+    },
+
+    /**
+     * 分析师点赞
+     */
+    praiseAnalyst: function(platform, analystId, callback) {
+        ChatPraise.findOne({
+            fromPlatform: platform,
+            praiseType: "user",
+            praiseId: analystId
+        }, function(err, row) {
+            if (err) {
+                logger.error("praiseAnalyst->find fail!:" + err);
+                callback({ isOK: false, msg: '更新失败', num: 0 });
+                return;
+            }
+            if (row) {
+                if (!row.praiseNum) {
+                    row.praiseNum = 1;
+                } else {
+                    row.praiseNum += 1;
+                }
+            } else {
+                row = new ChatPraise({
+                    _id: new ObjectId(),
+                    praiseId: analystId,
+                    praiseType: "user",
+                    fromPlatform: platform,
+                    praiseNum: 1,
+                    remark: ""
+                });
+            }
+            row.save(function(err1, rowTmp) {
+                if (err1) {
+                    logger.error('praiseAnalyst=>save fail!' + err1);
+                    callback({ isOK: false, msg: '更新失败', num: 0 });
+                    return;
+                }
+                callback({ isOK: true, msg: '', num: rowTmp.praiseNum });
+            });
+        });
+    },
+
+    /**
+     * 获取分析师晒单
+     * @param params {{platform:String, userId:String, tradeType:Number, num:Number, onlyHis:boolean}}
+     * @param callback
+     */
+    getShowTrade: function(params, callback) {
+        var queryObj = {
+            groupType: params.platform,
+            "boUser.userNo": params.userId,
+            tradeType: params.tradeType,
+            valid: 1
+        };
+        if (params.tradeType != 1) {
+            queryObj.status = 1; //审核通过
+        }
+        if (params.onlyHis) {
+            queryObj.profit = { $nin: [null, ""] };
+        }
+        ChatShowTrade.find(queryObj)
+            .limit(params.num)
+            .sort({ showDate: -1 })
+            .exec('find', function(err, datas) {
+                if (err) {
+                    logger.error('getShowTrade=>query fail:' + err);
+                    callback(ApiResult.result(ErrorMessage.code_10, null));
+                } else {
+                    var result = [],
+                        data = null;
+                    for (var i = 0, lenI = !datas ? 0 : datas.length; i < lenI; i++) {
+                        data = datas[i];
+                        result.push({
+                            id: data._id,
+                            groupType: data.groupType,
+                            groupId: data.groupId,
+                            userId: data.boUser.userNo,
+                            userName: data.boUser.userName,
+                            userAvatar: data.boUser.avatar,
+                            showDate: data.showDate ? data.showDate.getTime() : 0,
+                            tradeImg: data.tradeImg,
+                            profit: data.profit,
+                            remark: data.remark,
+                            title: data.title,
+                            praise: data.praise
+                        });
+                    }
+                    callback(ApiResult.result(null, result));
+                }
+            });
     },
     /**
      * 提取房间在线总人数
