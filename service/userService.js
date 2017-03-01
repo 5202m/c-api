@@ -633,6 +633,10 @@ var userService = {
                 return;
             }
             var ret = common.dateTimeWeekCheck(row.openDate, true);
+            if (!ret) {
+                callback(ret);
+                return;
+            }
             if (row.status == 2) { //授权访问，需要检查授权客户
                 ret = false;
                 if (row.traninClient) {
