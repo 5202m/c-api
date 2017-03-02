@@ -14,6 +14,48 @@ var ChatPraise = require('../models/chatPraise'); //引入chatPraise数据模型
 var noticeMessage = require("../message/NoticeMessage");
 var chatMessage = require("../message/ChatMessage");
 var baseMessage = require("../message/BaseMessage");
+var cacheClient = require("../cache/cacheClient");
+
+let updateCacheClient = userInfo => {
+    //设置到redis中 userId 与socketId
+    var key = chatService.getRedisKey(userInfo.groupType, userInfo.groupId, userInfo.userId);
+    cacheClient.get(key, function(error, result) {
+        if (!error && result) {
+            //通知老socket退出
+            noticeMessage.leaveRoomByOtherLogin(userInfo.groupType, result);
+        }
+    });
+    //设置最后登录的socket
+    cacheClient.set(key, userInfo.socketId);
+    //设置有效时间2天
+    cacheClient.expire(key, 1000 * 60 * 60 * 24 * 2);
+};
+
+let initSocketForUser = userInfo => {
+    var uuid = chatService.getUserUUId(userInfo);
+    //发送在线通知
+    var onlineNumMsg = noticeMessage.buildSendOnlineNum(userInfo.groupType, userInfo.groupId, userInfo, true);
+    //离线后通知
+    var offlineNumMsg = noticeMessage.buildSendOnlineNum(userInfo.groupType, userInfo.groupId, userInfo, false);
+    //设置加入房间
+    var joinMsg = baseMessage.buildJoin(userInfo.groupType, userInfo.socketId, uuid, userInfo.groupId);
+    //推送服务时间
+    var serverTimeMsg = noticeMessage.buildServerTimePushInfo(userInfo.groupType, userInfo.socketId, uuid);
+    //获取在线列表
+    var onlineUserList = baseMessage.buildOnlineList(userInfo.groupType, userInfo.groupId, userInfo.socketId, uuid);
+    //初始化socket 配置执行事件、设置属性、断开后事件。
+    baseMessage.initSocket(
+        userInfo.groupType,
+        userInfo.socketId,
+        uuid, //设置uuid
+        {
+            now: [serverTimeMsg, joinMsg, onlineNumMsg, onlineUserList], //需要马上执行的消息 获取服务器时间，加入房间，发送在线通知
+            disconnect: [offlineNumMsg] //断开连接后执行的消息  发送离线通知
+        },
+        userInfo
+    );
+}
+
 /**
  * 聊天室服务类
  * 备注：处理聊天室接受发送的所有信息及其管理
@@ -53,45 +95,12 @@ var chatService = {
         }
         //设置客户序列
         chatService.setClientSequence(userInfo);
-        var uuid = chatService.getUserUUId(userInfo);
         //更新在线状态
         userInfo.onlineStatus = 1;
         userInfo.onlineDate = new Date();
         userService.updateMemberInfo(userInfo, function(sendMsgCount, dbMobile, offlineDate) {
-            //设置到redis中 userId 与socketId
-            var key = chatService.getRedisKey(userInfo.groupType, userInfo.groupId, userInfo.userId);
-            var cacheClient = require("../cache/cacheClient");
-            cacheClient.get(key, function(error, result) {
-                if (!error && result) {
-                    //通知老socket退出
-                    noticeMessage.leaveRoomByOtherLogin(userInfo.groupType, result);
-                }
-            });
-            //设置最后登录的socket
-            cacheClient.set(key, userInfo.socketId);
-            //设置有效时间2天
-            cacheClient.expire(key, 1000 * 60 * 60 * 24 * 2);
-            //发送在线通知
-            var onlineNumMsg = noticeMessage.buildSendOnlineNum(userInfo.groupType, userInfo.groupId, userInfo, true);
-            //离线后通知
-            var offlineNumMsg = noticeMessage.buildSendOnlineNum(userInfo.groupType, userInfo.groupId, userInfo, false);
-            //设置加入房间
-            var joinMsg = baseMessage.buildJoin(userInfo.groupType, userInfo.socketId, uuid, userInfo.groupId);
-            //推送服务时间
-            var serverTimeMsg = noticeMessage.buildServerTimePushInfo(userInfo.groupType, userInfo.socketId, uuid);
-            //获取在线列表
-            var onlineUserList = baseMessage.buildOnlineList(userInfo.groupType, userInfo.groupId, userInfo.socketId, uuid);
-            //初始化socket 配置执行事件、设置属性、断开后事件。
-            baseMessage.initSocket(
-                userInfo.groupType,
-                userInfo.socketId,
-                uuid, //设置uuid
-                {
-                    now: [serverTimeMsg, joinMsg, onlineNumMsg, onlineUserList], //需要马上执行的消息 获取服务器时间，加入房间，发送在线通知
-                    disconnect: [offlineNumMsg] //断开连接后执行的消息  发送离线通知
-                },
-                userInfo
-            );
+            updateCacheClient(userInfo);
+            initSocketForUser(userInfo);
 
             //直播间创建访客记录
             if (parseInt(userInfo.userType) <= constant.roleUserType.member) {
@@ -166,6 +175,7 @@ var chatService = {
             });
             //公聊记录
             messageService.loadMsg(userInfo, lastPublishTime, false, function(msgData) {
+                var uuid = chatService.getUserUUId(userInfo);
                 //同步数据到客户端
                 chatMessage.loadMsg(userInfo.groupType, userInfo.socketId, uuid, { msgData: msgData, isAdd: common.isValid(lastPublishTime) ? true : false })
             });
@@ -182,7 +192,9 @@ var chatService = {
                 //直播间记录离线数据
                 visitorService.saveVisitorRecord('offline', { roomId: userInfo.groupId, groupType: userInfo.groupType, clientStoreId: userInfo.clientStoreId });
             });
+            return { clientStoreId: userInfo.clientStoreId, nickname: userInfo.nickname };
         }
+        return null;
 
     },
     /****
