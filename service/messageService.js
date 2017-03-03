@@ -66,15 +66,15 @@ var messageService = {
                 }
             } else {
                 if (userInfo.userType <= 0) {
-                    if (groupType == 'hxstudio') {
-                        searchObj.userType = 2;
-                    } else {
-                        searchObj.userType = { $in: [1, 2, 3] };
+                    if (!userInfo.isAllMessage) { //如果不是就查所有的聊天记录
+                        if (groupType == 'hxstudio') {
+                            searchObj.userType = 2;
+                        } else {
+                            searchObj.userType = { $in: [1, 2, 3] };
+                        }
                     }
-                    searchObj["toUser.talkStyle"] = 0;
-                } else {
-                    searchObj["toUser.talkStyle"] = 0;
                 }
+                searchObj["toUser.talkStyle"] = 0;
             }
             this.findMessageList(userInfo, searchObj, selectSQL, selectRows, function(result) {
                 callback(result);
