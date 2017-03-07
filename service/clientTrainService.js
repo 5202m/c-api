@@ -189,7 +189,7 @@ var clientTrainService = {
             valid: 1
         };
         var limit = 50,
-            searchFields = "_id status defaultAnalyst point openDate clientGroup name traninClient label remark";
+            searchFields = "_id status defaultAnalyst point openDate clientGroup name traninClient label remark sequence";
         if (!isAll) {
             searchObj.status = {
                 $in: [1, 2]
