@@ -226,6 +226,7 @@ var clientTrainService = {
                             isEnd: isEnd,
                             label: row.label,
                             remark: row.remark,
+                            sequence: row.sequence,
                             openDate: JSON.parse(row.openDate)
                         });
                     }
