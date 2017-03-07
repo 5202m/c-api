@@ -41,7 +41,7 @@ router.post("/addClientTrain", (req, res) => {
             clientGroup: req.body["clientGroup"]
         },
         (data) => {
-            res.json(APIUtil.APIResultFromData(data));
+            res.json(APIUtil.APIResult(null, data));
         }
     );
 });
@@ -80,7 +80,7 @@ router.get("/getTrainList", (req, res) => {
     );
 });
 router.post("/addSignin", (req, res) => {
-    let requires = ["mobilePhone", "groupType", "clientip"];
+    let requires = ["mobilePhone", "groupType", "clientip", "clientGroup"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
