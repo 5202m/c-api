@@ -149,13 +149,13 @@ var userService = {
             speakNum = Number(params.speakNum);
         if (common.isBlank(contentVal)) {
             deferred.reject({ isOK: false, tip: "发送的内容有误，已被拒绝!" });
-            return;
+            return deferred.promise;
         }
         contentVal = contentVal.replace(/(<(label|label) class="dt-send-name" tid="[^>"]+">@.*<\/label>)|(<(img|IMG)\s+src="[^>"]+face\/[^>"]+"\s*>)|(<a href="[^>"]+" target="_blank">.*<\/a>)/g, '');
         if (!isImg) { //如果是文字，替换成链接
             if (/<[^>]*>/g.test(contentVal)) { //过滤特殊字符
                 deferred.reject({ isOK: false, tip: "有特殊字符，已被拒绝!" });
-                return;
+                return deferred.promise;
             }
         }
         contentVal = common.encodeHtml(contentVal);
@@ -163,15 +163,15 @@ var userService = {
         chatGroup.findOne({ _id: groupId, valid: 1, status: { $in: [1, 2] } }, function(err, row) {
             if (err || !row) {
                 deferred.reject({ isOK: false, tip: '系统异常，房间不存在！', leaveRoom: true });
-                return;
+                return deferred.promise;
             }
             if (constant.roleUserType.member < parseInt(userType)) { //后台用户无需使用规则
                 deferred.resolve({ isOK: true, tip: '', talkStyle: row.talkStyle, whisperRoles: row.whisperRoles });
-                return;
+                return deferred.promise;
             }
             if (!common.dateTimeWeekCheck(row.openDate, true)) {
                 deferred.reject({ isOK: false, tip: '房间开放时间结束！', leaveRoom: true });
-                return;
+                return deferred.promise;
             }
             var ruleArr = row.chatRules,
                 resultTip = [],
@@ -202,15 +202,15 @@ var userService = {
                         } else {
                             deferred.resolve({ isOK: true, tip: '', talkStyle: row.talkStyle, whisperRoles: row.whisperRoles });
                         }
-                        return;
+                        return deferred.promise;
                     }
                 } else {
                     if (isPass && type == 'speak_not_allowed') { //禁言
                         deferred.reject({ isOK: false, tip: tip });
-                        return;
+                        return deferred.promise;
                     } else if (!isPass && type == 'speak_allowed') { //允许发言
                         deferred.reject({ isOK: false, tip: tip });
-                        return;
+                        return deferred.promise;
                     } else if (!visitorSpeak.allowed && isVisitor && type == 'visitor_filter') { //允许游客发言（默认游客不允许发言）
                         visitorSpeak.allowed = isPass;
                         visitorSpeak.tip = tip;
@@ -218,7 +218,7 @@ var userService = {
                     if (isImg && isPass && type == 'img_not_allowed') { //禁止发送图片
                         if (common.isBlank(clientGroupVal) || (common.isValid(clientGroupVal) && common.containSplitStr(clientGroupVal, clientGroup))) {
                             deferred.reject({ isOK: false, tip: tip });
-                            return;
+                            return deferred.promise;
                         }
                     }
                     if (!isImg && isPass && type != 'speak_not_allowed' && common.isValid(beforeVal)) {
@@ -227,24 +227,24 @@ var userService = {
                         if (type == 'visitor_filter') {
                             if (visitorSpeak.allowed && isVisitor && eval('/' + beforeVal + '/').test(nickname)) {
                                 deferred.reject({ isOK: false, type: "visitorGag", tip: tip });
-                                return;
+                                return deferred.promise;
                             }
                         }
                         if (type == 'speak_num_set' && visitorSpeak.allowed && speakNum > 0 && Number(beforeVal) <= speakNum) { //发言次数限制(针对游客）
                             deferred.reject({ isOK: false, tip: tip });
-                            return;
+                            return deferred.promise;
                         }
                         if (type == 'keyword_filter') { //过滤关键字或过滤链接
                             if (eval('/' + beforeVal + '/').test(contentVal)) {
                                 deferred.reject({ isOK: false, tip: tip });
-                                return;
+                                return deferred.promise;
                             }
                         }
                         if (type == 'url_not_allowed') { //禁止链接
                             var val = beforeVal.replace(/\//g, '\\/').replace(/\./g, '\\.');
                             if (eval('/' + val + '/').test(contentVal)) {
                                 deferred.reject({ isOK: false, tip: tip });
-                                return;
+                                return deferred.promise;
                             }
                         }
                         if (type == 'url_allowed') { //除该连接外其他连接会禁止
@@ -266,22 +266,22 @@ var userService = {
             }
             if (isWh) { //私聊不校验规则
                 deferred.resolve({ isOK: true, tip: resultTip.join(";"), talkStyle: row.talkStyle, whisperRoles: row.whisperRoles });
-                return;
+                return deferred.promise;
             }
             if (isVisitor && !visitorSpeak.allowed) {
                 deferred.reject({ isOK: false, tip: visitorSpeak.tip });
-                return;
+                return deferred.promise;
             }
             if (!isImg && urlArr.length > 0 && common.urlReg().test(contentVal)) {
                 var val = urlArr.join("|").replace(/\//g, '\\\/').replace(/\./g, '\\.');
                 if (!eval('/' + val + '/').test(contentVal)) {
                     deferred.reject({ isOK: false, tip: urlTipArr.join(";") });
-                    return;
+                    return deferred.promise;
                 }
             }
             if (needApproval) { //需要审批
                 deferred.reject({ isOK: false, needApproval: true, tip: needApprovalTip }); //需要审批，设置为true
-                return;
+                return deferred.promise;
             }
             deferred.resolve({ isOK: true, tip: resultTip.join(";"), talkStyle: row.talkStyle, whisperRoles: row.whisperRoles });
         });
