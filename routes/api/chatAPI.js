@@ -38,6 +38,7 @@ var logger = require("../../resources/logConf").getLogger("chatAPI");
 var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
 var userService = require('../../service/userService');
+let chatPointsService = require('../../service/chatPointsService');
 var ApiResult = require('../../util/ApiResult');
 let APIUtil = require('../../util/APIUtil'); //引入API工具类js
 
