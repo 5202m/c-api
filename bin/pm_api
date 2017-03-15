@@ -10,7 +10,7 @@ const debug = require('debug')('chat-api:server');
 var port = "3000";
 //启动服务
 var apiServer = app.listen(port, function() {
-    console.log('API server running. Listening on port ' + apiServer.address().port);
+    logger.info('API server running. Listening on port ' + apiServer.address().port);
     //开启定时器
 });
 apiServer.on('error', onError);
