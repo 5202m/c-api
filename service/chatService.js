@@ -87,7 +87,7 @@ var chatService = {
             delete userInfo.mobile;
             delete userInfo.email;
         } catch (e) {
-            logger.error("parseInt userInfo userType error");
+            logger.error("parseInt userInfo userType error: ", userInfo.userType);
         }
         userInfo.isMobile = common.isMobile(userAgent);
         if (common.isBlank(userInfo.groupType)) {
