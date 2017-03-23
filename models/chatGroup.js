@@ -54,6 +54,7 @@ var mongoose = require('mongoose'),
         trainConfig: String, //培训班配置
         roomType: String, // 房间类别（新手场：simple，普通：normal，VIP：vip，培训班：train）
         point: Number, //房间积分
-        label: String //房间标签
+        label: String, //房间标签
+        logo: String //房间Logo
     });
 module.exports = mongoose.model('chatGroup', chatGroupSchema, 'chatGroup');

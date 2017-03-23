@@ -281,9 +281,15 @@ var studioService = {
             if (row) {
                 if (row.loginPlatform && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                     var userGroup = row.loginPlatform.chatUserGroup;
+                    var currRow = null;
                     for (var i = 0; i < userGroup.length; i++) {
-                        if (userGroup[i]._id === userInfo.groupType) {
+                        currRow = userGroup[i];
+                        if (currRow._id === userInfo.groupType) {
                             result.error = errorMessage.code_1018;
+                            userInfo.nickname = currRow.nickname;
+                            userInfo.userId = currRow.userId;
+                            result.nickname = currRow.nickname;
+                            result.userId = currRow.userId;
                             callback(result);
                             return;
                         }
@@ -394,7 +400,7 @@ var studioService = {
             }
         }, "loginPlatform.chatUserGroup", function(err, sameNicknameRow) {
             if (err) {
-                logger.error("studioRegister fail:" + err);
+                logger.error("checkNickName fail:" + err);
                 callback(err, false);
                 return;
             }

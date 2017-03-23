@@ -30,7 +30,7 @@
  * @apiSuccess {Number} errcode  错误码.
  */
 "use strict";
-var logger =require("../../resources/logConf").getLogger("chatPraiseAPI");
+var logger = require("../../resources/logConf").getLogger("chatPraiseAPI");
 var express = require('express');
 var router = express.Router();
 var common = require('../../util/common');
@@ -45,7 +45,7 @@ var ApiResult = require('../../util/APIUtil.js').APIResult;
  *
  * @apiParam {String} praiseId 点赞ID
  * @apiParam {String} type 点赞人的类型
- * @apiParam {String} platfrom 平台
+ * @apiParam {String} platfrom 平台，直播间groupType值
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
@@ -72,15 +72,15 @@ var ApiResult = require('../../util/APIUtil.js').APIResult;
  *
  * @apiUse ParametersMissedError
  */
-router.get("/getPraiseNum", function(req, res){
+router.get("/getPraiseNum", function(req, res) {
     var praiseId = req.query["praiseId"],
         type = req.query["type"],
         platfrom = req.query["platfrom"];
-    if(common.isBlank(type)
-        ||common.isBlank(platfrom)){
+    if (common.isBlank(type) ||
+        common.isBlank(platfrom)) {
         res.json(ApiResult(errorMessage.code_1000, null));
-    }else{
-        chatPraiseService.getPraiseNum(praiseId, type, platfrom, function(data){
+    } else {
+        chatPraiseService.getPraiseNum(praiseId, type, platfrom, function(data) {
             res.json(ApiResult(null, data));
         });
     }
@@ -92,7 +92,7 @@ router.get("/getPraiseNum", function(req, res){
  *
  * @apiParam {String} praiseId 点赞ID
  * @apiParam {String} type 点赞人的类型
- * @apiParam {String} fromPlatform 平台
+ * @apiParam {String} fromPlatform 平台，直播间groupType值
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
@@ -113,19 +113,19 @@ router.get("/getPraiseNum", function(req, res){
  *
  * @apiUse ParametersMissedError
  */
-router.get("/setPraise", function(req, res){
+router.get("/setPraise", function(req, res) {
     var praiseId = req.query["praiseId"],
         type = req.query["type"],
         fromPlatform = req.query["fromPlatform"];
-    if(common.isBlank(praiseId)
-        ||common.isBlank(type)
-        ||common.isBlank(fromPlatform)){
+    if (common.isBlank(praiseId) ||
+        common.isBlank(type) ||
+        common.isBlank(fromPlatform)) {
         res.json(ApiResult(errorMessage.code_1000, null));
-    }else{
-        chatPraiseService.setPraise(praiseId, type, fromPlatform, function(data){
+    } else {
+        chatPraiseService.setPraise(praiseId, type, fromPlatform, function(data) {
             res.json(ApiResult(null, data));
         });
     }
 });
 
-module.exports =router;
+module.exports = router;

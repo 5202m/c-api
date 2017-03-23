@@ -76,7 +76,8 @@ var chatService = {
         var userInfo = data.userInfo,
             lastPublishTime = data.lastPublishTime,
             allowWhisper = data.allowWhisper,
-            fUserTypeStr = data.fUserTypeStr;
+            fUserTypeStr = data.fUserTypeStr,
+            requestParams = data.requestParams;
         try {
             //数据格式转换
             userInfo.userType = parseInt(userInfo.userType);
@@ -87,7 +88,7 @@ var chatService = {
             delete userInfo.mobile;
             delete userInfo.email;
         } catch (e) {
-            logger.error("parseInt userInfo userType error: ", userInfo.userType);
+            logger.error("parseInt userInfo userType error: \n", userInfo, e);
         }
         userInfo.isMobile = common.isMobile(userAgent);
         if (common.isBlank(userInfo.groupType)) {
@@ -105,6 +106,7 @@ var chatService = {
             //直播间创建访客记录
             if (parseInt(userInfo.userType) <= constant.roleUserType.member) {
                 var vrRow = {
+                    requestParams: requestParams,
                     userAgent: userAgent,
                     platform: fromPlatform,
                     visitorId: userInfo.visitorId,
@@ -190,6 +192,7 @@ var chatService = {
             var userInfo = data.user;
             userService.removeOnlineUser(userInfo, true, function() {
                 //直播间记录离线数据
+                logger.debug("disconnect", userInfo);
                 visitorService.saveVisitorRecord('offline', { roomId: userInfo.groupId, groupType: userInfo.groupType, clientStoreId: userInfo.clientStoreId });
             });
             return { clientStoreId: userInfo.clientStoreId, nickname: userInfo.nickname };
@@ -453,7 +456,16 @@ var chatService = {
                 if (!isAllowPass) {
                     var tipResult = userService.checkUserGag(row, userInfo.groupId); //检查用户禁言
                     if (!tipResult.isOK) { //是否设置了用户禁言
-                        chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), data);
+                        chatMessage.sendMsg(
+                            userInfo.groupType,
+                            userInfo.socketId,
+                            chatService.getUserUUId(userInfo), {
+                                fromUser: userInfo,
+                                uiId: data.uiId,
+                                value: tipResult,
+                                rule: true
+                            }
+                        );
                         return false;
                     }
                     userSaveInfo = row.loginPlatform.chatUserGroup[0]; //用于信息保存
