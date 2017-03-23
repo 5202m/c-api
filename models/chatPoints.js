@@ -10,11 +10,12 @@
  *     积分信息
  * </p>
  */
-var mongoose = require('mongoose')
-    , Schema = mongoose.Schema
-    , ObjectId = Schema.ObjectId;
+let mongoose = require('./commonMongoose');
+let Schema = mongoose.Schema;
+let ObjectId = Schema.ObjectId;
 
-var chatPointsSchema = new Schema({
+
+let chatPointsSchema = new Schema({
     "_id" : ObjectId,
     "groupType" : {type:String, index : true},  //房间组别
     "userId" : {type:String, index:true},       //用户编号（手机）

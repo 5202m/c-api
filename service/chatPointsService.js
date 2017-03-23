@@ -84,20 +84,24 @@ var chatPointsService = {
      * @param groupType
      * @param callback (err, config)
      */
-    getConfig : function(item, groupType, callback){
-        APIUtil.DBFindOne(ChatPointsConfig, {
+    getConfig : function(item, groupType, clientGroup, callback){
+        ChatPointsConfig.findOne({
             query : {
-                item : item,
-                groupType : groupType,
-                isDeleted : 0,
-                status : 1
+            item : item,
+            groupType : groupType,
+            clientGroup : {
+                $in : [ clientGroup ]
+            },
+            isDeleted : 0,
+            status : 1
             }
-        }, function(err, config){
-            if(err){
+        }, function(err, config) {
+            if (err) {
                 logger.error("<<getConfig:查询积分配置信息出错，[errMessage:%s]", err);
+                callback(APIUtil.APIResult("code_3003", null));
             }
-            callback(err, config);
-        })
+                callback(err, config);
+        });
     },
 
     /**
@@ -106,26 +110,34 @@ var chatPointsService = {
      * @param callback
      */
     add : function(params, callback){
-        if(!params.groupType || !params.userId || !params.item){
+        if (!params.groupType || !params.userId || !params.item
+            || !params.clientGroup) {
             callback(APIUtil.APIResult("code_1000", null));
             return;
         }
         params.opUser = params.opUser || params.userId;
-        chatPointsService.getConfig(params.item, params.groupType, function(err, config){
-            if(err){
-                callback(APIUtil.APIResult("code_10", null));
-            }else if(!config){
-                callback(APIUtil.APIResult(null, null));
-            }else{
-                chatPointsService.getChatPoints(params.groupType, params.userId, function(err, pointsInfo){
-                    if(err){
+        chatPointsService.getConfig(params.item, params.groupType,
+            params.clientGroup, function(err, config) {
+                if (err) {
+		    logger.error("chatPointsService.getConfig", err);
+                    callback(APIUtil.APIResult("code_10", null));
+                } else if (!config) {
+		    logger.warn("config record not found!");
+                    callback(APIUtil.APIResult("code_3003", null));
+                } else {
+                chatPointsService.getChatPoints(params.groupType,
+                    params.userId, function(err, pointsInfo) {
+                        if (err) {
+			logger.warn("chatPointsService.getChatPoints: ", err);
                         callback(APIUtil.APIResult("code_10", null));
-                    }else{
-                        chatPointsService.savePoints(pointsInfo, config, params, callback);
-                    }
-                });
-            }
-        });
+                        } else {
+                        chatPointsService.savePoints(
+                            pointsInfo, config, params,
+                            callback);
+                        }
+                    });
+                }
+            });
     },
 
     /**
@@ -300,6 +312,30 @@ var chatPointsService = {
             }
         }
         return result;
+    },
+
+    /**
+     * 查询积分配置表
+     * @param usrInfo
+     * @param callback
+     */
+    getChatPointsConfig:function(params,callback) {
+        var searchObj = {"groupType": params.groupType,"type":params.type,"item" : params.item, isDeleted:0, status: 1};
+        if(params.item instanceof Array){
+            searchObj = {"groupType": params.groupType,"type":params.type,"item" : {$in:params.item}, isDeleted:0, status: 1};
+        }
+        ChatPointsConfig.find(searchObj, "", function (err, row) {
+             if(err){
+                 logger.error("获取积分配置表失败! >>getChatPointsConfig:", err);
+                 callback(null);
+             }else{
+                 if(params.item instanceof Array) {
+                     callback(row);
+                 }else{
+                     callback(row[0]);
+                 }
+             }
+        })
     }
 };
 

@@ -26,7 +26,12 @@ router.get('/pointsInfo', function(req, res) {
 
     //查询积分
     ChatPointsService.getPointsInfo(params.groupType, params.userId, params.hasJournal, function(pointsInfo){
-        res.json(pointsInfo);
+    //    res.json(pointsInfo);
+        if(pointsInfo){
+            res.json(APIUtil.APIResult(null, pointsInfo));
+        } else {
+            res.json(APIUtil.APIResult("code_3003", null));
+        }
     });
 });
 
@@ -63,8 +68,30 @@ router.post('/add', function(req, res) {
 
     //添加积分
     ChatPointsService.add(params, function(apiResult){
-        res.json(apiResult);
+        if(apiResult){
+            res.json(apiResult);
+        } else {
+            res.json(APIUtil.APIResult("code_3002", null));
+        }
     });
+});
+
+router.get("/getChatPointsConfig", (req, res) => {
+    let requires = ["groupType", "type", "item"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.query[name]);
+    });
+    if(!isSatify){
+        logger.warn("Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    ChatPointsService.getChatPointsConfig(
+        req.query,
+        (data) => {
+            res.json(APIUtil.APIResult(null, data));
+        }
+    );
 });
 
 module.exports = router;

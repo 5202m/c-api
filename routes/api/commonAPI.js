@@ -172,8 +172,7 @@ router.get("/getNextCourses", function(req, res) {
         platform : req.query["platform"],
         groupType : req.query["groupType"],
         groupId : req.query["groupId"],
-        analystIds : req.query["analystIds"],
-        hasCurr : req.query['hasCurr']
+        analystIds : req.query["analystIds"]
     };
     var cfg = constant.studioThirdUsed.getConfig(loc_params.type, loc_params.platform);
     if(cfg){
@@ -191,7 +190,7 @@ router.get("/getNextCourses", function(req, res) {
     if(loc_params.analystIds) {
         loc_params.analystIds = loc_params.analystIds.split(/[,，]/);
     }
-    SyllabusService.getNextCources(new Date(), loc_params.groupType, loc_params.groupId, loc_params.analystIds, loc_params.hasCurr, function(courses){
+    SyllabusService.getNextCources(new Date(), loc_params.groupType, loc_params.groupId, loc_params.analystIds, function(courses){
         res.json(courses);
     });
 });

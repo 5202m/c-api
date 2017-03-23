@@ -129,5 +129,11 @@ router.get('/getLastReview', function(req, res){
         res.json(data);
     });
 });
+//adding this is for formatted response.
+router.get('/getFinanceDataLastReview', function(req, res){
+    ZxFinanceService.getFinanceDataLastReview(function(data){
+        res.json(ApiResult.result(null, data));
+    });
+});
 
 module.exports = router;

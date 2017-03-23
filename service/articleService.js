@@ -21,20 +21,15 @@ var articleService = {
      * 查询单个文档信息（按照创建时间逆序）
      * @param code
      * @param platform
-     * @param tag
      * @param isAll
-     * @param callback
      */
-    findArticle : function(code, platform, tag, isAll, callback){
+    findArticle : function(code, platform, isAll, callback){
         var searchObj = {
             valid:1,
             platform:commonJs.getSplitMatchReg(platform),
             status:1,
             categoryId:code
         };
-        if(tag){
-            searchObj["detailList.tag"] = tag;
-        }
         if(!isAll){
             var currDate=new Date();
             searchObj.publishStartDate = {"$lte":currDate};
@@ -98,9 +93,6 @@ var articleService = {
             var deList={lang:params.lang};
             if(commonJs.isValid(params.authorId)){
                 deList["authorInfo.userId"] = params.authorId;
-            }
-            if(commonJs.isValid(params.tag)){
-                deList["tag"] = params.tag;
             }
             searchObj.detailList = {$elemMatch:deList};
         }
@@ -166,7 +158,6 @@ var articleService = {
                     author = detail.authorInfo || {};
                     article.title = detail.title || "";
                     article.tag = detail.tag || "";
-                    article.remark = detail.remark || "";
                     //内容
                     content = detail.content || "";
                     contentImg = "";
@@ -197,24 +188,15 @@ var articleService = {
      * @param callback
      */
     getCountByDate:function(params,callback){
-        var endDate=params.dateTime?new Date(params.dateTime):new Date();
-        var startDate=null;
-        if(params.duration){
-            startDate=new Date(endDate.getTime() - params.duration);
-        }else{
-            startDate=new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-        }
-        var searchObj = {
+        var currDate=params.dateTime?new Date(params.dateTime):new Date();
+        var startDate=new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate());
+        article.count({
             status: 1,
             valid: 1,
             categoryId: params.code,
             platform: commonJs.getSplitMatchReg(params.platform),
-            createDate: {"$lte": endDate, "$gt": startDate}
-        };
-        if(params.tag){
-            searchObj["detailList.tag"] = params.tag;
-        }
-        article.count(searchObj, function(err,rowNum){
+            publishStartDate: {"$lte": currDate, "$gt": startDate}
+        }, function(err,rowNum){
             if(err){
                 logger.error("文档数量查询异常！", err);
                 callback(null);

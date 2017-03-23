@@ -1,10 +1,77 @@
-﻿var Images = require('images');//引入images
-/**
- * 图片处理通用方法
- * create by alan.wu
- * 2015-5-8
- */
-var imgUtil = {
+let Canvas = require("canvas");
+let Image = Canvas.Image;
+let path = require('path')
+let fs = require("fs");
+let logger = console;
+
+let getImgTypeFromImgPath = imgPath => {
+    let exName = /\.(\w+)$/.exec(imgPath)[1];
+    if(exName){
+        exName = exName.toLowerCase();
+    }
+    exName = exName === 'jpeg' ? 'jpg' : exName;
+    return exName;
+};
+
+let getImgSize = (width, height, image) => {
+    let _width = image.width, _height = image.height;
+    if(width && height){
+        _width = width;
+        _height = height;
+    } else if(!width && height){
+        _width = image.width * (height/image.height);
+        _height = height;
+    } else if(width && !height){
+        _width = width;
+        _height = image.height * (width/image.width);
+    }
+    return {
+            width: _width,
+            height: _height
+        };
+};
+
+let drawImg = (img, options) => {
+    let zipImgSize = getImgSize(options.width, options.height, img);
+    let canvas = new Canvas(zipImgSize.width, zipImgSize.height);
+    logger.info("Canvas created: ", canvas.inspect());
+    logger.info("Canvas image Data Length without image: ", canvas.toDataURL().length);
+    let ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, 0, 0, zipImgSize.width, zipImgSize.height);
+    logger.info("Canvas image Data Length with image: ", canvas.toDataURL().length);
+    return canvas;
+};
+
+let getImageStream = (canvas, exName, quality) => {
+    let imageSteam;
+    if(exName === 'jpg'){
+        imageSteam = canvas.jpegStream({
+            bufsize: 4096, 
+            quality: quality || 75
+        });
+    } else {
+        imageSteam = canvas.pngStream();
+    }
+    return imageSteam;
+};
+
+let writeImageStreamToFile = (imageSteam, savePath, callback) => {
+    let outStream = fs.createWriteStream(savePath, {defaultEncoding: 'base64'});
+    imageSteam.pipe(outStream);
+    outStream.on("error", (err) => logger.error(err));
+    outStream.on("finish", () => {
+        let img = new Image();
+        img.src = fs.readFileSync(savePath);
+        logger.info(`The image file has been saved to ${savePath} successfully!`);
+        if(callback)
+            callback(img);
+    });
+};
+
+let supportedImgTypes = ['jpg', 'png', 'gif'];
+
+module.exports = {
     /**
      * 重置图片大小
      * @param imgPath 原图片路径
@@ -14,42 +81,29 @@ var imgUtil = {
      *          quality : 压缩图片的质量
      *          output : 压缩图片的目标文件名，不给定，覆盖原图
      */
-    zipImg:function(imgPath, options){
-        if(!options){
+    zipImg: (imgPath, options, callback) => {
+        let exName = getImgTypeFromImgPath(imgPath);
+        if(supportedImgTypes.indexOf(exName) === -1){
+            logger.error("image file type not support:" + exName);
             return;
         }
-        var exName = /\.(\w+)$/.exec(imgPath)[1];
-        if(exName){
-            exName = exName.toLowerCase();
-        }
-        if(exName != "gif" && exName != "png" && exName != "jpg"){
-            console.log("image file type not support:" + exName);
-            return;
-        }
-        var img = Images(imgPath);
-        //缩放
-        if(options.width && options.height){
-            img = img.size(options.width, options.height);
-        }else if(!options.width && options.height){
-            img = img.size(img.width() * options.height / img.height());
-        }else if(options.width && !options.height){
-            img = img.size(options.width);
-        }else{
-            //不缩放
-        }
-        //保存
-        var saveCfg = null;
-        if(options.quality){
-            saveCfg = {quality : options.quality};
-        }
-        var output = options.output || imgPath;
-        if(exName == "gif"){
-            // output = output.replace(/\.\w+$/, ".png");
-            img.save(output, "png", saveCfg);
-        }else{
-            img.save(output, saveCfg);
-        }
+        
+        let img = new Image();
+        
+        let imageOnLoad = () => {
+            logger.info("Image loaded: ", img.inspect());
+            let canvas = drawImg(img, options);
+            let savePath = options.output || imgPath;
+            let imageSteam = getImageStream(canvas, exName, options.quality);
+            writeImageStreamToFile(imageSteam, savePath, callback);
+        };
+        
+        img.onerror = err => {
+          throw err;
+        };
+        
+        img.onload = imageOnLoad;
+        
+        img.src = imgPath;
     }
 };
-//导出类
-module.exports = imgUtil;

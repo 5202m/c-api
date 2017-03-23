@@ -11,13 +11,15 @@
  * </p>
  */
 var logger = require('../resources/logConf').getLogger("subscribeService");
-var Common = require('../util/common');
+var common = require('../util/common');
 var Config = require('../resources/config');
 var Member = require('../models/member');
 var ChatSubscribe = require('../models/chatSubscribe');
+var chatSubscribeType = require('../models/chatSubscribeType');//引入chatSubscribeType数据模型
 var SyllabusService = require('./syllabusService');
 var ArticleService = require('./articleService');
 var Request = require('request');
+var chatPointsService = require('../service/chatPointsService');//引入chatPointsService
 
 var subscribeService = {
     //订阅类型
@@ -192,16 +194,43 @@ var subscribeService = {
             case subscribeService.subscribeType.syllabus :
                 templateCode = "LiveReminder";
                 templateParam = {
-                    time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
-                    courseTime : data.startTime,
-                    teacherName : data.lecturer,
-                    groupName : data.groupName,
-                    title : data.title,
-                    context : data.context
+                    time : common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                    liveTime : data.startTime,
+                    teacherName : data.lecturer
                 };
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
+                attachDataArr = data.remark;
+                if(attachDataArr){
+                    try{
+                        attachDataArr = JSON.parse(attachDataArr);
+                    }catch(e){
+                    }
+                }
+                if(attachDataArr){
+                    templateCode = "ShoutSingleStrategy";
+                    templateParam = {
+                        time : common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                        teacherName : data.authName,
+                        typeLabel : data.tag == "resting_order" ? "挂单" : "喊单",
+                        content : data.content,
+                        shoutSingleList : []
+                    };
+                    //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
+                    for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
+                        attachData = attachDataArr[i];
+                        templateParam.shoutSingleList.push({
+                            name : attachData.name,
+                            trend : attachData.longshort == "long" ? "看涨" : "看跌",
+                            entryPoint : attachData.point,
+                            stopPoint : attachData.loss,
+                            profitPoint : attachData.profit
+                        });
+                    }
+                }
+                break;
+
             case subscribeService.subscribeType.strategy :
                 attachDataArr = data.remark;
                 if(attachDataArr){
@@ -212,28 +241,19 @@ var subscribeService = {
                 }
                 if(attachDataArr){
                     templateCode = "TradingStrategy";
-                    var tagMap = {"trading_strategy":"交易策略", "shout_single":"喊单", "resting_order":"挂单"};
                     templateParam = {
-                        time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
-                        authId : data.authId,
-                        authName : data.authName,
-                        tag : data.tag,
-                        tagLabel :  tagMap[data.tag] || "",
+                        time : common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                        teacherName : data.authName,
                         content : data.content,
-                        dataList : []
+                        varietyList : []
                     };
-                    //[{"symbol":"AUDUSD","name":"澳元美元","upordown":"up","open":"1","loss":"2","profit":"3","description":"test"}]
+                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456","drag_level":"123456"}
                     for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
-                        templateParam.dataList.push({
-                            symbol         : attachData.symbol || "",
-                            symbolLabel    : attachData.name || "",
-                            direction      : attachData.upordown || "",
-                            directionLabel : attachData.upordown == "down" ? "看跌" : "看涨",
-                            open           : attachData.open || "",
-                            profit         : attachData.profit || "",
-                            loss           : attachData.loss || "",
-                            description    : attachData.description || ""
+                        templateParam.varietyList.push({
+                            variety : attachData.name,
+                            support : attachData.support_level,
+                            drag    : attachData.drag_level
                         });
                     }
                 }
@@ -242,14 +262,14 @@ var subscribeService = {
         if(templateCode && Config.utm.hasOwnProperty(groupType)){
             var config = Config.utm[groupType];
             var emailData = {
-                timestamp : Common.formatDate(new Date(), "yyyyMMddHHmmss"),
+                timestamp : common.formatDate(new Date(), "yyyyMMddHHmmss"),
                 accountSid: config.sid,
                 sign: "",
                 emails : emails.join(","),
                 templateCode : templateCode,
                 templateParam : JSON.stringify(templateParam)
             };
-            emailData.sign = Common.getMD5(emailData.accountSid + config.token + emailData.timestamp);
+            emailData.sign = common.getMD5(emailData.accountSid + config.token + emailData.timestamp);
 
             //logger.info("<<doSendSms:发送邮件通知：content=[%s]", JSON.stringify(emailData));
             Request.post(Config.utm.emailUrl, function (error, response, data) {
@@ -287,16 +307,40 @@ var subscribeService = {
             case subscribeService.subscribeType.syllabus :
                 templateCode = "LiveReminder";
                 templateParam = {
-                    time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
                     teacherName : data.lecturer,
-                    courseTime : data.startTime,
-                    groupName : data.groupName,
-                    title : data.title,
-                    context : data.context
+                    courseTime : data.startTime
                 };
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
+                attachDataArr = data.remark;
+                if(attachDataArr){
+                    try{
+                        attachDataArr = JSON.parse(attachDataArr);
+                    }catch(e){
+                    }
+                }
+                if(attachDataArr && attachDataArr.length > 0){
+                    templateCode = "ShoutSingleStrategy";
+                    templateParam = {
+                        teacherName : data.authName,
+                        typeLabel : data.tag == "resting_order" ? "挂单" : "喊单",
+                        shoutSingleList : []
+                    };
+                    //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
+                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
+                        attachData = attachDataArr[i];
+                        templateParam.shoutSingleList.push({
+                            name : attachData.name,
+                            trend : attachData.longshort == "long" ? "看涨" : "看跌",
+                            entryPoint : attachData.point,
+                            stopPoint : attachData.loss,
+                            profitPoint : attachData.profit
+                        });
+                    }
+                }
+                break;
+
             case subscribeService.subscribeType.strategy :
                 attachDataArr = data.remark;
                 if(attachDataArr){
@@ -305,30 +349,19 @@ var subscribeService = {
                     }catch(e){
                     }
                 }
-                if(attachDataArr){
+                if(attachDataArr && attachDataArr.length > 0){
                     templateCode = "TradingStrategy";
-                    var tagMap = {"trading_strategy":"交易策略", "shout_single":"喊单", "resting_order":"挂单"};
                     templateParam = {
-                        time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
-                        authId : data.authId,
-                        authName : data.authName,
-                        tag : data.tag,
-                        tagLabel :  tagMap[data.tag] || "",
-                        content : data.content,
-                        dataList : []
+                        teacherName : data.authName,
+                        varietyList : []
                     };
-                    //[{"symbol":"AUDUSD","name":"澳元美元","upordown":"up","open":"1","loss":"2","profit":"3","description":"test"}]
-                    for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
+                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456","drag_level":"123456"}
+                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
-                        templateParam.dataList.push({
-                            symbol         : attachData.symbol || "",
-                            symbolLabel    : attachData.name || "",
-                            direction      : attachData.upordown || "",
-                            directionLabel : attachData.upordown == "down" ? "看跌" : "看涨",
-                            open           : attachData.open || "",
-                            profit         : attachData.profit || "",
-                            loss           : attachData.loss || "",
-                            description    : attachData.description || ""
+                        templateParam.varietyList.push({
+                            variety : attachData.name,
+                            support : attachData.support_level,
+                            drag    : attachData.drag_level
                         });
                     }
                 }
@@ -337,14 +370,14 @@ var subscribeService = {
         if(templateCode && Config.utm.hasOwnProperty(groupType)){
             var config = Config.utm[groupType];
             var smsData = {
-                timestamp : Common.formatDate(new Date(), "yyyyMMddHHmmss"),
+                timestamp : common.formatDate(new Date(), "yyyyMMddHHmmss"),
                 accountSid: config.sid,
                 sign: "",
                 phones : mobiles.join(","),
                 templateCode : templateCode,
                 templateParam : JSON.stringify(templateParam)
             };
-            smsData.sign = Common.getMD5(smsData.accountSid + config.token + smsData.timestamp);
+            smsData.sign = common.getMD5(smsData.accountSid + config.token + smsData.timestamp);
 
             logger.info("<<doSendSms:发送短信通知：content=[%s]", JSON.stringify(smsData));
             Request.post(Config.utm.smsUrl, function (error, response, data) {
@@ -450,7 +483,11 @@ var subscribeService = {
                 case "trading_strategy":
                     result = subscribeService.subscribeType.strategy;
                     break;
+
                 case "shout_single":
+                    result = subscribeService.subscribeType.shoutTrade;
+                    break;
+
                 case "resting_order":
                     result = subscribeService.subscribeType.shoutTrade;
                     break;
@@ -482,6 +519,258 @@ var subscribeService = {
         result.content = articleDetail.content || "";
         result.tag = articleDetail.tag || "";
         return result;
+    },
+    /**
+     * 获取订阅数据
+     * @param params
+     * @param callback
+     */
+    getSubscribeList: function(params, callback){
+        var now = new Date();
+        var searchObj = {
+            groupType:params.groupType,
+            userId:params.userId,
+            valid:1,
+            status:1,
+            analyst: {$ne:''},
+            noticeType: {$ne:''},
+            startDate : {$lte : now},
+            endDate : {$gt : now}
+        };
+        ChatSubscribe.find(searchObj,"type analyst noticeType startDate endDate point",function(err, result){
+            if(err){
+                logger.error("查询数据失败! >>getSubscribeList:", err);
+                callback({isOK: false, msg: '查询数据失败！'});
+            }else{
+                callback(result);
+            }
+        });
+    },
+    /**
+     * 获取有效订阅服务类型数据
+     * 
+     * @param params
+     * @param callback
+     */
+    getSubscribeTypeList : function(params, callback) {
+        var searchObj = {
+            groupType : params.groupType,
+            valid : 1,
+            status : 1,
+            startDate : {
+                $lte : new Date()
+            },
+            endDate : {
+                $gte : new Date()
+            }
+        };
+        chatSubscribeType.find(searchObj).select({
+            name : 1,
+            groupType : 1,
+            code : 1,
+            analysts : 1,
+            noticeTypes : 1,
+            noticeCycle : 1
+        }).sort({
+            'sequence' : 'asc'
+        }).exec(function(err, result) {
+            if (err) {
+            logger.error("查询数据失败! >>getSubscribeTypeList:", err);
+            callback(null);
+            } else {
+            callback(result);
+            }
+        });
+    },
+    /**
+     * 保存订阅
+     * @param params
+     * @param callback
+     */
+    saveSubscribe: function(params, callback){
+        var insertModel = {
+            _id         : null,
+            groupType   : params.groupType, //聊天室组别
+            type        : params.type,//订阅服务类型
+            userId      : params.userId,//用户ID
+            analyst     : params.analyst,//分析师
+            noticeType  : params.noticeType,//订阅方式
+            startDate   : params.startDate,//开始时间
+            endDate     : params.endDate,//结束时间
+            point       : params.point,//消费积分
+            valid       : 1, //是否删除 1-有效 0-无效
+            updateDate  : new Date(),
+            createUser  : params.userName,
+            createIp    : params.Ip,
+            createDate  : new Date(),
+            status      : 1 //状态：0 无效， 1 有效
+        };
+        if(params.point>0) {
+            var pointsParam = {
+                clientGroup: params.clientGroup,
+                groupType: params.groupType,
+                userId: params.userId,
+                item: 'prerogative_subscribe',
+                val: -params.point,
+                isGlobal: false,
+                remark: params.pointsRemark,
+                opUser: params.userName,
+                opIp: params.Ip
+            };
+            chatPointsService.add(pointsParam, function (data) {
+                if (data.result === 0) {
+                    let result = data.data;
+                    insertModel.pointsId = common.isBlank(result)?'':result._id;
+                    new ChatSubscribe(insertModel).save(function (err) {
+                        if (err) {
+                            logger.error("保存订阅数据失败! >>saveSubscribe:", err);
+                            callback({isOK: false, msg: '订阅失败'});
+                        } else {
+                            subscribeService.saveSubscribe4UTM(params.groupType, params.userId, params.type, !!params.analyst, callback);
+                        }
+                    });
+                } else {
+                    callback({isOK: false, msg: err.errmsg});
+                }
+            });
+        } else {
+            new ChatSubscribe(insertModel).save(function (err) {
+                if (err) {
+                    logger.error("保存订阅数据失败! >>saveSubscribe:", err);
+                    callback({isOK: false, msg: '订阅失败'});
+                } else {
+                    subscribeService.saveSubscribe4UTM(params.groupType, params.userId, params.type, !!params.analyst, callback);
+                }
+            });
+        }
+    },
+    
+    /**
+     * 更新订阅
+     * @param params
+     * @param callback
+     */
+    modifySubscribe: function(params, callback){
+        var searchObj = {_id:params.id};
+        ChatSubscribe.findOne(searchObj, function(err, row){
+            if(err){
+                logger.error("查询数据失败! >>modifySubscribe:", err);
+                callback({isOK:false, msg:'修改订阅失败'});
+            }else{
+                if(params.noticeCycle=='week') {
+                    params.endDate = common.DateAdd('w', 1, new Date(row.startDate));//结束时间，1周
+                }else if(params.noticeCycle=='month'){
+                    params.endDate = common.DateAdd('M', 1, new Date(row.startDate));//结束时间，1月
+                }else if(params.noticeCycle=='year'){
+                    params.endDate = common.DateAdd('y', 1, new Date(row.startDate));//结束时间，1年(暂时供手机版使用)
+                }
+                var setObj = { '$set': {'analyst': params.analyst,'noticeType':params.noticeType,endDate:params.endDate,point:params.point, updateDate : new Date()}};
+                if(common.isBlank(params.analyst) || common.isBlank(params.noticeType)){
+                    setObj = { '$set': {'analyst': params.analyst,'noticeType':params.noticeType,endDate:params.endDate,point:params.point,valid:0, updateDate : new Date()}};
+                }
+                if(params.point>0 && row.point<params.point){
+                    var pointsParam = {clientGroup:params.clientGroup,groupType:params.groupType, userId:params.userId, item:'prerogative_subscribe', val:-(params.point-row.point), isGlobal:false, remark:params.pointsRemark, opUser:params.userName, opIp:params.Ip};
+                    chatPointsService.add(pointsParam,function(json) {
+                        if (json.result === 0) {
+                            var result = json.data;
+                            setObj.pointsId = common.isBlank(result)?'':result._id;
+                            ChatSubscribe.findOneAndUpdate(searchObj, setObj, function (err1, row1) {
+                                if (err1) {
+                                    logger.error('modifySubscribe=>fail!' + err1);
+                                    callback({isOK: false, msg: '修改订阅失败'});
+                                } else {
+                                    subscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
+                                }
+                            });
+                        } else if(json.result != 0){
+                            callback({isOK:true, msg: '修改订阅成功'});
+                        }
+                    });
+                }else {
+                    ChatSubscribe.findOneAndUpdate(searchObj, setObj, function (err1, row1) {
+                        if (err1) {
+                            logger.error('modifySubscribe=>fail!' + err1);
+                            callback({isOK: false, msg: '修改订阅失败'});
+                        } else {
+                            subscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
+                        }
+                    });
+                }
+            }
+        });
+    },
+    
+
+    /**
+     * 保存客户分组到UTM
+     * @param groupType
+     * @param userId
+     * @param subscribeType
+     * @param isAdd
+     * @param callback ({{isOK : boolean, msg : String}})
+     */
+    saveSubscribe4UTM : function(groupType, userId, subscribeType, isAdd, callback){
+        var groupCodes = {
+            "daily_quotation" : "daily_quotation",
+            "big_quotation" : "big_quotation",
+            "daily_review" : "daily_review",
+            "week_review" : "week_review"
+        };
+        if(!groupCodes.hasOwnProperty(subscribeType)){
+            callback({isOK : true, msg : ""});
+            return;
+        }
+        if(!groupType || !Config.utm.hasOwnProperty(groupType) || !userId){
+            callback({isOK : false, msg : "参数错误！"});
+            return ;
+        }
+        Member.findOne({
+            "mobilePhone" : userId,
+            "valid": 1,
+            "status": 1,
+            "loginPlatform.chatUserGroup._id" : groupType
+        }, "loginPlatform.chatUserGroup.$.email", function(err, row){
+            if(err){
+                logger.error("<<saveSubscribe4UTM:提取用户邮箱失败，[errMessage:%s]", err);
+                callback({isOK : false, msg : "提取用户邮箱失败！"});
+                return;
+            }
+            var config = Config.utm[groupType];
+            var params = {
+                timestamp : common.formatDate(new Date(), "yyyyMMddHHmmss"),
+                accountSid: config.sid,
+                sign: "",
+                groupCode : groupCodes[subscribeType],
+                type : isAdd ? "add" : "remove",
+                phones : userId,
+                emails : null
+            };
+            var email = row.loginPlatform.chatUserGroup[0].email;
+            if(email){
+                params.emails = email;
+            }
+            params.sign = common.getMD5(params.accountSid + config.token + params.timestamp);
+            logger.info(`Posting data to ${Config.utm.cstGroupUrl}...`);
+            Request.post(Config.utm.cstGroupUrl, function (error, response, data) {
+                if (error || response.statusCode != 200 || !data) {
+                    logger.error("<<saveSubscribe4UTM:保存客户分组异常，errMessage:", error);
+                    callback({isOK : false, msg : "保存客户分组失败！"});
+                } else{
+                    try{
+                        data = JSON.parse(data);
+                        if(data.respCode != "Success"){
+                            logger.error("<<saveSubscribe4UTM:保存客户分组失败，[errMessage:%s]", data.respMsg);
+                            callback({isOK : false, msg : "保存客户分组失败:" + data.respMsg + "！"});
+                        }else{
+                            callback({isOK : true, msg : "保存客户分组成功"});
+                        }
+                    }catch(e){
+                        logger.error("<<saveSubscribe4UTM:发送通知邮件出错，[response:%s]", data);
+                        callback({isOK : false, msg : "保存客户分组失败！"});
+                    }
+                }
+            }).form(params);
+        });
     }
 };
 

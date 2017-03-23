@@ -18,7 +18,7 @@ exports.initConfig = function(appName){
                 },
                 {//日志文件输出
                     type: "dateFile",
-                    filename: 'logs/pm_task.log',
+                    filename: '/logs/pm_task/pm_task.log',
                     pattern: "_yyyy-MM-dd",//日期文件格式
                     alwaysIncludePattern: true  //当天的日志文件名是否加上日期
                 }
@@ -38,7 +38,7 @@ exports.initConfig = function(appName){
                 },
                 {//日志文件输出
                     type: "dateFile",
-                    filename: 'logs/pm_socket.log',
+                    filename: '/logs/pm_socket/pm_socket.log',
                     pattern: "_yyyy-MM-dd",//日期文件格式
                     alwaysIncludePattern: true  //当天的日志文件名是否加上日期
                 }
@@ -54,7 +54,7 @@ exports.initConfig = function(appName){
                 },
                 {//日志文件输出
                     type: "dateFile",
-                    filename: 'logs/pm_api.log',
+                    filename: '/logs/chat-api/pm_api.log',
                     pattern: "_yyyy-MM-dd",//日期文件格式
                     alwaysIncludePattern: true  //当天的日志文件名是否加上日期
 

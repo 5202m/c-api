@@ -17,7 +17,6 @@ var Config = require('../resources/config.js');
 var IteratorUtil = require('../util/IteratorUtil.js');
 var Ftp = require('ftp');
 var FS = require('fs');
-var ImgUtil = require('../util/imgUtil');
 
 var uploadService = {
     /**
@@ -178,6 +177,7 @@ var uploadService = {
      * @param op
      */
     zipImg : function(imgs, op){
+        var ImgUtil = require('../util/imgUtil');
         if(uploadService.zipConfigs.hasOwnProperty(op) == false){
             return false;
         }else{
