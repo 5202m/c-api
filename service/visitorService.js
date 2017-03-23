@@ -95,6 +95,8 @@ var visitorService = {
                         data.save(function(err) {
                             if (err) {
                                 logger.error('saveVisitorRecord-update fail', err);
+                            } else {
+                                logger.debug('saveVisitorRecord-update Success', JSON.stringify(data));
                             }
                         });
                     }
