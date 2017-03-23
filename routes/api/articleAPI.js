@@ -29,7 +29,7 @@
  * @apiSuccess {String} errmsg  错误信息.
  * @apiSuccess {Number} errcode  错误码.
  */
-var logger =require("../../resources/logConf").getLogger("articleAPI");
+var logger = require("../../resources/logConf").getLogger("articleAPI");
 var express = require('express');
 var router = express.Router();
 var articleService = require('../../service/articleService');
@@ -37,8 +37,8 @@ var articleService = require('../../service/articleService');
 let errorMessage = require('../../util/errorMessage');
 let common = require('../../util/common');
 let constant = require('../../constant/constant');
-let APIUtil = require('../../util/APIUtil'); 	 	   //引入API工具类js
-let ApiResult = require('../../util/ApiResult');       //引起聊天室工具类js
+let APIUtil = require('../../util/APIUtil'); //引入API工具类js
+let ApiResult = require('../../util/ApiResult'); //引起聊天室工具类js
 
 /**
  * @api {get} /article/getGroupArticles 获取分组文档资讯列表
@@ -47,7 +47,7 @@ let ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
  *
  * @apiParam {Number} [days] 多少天范围以内的文章.
  * @apiParam {String} code 文章类型，对应数据库中的categoryId.
- * @apiParam {String} platform 文章平台.
+ * @apiParam {String} platform 文章平台，对应mis后台应用位置，取直播间的groupId值
  * @apiParam {String} [format] 待补充说明
  *
  * @apiUse CommonResultDescription
@@ -71,24 +71,24 @@ let ApiResult = require('../../util/ApiResult');       //引起聊天室工具�
  * @apiUse ParametersMissedError
  */
 router.get('/getGroupArticles', (req, res) => {
-    let params={
-        days:req.query["days"],
-        code:req.query["code"],
-        platform:req.query["platform"],
-        format:req.query["format"]
+    let params = {
+        days: req.query["days"],
+        code: req.query["code"],
+        platform: req.query["platform"],
+        format: req.query["format"]
     };
     let requires = ["code", "platform"];
     let isSatify = requires.every(name => {
         return common.isValid(params[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[verifyRule] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    
+
     articleService.getListByGroup(params, data => {
-	res.json(APIUtil.APIResult(null, data));
+        res.json(APIUtil.APIResult(null, data));
     });
 });
 
@@ -98,7 +98,7 @@ router.get('/getGroupArticles', (req, res) => {
  * @apiGroup article
  *
  * @apiParam {String} code 文章类型，对应数据库中的categoryId.
- * @apiParam {String} platform 文章平台.
+ * @apiParam {String} platform 文章平台，对应mis后台应用位置，取直播间的groupId值.
  * @apiParam {String} [format] 待补充说明
  *
  * @apiUse CommonResultDescription
@@ -121,7 +121,7 @@ router.get('/getGroupArticles', (req, res) => {
  * @apiUse ParametersMissedError
  */
 router.get('/getArticleCount', (req, res) => {
-    var params= {
+    var params = {
         code: req.query["code"],
         platform: req.query["platform"],
         dateTime: req.query["dateTime"]
@@ -130,13 +130,13 @@ router.get('/getArticleCount', (req, res) => {
     let isSatify = requires.every(name => {
         return common.isValid(params[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[verifyRule] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
     articleService.getCountByDate(params, data => {
-	res.json(APIUtil.APIResult(null, data));
+        res.json(APIUtil.APIResult(null, data));
     });
 });
 
@@ -147,15 +147,15 @@ router.get('/getArticleCount', (req, res) => {
  *
  * @apiParam {String} [authorId] 作者ID.
  * @apiParam {String} code 文章类型，对应数据库中的categoryId.
- * @apiParam {String} platform 文章平台.
- * @apiParam {String} [lang] 待补充说明
- * @apiParam {Number} pageNo 待补充说明
- * @apiParam {Number} pageSize 待补充说明
+ * @apiParam {String} platform 文章平台，对应mis后台应用位置，取直播间的groupId值
+ * @apiParam {String} [lang] 语言 zh tw en
+ * @apiParam {Number} pageNo 第几页
+ * @apiParam {Number} pageSize 每页条数
  * @apiParam {Number} [pageLess] 待补充说明
  * @apiParam {String} [pageKey] 待补充说明
  * @apiParam {Number} [isAll] 待补充说明
- * @apiParam {String} [orderByJsonStr] 待补充说明
- * @apiParam {String} [hasContent] 待补充说明
+ * @apiParam {String} [orderByJsonStr] 排序字段 {"publishStartDate":"desc"}
+ * @apiParam {String} [hasContent] 是否包含内容 true/false
  * @apiParam {String} [format] 待补充说明
  *
  * @apiUse CommonResultDescription
@@ -178,43 +178,43 @@ router.get('/getArticleCount', (req, res) => {
  * @apiUse ParametersMissedError
  */
 router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
-    var params={};
-        params.authorId = req.query["authorId"];
-        params.code = req.query["code"];
-        params.platform = req.query["platform"];
-        params.lang =req.query["lang"];
-        params.pageNo = common.isBlank(req.query["pageNo"]) ? constant.curPageNo : req.query["pageNo"];
-        params.pageSize = common.isBlank(req.query["pageSize"]) ? constant.pageSize : req.query["pageSize"];
-        params.pageLess = req.query["pageLess"] == "1";
-        params.pageKey = req.query["pageKey"];
-        params.isAll = req.query["isAll"] == "1";
-        params.orderByJsonStr=req.query["orderByJsonStr"];
-        params.hasContent= req.query["hasContent"];
-        params.format= req.query["format"];
-    if(!params.pageNo||params.pageNo <= 0){
+    var params = {};
+    params.authorId = req.query["authorId"];
+    params.code = req.query["code"];
+    params.platform = req.query["platform"];
+    params.lang = req.query["lang"];
+    params.pageNo = common.isBlank(req.query["pageNo"]) ? constant.curPageNo : req.query["pageNo"];
+    params.pageSize = common.isBlank(req.query["pageSize"]) ? constant.pageSize : req.query["pageSize"];
+    params.pageLess = req.query["pageLess"] == "1";
+    params.pageKey = req.query["pageKey"];
+    params.isAll = req.query["isAll"] == "1";
+    params.orderByJsonStr = req.query["orderByJsonStr"];
+    params.hasContent = req.query["hasContent"];
+    params.format = req.query["format"];
+    if (!params.pageNo || params.pageNo <= 0) {
         params.pageNo = 1;
     }
-    params.pageNo=parseInt(params.pageNo);
-    params.pageSize=parseInt(params.pageSize)||15;
-    if(isNaN(params.pageNo)||isNaN(params.pageSize)||common.isBlank(params.code)||common.isBlank(params.platform)){
-	var result = APIUtil.APIResult("code_1000", null);
-	if(req.path.indexOf('.xml')!=-1){
-	    result = common.toXML(result);
+    params.pageNo = parseInt(params.pageNo);
+    params.pageSize = parseInt(params.pageSize) || 15;
+    if (isNaN(params.pageNo) || isNaN(params.pageSize) || common.isBlank(params.code) || common.isBlank(params.platform)) {
+        var result = APIUtil.APIResult("code_1000", null);
+        if (req.path.indexOf('.xml') != -1) {
+            result = common.toXML(result);
         }
-	res.json(result);
-    }else{
-        if("class_note" == params.code){ //官网请求直播精华，应用位置直接修改为普通房间的直播精华（特殊处理）
-            if("24k_web" == params.platform || "24k_mobile" == params.platform){
+        res.json(result);
+    } else {
+        if ("class_note" == params.code) { //官网请求直播精华，应用位置直接修改为普通房间的直播精华（特殊处理）
+            if ("24k_web" == params.platform || "24k_mobile" == params.platform) {
                 params.platform = constant.studioDefRoom.studio
-            }else if("gwfx_web" == params.platform || "gwfx_mobile" == params.platform){
+            } else if ("gwfx_web" == params.platform || "gwfx_mobile" == params.platform) {
                 params.platform = constant.studioDefRoom.fxstudio
             }
         }
-        articleService.getArticlePage(params,function(page){
-            if(req.path.indexOf('.xml')!=-1){
-                res.end(ApiResult.result(null,page,ApiResult.dataType.xml));
-            }else{
-                res.json(ApiResult.result(null,page));
+        articleService.getArticlePage(params, function(page) {
+            if (req.path.indexOf('.xml') != -1) {
+                res.end(ApiResult.result(null, page, ApiResult.dataType.xml));
+            } else {
+                res.json(ApiResult.result(null, page));
             }
         });
     }
@@ -251,11 +251,11 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.get('/getArticleInfo', function(req, res) {
-    var id= req.query["id"];
-    if(common.isBlank(id)){
-	res.json(APIUtil.APIResult("code_1000", null));
-    }else{
-        articleService.getArticleInfo(id,function(article){
+    var id = req.query["id"];
+    if (common.isBlank(id)) {
+        res.json(APIUtil.APIResult("code_1000", null));
+    } else {
+        articleService.getArticleInfo(id, function(article) {
             res.json(APIUtil.APIResult(null, article));
         });
     }
@@ -268,12 +268,12 @@ router.get('/getArticleInfo', function(req, res) {
  *
  * @apiParam {Object} data 请求体中的data字段.
  * @apiParam {String} [data.template] 请求体中的data字段的参数.
- * @apiParam {Date} data.publishStartDate 请求体中的data字段的参数.
- * @apiParam {Date} data.publishEndDate 请求体中的data字段的参数.
- * @apiParam {String} [data.mediaUrl] 请求体中的data字段的参数.
- * @apiParam {String} [data.mediaImgUrl] 请求体中的data字段的参数.
- * @apiParam {String} [data.linkUrl] 请求体中的data字段的参数.
- * @apiParam {Array} data.detailList 请求体中的data字段的参数.
+ * @apiParam {Date} data.publishStartDate 发布开始时间.
+ * @apiParam {Date} data.publishEndDate 发布结束时间.
+ * @apiParam {String} [data.mediaUrl] 发布媒体的URL.
+ * @apiParam {String} [data.mediaImgUrl] 媒体图片封面url.
+ * @apiParam {String} [data.linkUrl] 链接Url.
+ * @apiParam {Array} data.detailList 文档内容.
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -298,10 +298,10 @@ router.get('/getArticleInfo', function(req, res) {
  *
  * @apiUse ParametersMissedError
  */
-router.post('/add', function(req, res){
+router.post('/add', function(req, res) {
     APIUtil.logRequestInfo(req, "articleAPI");
     var param = req.body['data'];
-    if(typeof param == 'string'){
+    if (typeof param == 'string') {
         param = JSON.parse(param);
     }
     var loc_article = {
@@ -318,22 +318,22 @@ router.post('/add', function(req, res){
         linkUrl: param.linkUrl,
         detailList: param.detailList
     };
-    if(!loc_article.publishStartDate
-        || !loc_article.publishEndDate
-        || !loc_article.detailList){
+    if (!loc_article.publishStartDate ||
+        !loc_article.publishEndDate ||
+        !loc_article.detailList) {
         logger.error("article is invalid! ", loc_article);
         res.json(APIUtil.APIResult("code_2001", null, null));
         return;
     }
-    if(typeof loc_article.publishStartDate !== "string"
-        || typeof loc_article.publishEndDate !== "string"
-        || typeof loc_article.detailList !== "object"){
+    if (typeof loc_article.publishStartDate !== "string" ||
+        typeof loc_article.publishEndDate !== "string" ||
+        typeof loc_article.detailList !== "object") {
         logger.error("article is invalid! ", loc_article);
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
-    articleService.addArticle(loc_article, function(apiResult){
-	    res.json(APIUtil.APIResult(null, apiResult, null));
+    articleService.addArticle(loc_article, function(apiResult) {
+        res.json(APIUtil.APIResult(null, apiResult, null));
     });
 });
 
@@ -365,40 +365,40 @@ router.post('/add', function(req, res){
  * 
  * @apiUse ParametersDataBrokenError
  */
-router.post('/modify',function(req, res){
+router.post('/modify', function(req, res) {
     APIUtil.logRequestInfo(req, "articleAPI");
     var query = req.body['query'];
     var updater = req.body['data'];
     var field = req.body['field'];
-    
+
     let requires = ["query", "data"];
     let isSatify = requires.every(name => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[modify] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    
-    if(typeof query == 'string'){
+
+    if (typeof query == 'string') {
         try {
             query = JSON.parse(query);
-        }catch(e){
+        } catch (e) {
             res.json(APIUtil.APIResult("code_2003", null));
             return;
         }
     }
-    if(typeof updater == 'string'){
+    if (typeof updater == 'string') {
         try {
             updater = JSON.parse(updater);
-        }catch(e){
+        } catch (e) {
             res.json(APIUtil.APIResult("code_2003", null));
             return;
         }
     }
-    articleService.modifyArticle(query, field, updater, function(apiResult){
-	APIUtil.APIResult(null, apiResult, null);
+    articleService.modifyArticle(query, field, updater, function(apiResult) {
+        APIUtil.APIResult(null, apiResult, null);
     });
 });
 
@@ -429,7 +429,7 @@ router.post('/modify',function(req, res){
  * 
  * @apiUse ParametersDataBrokenError
  */
-router.post('/modifyPraiseOrDownloads', function(req, res){
+router.post('/modifyPraiseOrDownloads', function(req, res) {
     APIUtil.logRequestInfo(req, "articleAPI");
     var query = req.body['query'];
     var type = req.body['type'];
@@ -437,21 +437,21 @@ router.post('/modifyPraiseOrDownloads', function(req, res){
     let isSatify = requires.every(name => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[modifyPraiseOrDownloads] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    if(typeof query == 'string'){
+    if (typeof query == 'string') {
         try {
             query = JSON.parse(query);
-        }catch(e){
+        } catch (e) {
             res.json(APIUtil.APIResult("code_2003", null));
             return;
         }
     }
-    articleService.modifyPraiseOrDownloads(query, type, function(apiResult){
-	APIUtil.APIResult(null, apiResult, null);
+    articleService.modifyPraiseOrDownloads(query, type, function(apiResult) {
+        APIUtil.APIResult(null, apiResult, null);
     });
 });
 

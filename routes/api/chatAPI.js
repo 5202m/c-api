@@ -187,7 +187,31 @@ router.post("/praiseAnalyst", function(req, res) {
 });
 
 /**
- * 分析师晒单
+ * @api {get} /chat/getShowTrade 分析师晒单
+ * @apiName getShowTrade
+ * @apiGroup chat
+ *
+ * @apiParam {String} platfrom 成员类型，必需
+ * @apiParam {String} userId 分析师ID，必需
+ * @apiParam {Number} tradeType 晒单类型，1 分析师晒单，2 客户晒单
+ * @apiParam {Number} onlyHis 仅查询已平仓的晒单，1 是， 0 否
+ * @apiParam {Number} num 条数
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/getShowTrade
+ * @apiExample Example usage:
+ *  /api/chat/getShowTrade?platform=studio&userId=Eugene_ana&tradeType=1&onlyHis=0&num=4
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {}
+ * }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get("/getShowTrade", function(req, res) {
     var params = {
@@ -245,7 +269,34 @@ router.get("/getRoomOnlineTotalNum", function(req, res) {
         res.json(ApiResult.result(null, data));
     });
 });
-
+/**
+ * @api {post} /chat/checkChatPraise 检查客户是否已经点赞
+ * @apiName checkChatPraise
+ * @apiGroup chat
+ *
+ * @apiParam {String} clientId 用户ID，必需
+ * @apiParam {String} praiseId 点赞对象ID，必需
+ * @apiParam {String} fromPlatform 成员类型，必需 直播间groupType值 studio/fxstudio/hxstudio
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data 返回的数据
+ *
+ * @apiSampleRequest /api/chat/checkChatPraise
+ * @apiExample {json} Request-Example:
+ *  {clientId : 'sxunppxunpxix',
+ *      praiseId : 'Eugene_ana',
+ *      fromPlatform : 'studio'}
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/checkChatPraise", function(req, res) {
     var clientId = req.body.clientId,
         praiseId = req.body.praiseId,
@@ -258,7 +309,33 @@ router.post("/checkChatPraise", function(req, res) {
         });
     }
 });
-
+/**
+ * @api {post} /chat/acceptMsg 审批聊天消息
+ * @apiName acceptMsg
+ * @apiGroup chat
+ *
+ * @apiParam {String} fromUser 发送用户
+ * @apiParam {String} content 消息内容
+ * @apiParam {String} uiId 消息ID
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/removeMsg
+ * @apiParamExample {json} Request-Example:
+ *     {fromUser: "",
+ *      content: ""，
+ *      uiId: ""}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/acceptMsg", function(req, res) {
     let requires = ["fromUser", "content", "uiId"];
     let isSatify = requires.every(name => {
@@ -276,7 +353,31 @@ router.post("/acceptMsg", function(req, res) {
         res.json(ApiResult.result(e, false));
     }
 });
-
+/**
+ * @api {post} /chat/removeMsg 移除聊天消息
+ * @apiName removeMsg
+ * @apiGroup chat
+ *
+ * @apiParam {String} groupId 分组ID列表
+ * @apiParam {String} msgIds 消息ID列表，逗号分隔
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/removeMsg
+ * @apiParamExample {json} Request-Example:
+ *     {groupId: "studio_teach",
+ *      msgIds: "1489470593313_773839992"}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/removeMsg", function(req, res) {
     let requires = ["groupId", "msgIds"];
     let isSatify = requires.every(name => {

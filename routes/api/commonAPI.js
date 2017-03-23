@@ -1,7 +1,23 @@
 /**
- * 摘要：文章资讯 API处理类
- * author:Gavin.guo
- * date:2015/4/23
+ * @apiDefine ParameterNotAvailableJSONError
+ *
+ * @apiError ParameterNotAvailableJSONError 参数数据不是合法的JSON字符串。
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 1,
+ *          "errcode": "10",
+ *          "errmsg": "操作异常!",
+ *          "data": null
+ *      }
+ */
+/**
+ * @apiDefine CommonResultDescription
+ *
+ * @apiSuccess {Number} result 结果码，0 - 成功；-1 - 未知或未定义的错误；other - API系统定义的错误
+ * @apiSuccess {String} errmsg  错误信息.
+ * @apiSuccess {Number} errcode  错误码.
  */
 var router = require('express').Router();
 var request = require('request');
@@ -138,7 +154,35 @@ router.get('/getBroadStrateList', function(req, res) {
 });
 
 /**
- * 获取指定日期课程安排
+ * @api {get} /common/getCourse 获取指定日期课程安排
+ * @apiName getCourse
+ * @apiGroup common
+ *
+ * @apiParam {String} type 事业部标识，pm/fx/hx
+ * @apiParam {String} platform 平台 pm(web24k,webui,app,pc)/fx(gwfx,uce,webui)/hx(uce,webui)
+ * @apiParam {String} groupType 组别，必填. 取直播间groupType值
+ * @apiParam {String} groupId 房间ID，取直播间groupId值
+ * @apiParam {String} flag 获取课程安排标识 S/D/W
+ * @apiParam {Number} strategy 是否填充交易策略信息
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/getCourse
+ * @apiExample Example usage:
+ *  /api/common/getCourse?type=pm&platform=pc&groupType=studio&groupId=studio_teach&flag=D&strategy=1
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get("/getCourse", function(req, res) {
     var loc_params = {
@@ -171,7 +215,34 @@ router.get("/getCourse", function(req, res) {
 
 
 /**
- * 获取指定分析师的下次课程安排
+ * @api {get} /common/getNextCourses 获取指定分析师的下次课程安排
+ * @apiName getNextCourses
+ * @apiGroup common
+ *
+ * @apiParam {String} type 事业部标识，pm/fx/hx
+ * @apiParam {String} platform 平台 pm(web24k,webui,app,pc)/fx(gwfx,uce,webui)/hx(uce,webui)
+ * @apiParam {String} groupType 组别，必填.取直播间groupType值
+ * @apiParam {String} groupId 房间ID 取直播间groupId值
+ * @apiParam {String} analystIds 分析师ID，多个,隔开
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Array} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/getNextCourses
+ * @apiExample Example usage:
+ *  /api/common/getNextCourses?type=pm&platform=pc&groupType=studio&groupId=studio_teach&analystIds=kitty
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get("/getNextCourses", function(req, res) {
     var loc_params = {
@@ -334,7 +405,34 @@ router.get('/getInformation', function(req, res) {
 });
 
 /**
- * 更新点赞数或下载次数
+ * @api {post} /common/modifyArticle 更新点赞数或下载次数
+ * @apiName modifyArticle
+ * @apiGroup common
+ *
+ * @apiParam {String} id 更新对象ID，必填
+ * @apiParam {String} type 更新类型，必填 praise or downloads
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/modifyArticle
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "id": "10000538",
+ *       "type": "praise"
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.post('/modifyArticle', function(req, res) {
     var _id = req.body['id'] || req.query['id'];
@@ -349,7 +447,28 @@ router.post('/modifyArticle', function(req, res) {
 });
 
 /**
- * 获取财经日历最后点评的数据
+ * @api {get} /common/getLastReview 获取财经日历最后点评的数据
+ * @apiName getLastReview
+ * @apiGroup common
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/getLastReview
+ * @apiExample Example usage:
+ *  /api/common/getLastReview
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/getLastReview', function(req, res) {
     ZxFinanceService.getFinanceDataLastReview(function(data) {
