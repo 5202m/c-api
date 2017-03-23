@@ -27,6 +27,34 @@ let syllabusService = require('../../service/syllabusService');
 let common = require('../../util/common');
 let APIUtil = require('../../util/APIUtil.js');
 
+/**
+ * @api {get} /syllabus/getSyllabus 查询聊天室课程安排(一周完整课表安排)
+ * @apiName getSyllabus
+ * @apiGroup syllabus
+ *
+ * @apiParam {String} groupType 组别，必填. 取直播间groupType值
+ * @apiParam {String} today 当天的时间戳
+ * @apiParam {String} groupId 房间Id，取直播间userInfo.groupId值
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/syllabus/getSyllabus
+ * @apiExample Example usage:
+ *  /api/syllabus/getSyllabus?groupType=studio&today=1490253074566&groupId=studio_teach
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getSyllabus", (req, res) => {
     let requires = ["groupType", "today"];
     let isSatify = requires.every((name) => {
@@ -45,6 +73,37 @@ router.get("/getSyllabus", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /syllabus/getCourseInfo 通过参数提取课程信息,包括课程分析师的个人信息
+ * @apiName getCourseInfo
+ * @apiGroup syllabus
+ *
+ * @apiParam {String} groupType 组别，必填. 取直播间groupType值
+ * @apiParam {String} groupId 房间Id，取直播间userInfo.groupId值
+ * @apiParam {String} startTime 开始时间
+ * @apiParam {String} endTime 结束时间
+ * @apiParam {String} authorId 分析师Id
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/syllabus/getCourseInfo
+ * @apiExample Example usage:
+ *  /api/syllabus/getCourseInfo?groupType=studio&groupId=studio_teach&startTime=1490253074566&endTime=&authorId=
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getCourseInfo", (req, res) => {
     let requires = ["groupType", "groupId", "startTime", "endTime", "authorId"];
     let isSatify = requires.every((name) => {
