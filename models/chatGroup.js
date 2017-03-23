@@ -48,6 +48,7 @@ var mongoose = require('mongoose'),
         traninClient: [{ clientId: { type: String, index: true }, nickname: { type: String }, isAuth: { type: Number, default: 0 } }], //培训报名学员 isAuth : 0 、禁用授权 ；1、授权
         roomType: String, // 房间类别（普通：normal，VIP：vip，培训班：train）
         point: Number, //房间积分
-        label: String //房间标签
+        label: String, //房间标签
+        logo: String //房间Logo
     });
 module.exports = mongoose.model('chatGroup', chatGroupSchema, 'chatGroup');
