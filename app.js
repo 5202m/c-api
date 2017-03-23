@@ -68,13 +68,13 @@ mongoose.connect(config.dbURL,dboptions);
 /*＃＃＃＃＃＃＃＃＃＃数据库连接配置＃＃＃＃＃＃＃＃end */
 
 (function(JSON) {
-    let logger = logConf.getLogger("application");
+    let loggerTmp = logger.getLogger("application");
     let jParse = JSON.parse;
     JSON.parse = function() {
         try {
             return jParse.apply(JSON, arguments);
         } catch (e) {
-            logger.error(`JSON parse Error in ${arguments.callee.name}: `, e);
+            loggerTmp.error(`JSON parse Error in ${arguments.callee.name}: `, e);
             return {};
         };
     };
@@ -83,7 +83,7 @@ mongoose.connect(config.dbURL,dboptions);
         try {
             return jStringify.apply(JSON, arguments);
         } catch (e) {
-            logger.error(`JSON stringify Error in ${arguments.callee.name}: `, e);
+            loggerTmp.error(`JSON stringify Error in ${arguments.callee.name}: `, e);
             return "";
         }
     };
