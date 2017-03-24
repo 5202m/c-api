@@ -108,7 +108,7 @@ var messageService = {
         chatMessage.db().find(searchObj).count(function(err, rows) {
             //    callback(rows && rows > 0);
             if (err) {
-                logger.error("save chatMessage Failure!! >>saveTrain:", err);
+                logger.error("save chatMessage Failure!! >>existRecord:", err);
                 callback({ isOK: false, msg: 'save chatMessage Failure' });
             } else {
                 logger.info(rows);
