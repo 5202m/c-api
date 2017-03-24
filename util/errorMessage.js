@@ -92,7 +92,27 @@ var errorMessage = {
     "code_3008": { 'errcode': "3008", 'errmsg': "报名已结束，请关注下期培训班！" /*"您没有访问该房间的权限，请联系客服！"*/ },
     "code_3009": { 'errcode': "3009", 'errmsg': "培训班名单正在审批中，请稍候！" },
     "code_3010": { 'errcode': "3010", 'errmsg': "报名已结束，请关注下期培训班！" },
-    "code_3011": { 'errcode': "3011", 'errmsg': "培训班开放时间{time}，请稍后再进！" }
+    "code_3011": { 'errcode': "3011", 'errmsg': "培训班开放时间{time}，请稍后再进！" },
+    "code_4000" : {'errcode' : "4000", 'errmsg' : "房间不存在！"},
+    "code_4001" : {'errcode' : "4001", 'errmsg' : "该房间已被禁用！"},
+    "code_4002" : {'errcode' : "4002", 'errmsg' : "该房间暂未开放，请关注开课时间{time}！"},
+    "code_4003" : {'errcode' : "4003", 'errmsg' : "您还没有访问该房间的权限！"},
+    "code_4004" : {'errcode' : "4004", 'errmsg' : "该房间仅对新客户开放！"},
+    "code_4005" : {'errcode' : "4005", 'errmsg' : "已有真实账户并激活的客户才可进入该房间，您还不满足条件！"},
+    "code_4006" : {'errcode' : "4006", 'errmsg' : "该房间仅对VIP客户开放！"},
+    "code_4007" : {'errcode' : "4007", 'errmsg' : "该房间仅对指定客户开放！"},
+    "code_4008" : {'errcode' : "4008", 'errmsg' : "您的报名信息还在审核中，请耐心等待！"},
+    "code_4009" : {'errcode' : "4009", 'errmsg' : "您的报名信息未通过审核！"},
+    "code_4010" : {'errcode' : "4010", 'errmsg' : "该房间人数已达上限，请尝试进入其他房间！"},
+    "code_4011" : {'errcode' : "4011", 'errmsg' : "查询培训报名数据失败，请稍后重试！"},
+    "code_4012" : {'errcode' : "4012", 'errmsg' : "报名信息不存在，请刷新后重试！"},
+    "code_4013" : {'errcode' : "4013", 'errmsg' : "您不符合报名条件！"},
+    "code_4014" : {'errcode' : "4014", 'errmsg' : "您已报名，等待管理员审核！"},
+    "code_4015" : {'errcode' : "4015", 'errmsg' : "您已报名，请关注开课时间{time}！"},
+    "code_4016" : {'errcode' : "4016", 'errmsg' : "您已报名，请勿重复报名！"},
+    "code_4017" : {'errcode' : "4017", 'errmsg' : "报名已结束，请关注下期培训班！"},
+    "code_4018" : {'errcode' : "4018", 'errmsg' : "报名出错，请稍后再试！"},
+    "code_4019" : {'errcode' : "4019", 'errmsg' : "报名成功，请关注开课时间{time}！"}
 };
 //导出类
 module.exports = errorMessage;
