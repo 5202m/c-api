@@ -6,6 +6,7 @@ var signin = require('../models/signin'); //引入signin数据模型
 var chatSyllabusHis = require('../models/chatSyllabusHis'); //引入chatSyllabusHis数据模型
 var chatPointsService = require('./chatPointsService'); //引入chatPointsService
 var async = require('async');
+let Deferred = common.Deferred;
 /**
  * 客户学员服务类型服务类
  *
@@ -17,27 +18,29 @@ var clientTrainService = {
      * @param userId
      * @param nickname
      */
-    saveTrain: function(groupId, userId, nickname, callback) {
+    saveTrain: function(groupId, userId, nickname) {
+        let deferred = new Deferred();
         var setObj = { $push: { "traninClient": { "clientId": userId, "nickname": nickname } } };
         chatGroup.findOneAndUpdate({ _id: groupId }, setObj, function(err, row) {
             if (err) {
                 logger.error("保存培训报名数据失败! >>saveTrain:", err);
-                callback({ isOK: false, msg: '培训报名失败' });
+                deferred.reject({ isOK: false, msg: '培训报名失败' });
             } else {
-                callback({ isOK: true, msg: '恭喜您！报名成功。' });
+                deferred.resolve({ isOK: true, msg: '恭喜您！报名成功。' });
             }
         });
+        return deferred.promise;
     },
     /**
      * 客户学员报名
      * @param params
-     * @param callback
      */
-    addClientTrain: function(params, userInfo, callback) {
+    addClientTrain: function(params, userInfo) {
+        let deferred = new Deferred();
         chatGroup.findOne({ _id: params.groupId, valid: 1, status: { $in: [1, 2] } }, "openDate clientGroup traninClient", function(err, row) {
             if (err) {
                 logger.error("查询培训报名数据失败! >>addClientTrain:", err);
-                callback({ isOK: false, msg: '查询培训报名数据失败！' });
+                deferred.reject({ isOK: false, msg: '查询培训报名数据失败！' });
             } else {
                 var retInfo = {};
                 if (row) {
@@ -73,7 +76,7 @@ var clientTrainService = {
 
                     if (!common.containSplitStr(row.clientGroup, userInfo.clientGroup)) {
                         retInfo = errorMessage.code_3005;
-                        callback(retInfo);
+                        deferred.resolve(retInfo);
                     } else if (row.traninClient) {
                         var trRow = null,
                             isOpen = false,
@@ -122,28 +125,29 @@ var clientTrainService = {
                             retInfo = errorMessage.code_3010;
                         }
                         if (retInfo.errcode || retInfo.awInto) {
-                            callback(retInfo);
+                            deferred.resolve(retInfo);
                         } else {
                             isOpen = common.dateTimeWeekCheck(row.openDate, false);
                             if (isOpen) {
                                 retInfo = errorMessage.code_3008;
-                                callback(retInfo);
+                                deferred.resolve(retInfo);
                             } else {
-                                clientTrainService.saveTrain(params.groupId, userInfo.userId, params.nickname, function(saveRet) {
-                                    callback(saveRet);
+                                clientTrainService.saveTrain(params.groupId, userInfo.userId, params.nickname).then(function(saveRet) {
+                                    deferred.resolve(saveRet);
                                 });
                             }
                         }
                     } else {
-                        clientTrainService.saveTrain(params.groupId, userInfo.userId, params.nickname, function(saveRet) {
-                            callback(saveRet);
+                        clientTrainService.saveTrain(params.groupId, userInfo.userId, params.nickname).then(function(saveRet) {
+                            deferred.resolve(saveRet);
                         });
                     }
                 } else {
-                    callback({ isOK: false, msg: '查询培训报名数据失败！' });
+                    deferred.reject({ isOK: false, msg: '查询培训报名数据失败！' });
                 }
             }
         });
+        return deferred.promise;
     },
     /**
      * 提取培训班数及人数
@@ -183,6 +187,7 @@ var clientTrainService = {
      * @param callback
      */
     getTrainList: function(groupType, teachId, isAll, callback) {
+        let deferred = new Deferred();
         var searchObj = {
             "groupType": groupType,
             roomType: 'train',
@@ -205,7 +210,7 @@ var clientTrainService = {
         }).exec(function(err, rooms) {
             if (err) {
                 logger.error("获取房间列表失败! >>getChatGroupList:", err);
-                callback(null);
+                deferred.reject(err);
             } else {
                 var tmList = [];
                 var row = null,
@@ -231,9 +236,10 @@ var clientTrainService = {
                         });
                     }
                 }
-                callback(tmList);
+                deferred.resolve(tmList);
             }
         });
+        return deferred.promise;
     },
 
     /**
@@ -368,6 +374,7 @@ var clientTrainService = {
      * @param params
      */
     getSignin: function(userInfo, dataCallback) {
+        let deferred = new Deferred();
         var today = new Date();
         today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         async.parallel({
@@ -405,8 +412,9 @@ var clientTrainService = {
                 }
             },
             function(error, result) {
-                dataCallback(result);
-            })
+                deferred.resolve(result);
+            });
+        return deferred.promise;
     },
     /**
      * 查询客户当天是否签到

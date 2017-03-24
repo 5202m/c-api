@@ -45,8 +45,14 @@ var mongoose = require('mongoose'),
         clientGroup: String, //客户组（对应数据字典的客户组,多个逗号分隔）
         remark: String, //备注
         defTemplate: String, //默认主题皮肤
-        traninClient: [{ clientId: { type: String, index: true }, nickname: { type: String }, isAuth: { type: Number, default: 0 } }], //培训报名学员 isAuth : 0 、禁用授权 ；1、授权
-        roomType: String, // 房间类别（普通：normal，VIP：vip，培训班：train）
+        traninClient: [{
+            clientId: { type: String, index: true },
+            nickname: { type: String },
+            isAuth: { type: Number, default: 0 },
+            dateTime: Date
+        }], //培训报名学员 isAuth : 0 、禁用授权 ；1、授权
+        trainConfig: String, //培训班配置
+        roomType: String, // 房间类别（新手场：simple，普通：normal，VIP：vip，培训班：train）
         point: Number, //房间积分
         label: String, //房间标签
         logo: String //房间Logo

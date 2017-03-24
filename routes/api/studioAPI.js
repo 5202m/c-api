@@ -263,15 +263,18 @@ router.get("/checkGroupAuth", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    studioService.checkGroupAuth(
-        req.query["roomType"],
-        req.query["groupId"],
-        req.query["clientGroup"],
-        req.query["userId"],
-        (data) => {
-            res.json(APIUtil.APIResult(null, data));
-        }
-    );
+    let service = common.getCompanyOnlyService(req.query.companyId);
+    service = service || studioService;
+    service.checkGroupAuth({
+        roomType: req.query["roomType"],
+        groupId: req.query["groupId"],
+        clientGroup: req.query["clientGroup"],
+        userId: req.query["userId"]
+    }).then((data, err) => {
+        res.json(APIUtil.APIResult(err, data));
+    }).catch((data, err) => {
+        res.json(APIUtil.APIResult(err, data));
+    });
 });
 /**
  * @api {get} /studio/getDefaultRoom 获取默认房间

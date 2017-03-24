@@ -66,15 +66,18 @@ router.post("/saveTrain", (req, res) => { //groupId,userId,nickname
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    clientTrainService.saveTrain(
-        req.body["groupId"],
-        req.body["userId"],
-        req.body["nickname"],
-        (data) => {
+    let service = common.getCompanyOnlyService(req.body.companyId);
+    service = service || clientTrainService;
+    service.saveTrain(
+            req.body["groupId"],
+            req.body["userId"],
+            req.body["nickname"],
+            req.body["isAuth"])
+        .then(data => {
             res.json(APIUtil.APIResultFromData(data));
-        }
-    );
-
+        }).catch(e => {
+            res.json(APIUtil.APIResultFromData(e));
+        });
 });
 /**
  * @api {post} /clientTrain/addClientTrain 客户学员报名
@@ -122,18 +125,21 @@ router.post("/addClientTrain", (req, res) => {
         return;
     }
 
-    clientTrainService.addClientTrain({
+    let service = common.getCompanyOnlyService(req.body.companyId);
+    service = service || clientTrainService;
+    service.addClientTrain({
             groupId: req.body["groupId"],
             nickname: req.body["nickname"],
             noApprove: req.body['noApprove']
         }, {
             userId: req.body["userId"],
             clientGroup: req.body["clientGroup"]
-        },
-        (data) => {
+        })
+        .then(data => {
             res.json(APIUtil.APIResult(null, data));
-        }
-    );
+        }).catch(errData => {
+            res.json(APIUtil.APIResult(null, errData));
+        });
 });
 /**
  * @api {get} /clientTrain/getTrainAndClientNum 提取培训班数及人数
@@ -216,15 +222,18 @@ router.get("/getTrainList", (req, res) => {
         return;
     }
 
-    clientTrainService.getTrainList(
-        req.query["groupType"],
-        req.query["teachId"],
-        req.query["isAll"] || false,
-        req.query['userId'],
-        (data) => {
+    let service = common.getCompanyOnlyService(req.query.companyId);
+    service = service || clientTrainService;
+    service.getTrainList(
+            req.query["groupType"],
+            req.query["teachId"],
+            req.query["isAll"] || false,
+            req.query['userId'])
+        .then(data => {
             res.json(APIUtil.APIResultFromData(data));
-        }
-    );
+        }).catch(e => {
+            res.json(APIUtil.APIResultFromData(null));
+        });
 });
 /**
  * @api {post} /clientTrain/addSignin 添加签到
@@ -323,14 +332,16 @@ router.get("/getSignin", (req, res) => {
         return;
     }
 
-    clientTrainService.getSignin({
-            mobilePhone: req.query["mobilePhone"],
-            groupType: req.query["groupType"]
-        },
-        (data) => {
-            res.json(APIUtil.APIResultFromData(data));
-        }
-    );
+    let service = common.getCompanyOnlyService(req.query.companyId);
+    service = service || clientTrainService;
+    service.getSignin({
+        mobilePhone: req.query["mobilePhone"],
+        groupType: req.query["groupType"]
+    }).then(data => {
+        res.json(APIUtil.APIResultFromData(data));
+    }).catch(errData => {
+        res.json(APIUtil.APIResultFromData(errData));
+    });
 });
 /**
  * @api {post} /clientTrain/checkTodaySignin 查询客户当天是否签到
