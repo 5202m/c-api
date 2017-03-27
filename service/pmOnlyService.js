@@ -112,11 +112,11 @@ module.exports = {
                         result = errorMessage.code_4019;
                     }
                     result = _this.fillOpenTime(result, row.openDate);
-                    deferred.resolve(result);
+                    deferred.resolve({ code: result.errcode, message: result.errmsg });
                 });
             } else {
                 result = _this.fillOpenTime(result, row.openDate);
-                deferred.reject(result);
+                deferred.reject({ code: result.errcode, message: result.errmsg });
             }
         });
         return deferred.promise;
@@ -291,13 +291,19 @@ module.exports = {
             }
             if (result) {
                 result = _this.fillOpenTime(result, room.openDate);
-                deferred.resolve(room, result);
+                room.checkState = {};
+                room.checkState.code = result.errcode;
+                room.checkState.message = result.errmsg;
+                deferred.resolve(room);
             } else {
                 chatService.getRoomOnlineTotalNum(room._id, function(onlineNum) {
+                    room.checkState = { code: 0 };
                     if (room.maxCount <= onlineNum) {
                         result = errorMessage.code_4010;
+                        room.checkState.code = result.errcode;
+                        room.checkState.message = result.errmsg;
                     }
-                    deferred.resolve(room, result);
+                    deferred.resolve(room);
                 });
             }
         });
