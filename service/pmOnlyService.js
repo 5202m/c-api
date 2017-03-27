@@ -297,9 +297,9 @@ module.exports = {
                 deferred.resolve(room);
             } else {
                 chatService.getRoomOnlineTotalNum(room._id, function(onlineNum) {
-                    room.checkState = { code: 0 };
                     if (room.maxCount <= onlineNum) {
                         result = errorMessage.code_4010;
+                        room.checkState = {};
                         room.checkState.code = result.errcode;
                         room.checkState.message = result.errmsg;
                     }

@@ -279,6 +279,20 @@ var common = {
         return /(^[0-9]{11})$|(^86(-){0,3}[0-9]{11})$/.test(val);
     },
     /**
+     * 格式到json
+     * @param str
+     */
+    parseJson: function(str) {
+        if (!str) {
+            return null;
+        } else {
+            try {
+                return JSON.parse(str);
+            } catch (e) {}
+        }
+        return null;
+    },
+    /**
      * 判断客户端是否手机
      * @param userAgent
      */
