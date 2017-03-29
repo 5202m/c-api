@@ -156,8 +156,35 @@ router.get("/getMemberInfo", function(req, res) {
         });
     }
 });
-/**
- * 查询分析师信息（点赞+胜率）
+ /**
+ * @api {get} /chat/getAnalysts 查询分析师信息（点赞+胜率）
+ * @apiName getAnalysts
+ * @apiGroup chat
+ *
+ * @apiParam {String} platform 平台类型类型，必需。pm是"studio"；fx是"fxstudio"；hx是"hxstudio"。
+ * @apiParam {String} analystIds 分析师编号列表，英文逗号分隔，必需。比如"andrew"代表伦老师; "sunman_chu"代表朱老师。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/getAnalysts
+ * @apiExample Example usage:
+ *  /api/chat/getAnalysts?platform=studio&analystIds=andrew
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * [{
+ * 		"userNo": "andrew",
+ * 		"userName": "伦老师",
+ * 		"position": "金道研究院",
+ * 		"avatar": "http://192.168.35.91:8090/upload/pic/header/chat/201508/20150817140000_analyst1.png",
+ * 		"introduction": "",
+ * 		"wechatCode": "",
+ * 		"winRate": "79.60%",
+ * 		"praise": 0
+ * 	}
+ * ]
+ *
+ * @apiUse ParametersMissedError
  */
 router.get("/getAnalysts", function(req, res) {
     var platform = req.query["platform"];
@@ -171,8 +198,29 @@ router.get("/getAnalysts", function(req, res) {
     }
 });
 
-/**
- * 分析师点赞
+ /**
+ * @api {post} /chat/praiseAnalyst 查询分析师信息（点赞+胜率）
+ * @apiName praiseAnalyst
+ * @apiGroup chat
+ *
+ * @apiParam {String} platform 平台类型类型，必需。pm是"studio"；fx是"fxstudio"；hx是"hxstudio"。
+ * @apiParam {String} analystId 分析师编号，必需。比如"andrew"代表伦老师; "sunman_chu"代表朱老师。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/praiseAnalyst
+ * @apiExample Example usage:
+ *  /api/chat/praiseAnalyst?platform=studio&analystId=andrew
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ * 	"isOK": true,
+ * 	"msg": "",
+ * 	"num": 1
+ * }
+ *
+ * @apiUse ParametersMissedError
  */
 router.post("/praiseAnalyst", function(req, res) {
     var platform = req.body["platform"] || req.query["platform"];
@@ -191,7 +239,7 @@ router.post("/praiseAnalyst", function(req, res) {
  * @apiName getShowTrade
  * @apiGroup chat
  *
- * @apiParam {String} platfrom 成员类型，必需
+ * @apiParam {String} platform 成员类型，必需
  * @apiParam {String} userId 分析师ID，必需
  * @apiParam {Number} tradeType 晒单类型，1 分析师晒单，2 客户晒单
  * @apiParam {Number} onlyHis 仅查询已平仓的晒单，1 是， 0 否
