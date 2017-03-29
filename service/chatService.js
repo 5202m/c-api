@@ -15,6 +15,7 @@ var noticeMessage = require("../message/NoticeMessage");
 var chatMessage = require("../message/ChatMessage");
 var baseMessage = require("../message/BaseMessage");
 var cacheClient = require("../cache/cacheClient");
+var ObjectId = require('mongoose').Types.ObjectId;
 
 let updateCacheClient = userInfo => {
     //设置到redis中 userId 与socketId
