@@ -27,6 +27,32 @@ let userService = require('../../service/userService');
 let common = require('../../util/common');
 let APIUtil = require('../../util/APIUtil.js');
 
+/**
+ * @api {get} /user/getUserInfo 通过用户ID提取用户信息（分析师）
+ * @apiName getUserInfo
+ * @apiGroup user
+ *
+ * @apiParam {String} id 用户ID，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getUserInfo
+ * @apiExample Example usage:
+ *  /api/user/getUserInfo?id=U150511B000005
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getUserInfo", (req, res) => {
     if (common.isBlank(req.query["id"])) {
         logger.warn("[getUserInfo] Parameters missed! Expecting parameters: ", "id");
@@ -41,6 +67,33 @@ router.get("/getUserInfo", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/getUserInfoByUserNo 通过用户userNo提取用户信息（分析师）
+ * @apiName getUserInfoByUserNo
+ * @apiGroup user
+ *
+ * @apiParam {String} userNo 用户userNo，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getUserInfoByUserNo
+ * @apiExample Example usage:
+ *  /api/user/getUserInfoByUserNo?userNo=leo
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getUserInfoByUserNo", (req, res) => {
     if (common.isBlank(req.query["userNo"])) {
         logger.warn("[getUserInfoByUserNo] Parameters missed! Expecting parameters: ", "userNo");
@@ -55,6 +108,33 @@ router.get("/getUserInfoByUserNo", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/getUserList 通过多个用户userNo提取用户信息（分析师）
+ * @apiName getUserList
+ * @apiGroup user
+ *
+ * @apiParam {String} userNOs 用户userNo，多个用,隔开必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getUserList
+ * @apiExample Example usage:
+ *  /api/user/getUserList?userNo=leo,kitty
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getUserList", (req, res) => {
     if (common.isBlank(req.query["userNOs"])) {
         logger.warn("[getUserList] Parameters missed! Expecting parameters: ", "userNOs");
@@ -69,6 +149,33 @@ router.get("/getUserList", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/batchOfflineStatus 批量下线房间用户在线状态（客户）
+ * @apiName batchOfflineStatus
+ * @apiGroup user
+ *
+ * @apiParam {String} roomId 房间Id，取userInfo.groupId 必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/batchOfflineStatus
+ * @apiExample Example usage:
+ *  /api/user/batchOfflineStatus?roomId=studio_teach
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/batchOfflineStatus", (req, res) => {
     if (common.isBlank(req.query["roomId"])) {
         logger.warn("[batchOfflineStatus] Parameters missed! Expecting parameters: ", "roomId");
@@ -83,6 +190,47 @@ router.get("/batchOfflineStatus", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/verifyRule 验证规则
+ * @apiName verifyRule
+ * @apiGroup user
+ *
+ * @apiParam {String} nickname 昵称，必填
+ * @apiParam {Number} userType 用户类型，必填 前台或后台用户(-1,0,1,2,3)
+ * @apiParam {String} groupId 房间ID，必填 取userInfo.groupId
+ * @apiParam {String} content 发言内容，必填
+ * @apiParam {String} clientGroup 用户组别，取userInfo.clientGroup值
+ * @apiParam {String} isWh 是否私聊 true||false
+ * @apiParam {Number} speakNum 发言次数
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/verifyRule
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "nickname": "test",
+ *       "userType": -1,
+ *       "groupId": "studio_teach",
+ *       "content": "test",
+ *       "clientGroup": "register",
+ *       "isWh": false,
+ *       "speakNum": 1
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/verifyRule", (req, res) => {
     let requires = ["nickname", "userType", "groupId", "content"];
     let isSatify = requires.every((name) => {
@@ -113,6 +261,33 @@ router.post("/verifyRule", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/getMemberList 根据id提取会员信息
+ * @apiName getMemberList
+ * @apiGroup user
+ *
+ * @apiParam {String} id 会员ID 必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getMemberList
+ * @apiExample Example usage:
+ *  /api/user/getMemberList?id=578de12d87c3f6ec3382ad37
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getMemberList", (req, res) => {
     if (common.isBlank(req.query["id"])) {
         logger.warn("[getMemberList] Parameters missed! Expecting parameters: ", "id");
@@ -127,6 +302,33 @@ router.get("/getMemberList", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/getAuthUsersByGroupId 检查角色是否有审批权限
+ * @apiName getAuthUsersByGroupId
+ * @apiGroup user
+ *
+ * @apiParam {String} groupId  房间ID，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getAuthUsersByGroupId
+ * @apiExample Example usage:
+ *  /api/user/getAuthUsersByGroupId?groupId=studio_teach
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getAuthUsersByGroupId", (req, res) => {
     if (common.isBlank(req.query["groupId"])) {
         logger.warn("[getAuthUsersByGroupId] Parameters missed! Expecting parameters: ", "groupId");
@@ -141,6 +343,41 @@ router.get("/getAuthUsersByGroupId", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/createUser 新增用户信息
+ * @apiName createUser
+ * @apiGroup user
+ *
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} groupId 房间ID，必填 取userInfo.groupId
+ * @apiParam {String} accountNo 交易账号，必填
+ * @apiParam {String} mobilePhone 手机号，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/createUser
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "groupType": "studio",
+ *       "groupId": "studio_teach",
+ *       "accountNo": "",//交易账号
+ *       "mobilePhone": "13800138000"
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/createUser", (req, res) => {
     let requires = ["groupType", "groupId", "accountNo", "mobilePhone"];
     let isSatify = requires.every((name) => {
@@ -159,6 +396,36 @@ router.post("/createUser", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/joinNewRoom 加入新的房间组
+ * @apiName joinNewRoom
+ * @apiGroup user
+ *
+ * @apiParam {String} mobilePhone  手机号，必填
+ * @apiParam {String} userId  用户ID，必填
+ * @apiParam {String} groupType  组别，必填 取userInfo.groupType值
+ * @apiParam {String} groupId  房间ID，必填 取userInfo.groupId值
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/joinNewRoom
+ * @apiExample Example usage:
+ *  /api/user/joinNewRoom?mobilePhone=13800138012&userId=sxunppxunpxix&groupType=studio&groupId=studio_teach
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/joinNewRoom", (req, res) => {
     let requires = ["mobilePhone", "userId", "groupType", "groupId"];
     let isSatify = requires.every((name) => {
@@ -177,6 +444,41 @@ router.get("/joinNewRoom", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/updateMemberInfo 更新会员信息
+ * @apiName updateMemberInfo
+ * @apiGroup user
+ *
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} nickname 昵称，必填
+ * @apiParam {String} groupId 房间ID，必填 取userInfo.groupId
+ * @apiParam {String} clientStoreId 客户端缓存ID
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/updateMemberInfo
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "groupType": "studio",
+ *       "groupId": "studio_teach",
+ *       "nickname": "beatp",
+ *       "clientStoreId": "1485046160186_32772873"
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/updateMemberInfo", (req, res) => {
     let requires = ["groupType", "nickname", "groupId"];
     let isSatify = requires.every((name) => {
@@ -195,6 +497,45 @@ router.post("/updateMemberInfo", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/updateChatUserGroupStatus 下线更新会员状态及发送记录条数
+ * @apiName updateChatUserGroupStatus
+ * @apiGroup user
+ *
+ * @apiParam {String} userId 用户ID，必填
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} groupId 房间ID，必填 取userInfo.groupId
+ * @apiParam {Number} chatStatus 状态，0下线，1上线
+ * @apiParam {Number} sendMsgCount 消息条数
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/updateChatUserGroupStatus
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "userInfo":{
+ *          "userId":"sxunppxunpxix",
+ *          "groupType":"studio",
+ *          "groupId":"studio_teach"
+ *       },
+ *       "chatStatus": 0,
+ *       "sendMsgCount": 10
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/updateChatUserGroupStatus", (req, res) => {
     if (common.isBlank(req.body["userInfo"])) {
         logger.warn("[updateChatUserGroupStatus] Parameters missed! Expecting parameters: ", "userInfo");
@@ -219,6 +560,34 @@ router.post("/updateChatUserGroupStatus", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/checkUserLogin 通过userId及组别检测用户是否已经登录过
+ * @apiName checkUserLogin
+ * @apiGroup user
+ *
+ * @apiParam {String} userId  用户ID，必填
+ * @apiParam {String} groupType  组别，必填 取userInfo.groupType值
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/checkUserLogin
+ * @apiExample Example usage:
+ *  /api/user/checkUserLogin?userId=sxunppxunpxix&groupType=studio
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/checkUserLogin", (req, res) => {
     let requires = ["userId", "groupType"];
     let isSatify = requires.every((name) => {
@@ -238,6 +607,33 @@ router.get("/checkUserLogin", (req, res) => {
     );
 });
 // router.get("/getMemberByTel", (req, res) => {});
+
+/**
+ * @api {get} /user/getRoomCsUser 提取cs客服信息(单个)
+ * @apiName getRoomCsUser
+ * @apiGroup user
+ *
+ * @apiParam {String} roomId  房间ID，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getRoomCsUser
+ * @apiExample Example usage:
+ *  /api/user/getRoomCsUser?roomId=studio_teach
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getRoomCsUser", (req, res) => {
     if (common.isBlank(req.query["roomId"])) {
         logger.warn("[getRoomCsUser] Parameters missed! Expecting parameters: ", "roomId");
@@ -252,6 +648,33 @@ router.get("/getRoomCsUser", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/getRoomCsUserList 提取cs客服信息列表
+ * @apiName getRoomCsUserList
+ * @apiGroup user
+ *
+ * @apiParam {String} roomId  房间ID，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getRoomCsUserList
+ * @apiExample Example usage:
+ *  /api/user/getRoomCsUserList?roomId=studio_teach
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getRoomCsUserList", (req, res) => {
     if (common.isBlank(req.query["roomId"])) {
         logger.warn("[getRoomCsUserList] Parameters missed! Expecting parameters: ", "roomId");
