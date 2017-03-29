@@ -186,32 +186,22 @@ var clientTrainService = {
      * @param isAll
      * @param callback
      */
-    getTrainList: function(groupType, teachId, isAll, callback) {
+    getTrainList: function(groupType, teachId, isAll, userId, callback) {
         let deferred = new Deferred();
-        var searchObj = {
-            "groupType": groupType,
-            roomType: 'train',
-            valid: 1
-        };
-        var limit = 50,
-            searchFields = "_id status defaultAnalyst point openDate clientGroup name traninClient label remark sequence";
-        if (!isAll) {
-            searchObj.status = {
-                $in: [1, 2]
-            };
+        var searchObj={"groupType":groupType,roomType:'train',valid:1};
+        var limit=50,searchFields="_id status defaultAnalyst point openDate clientGroup name traninClient trainConfig label remark";
+        if(!isAll){
+            searchObj.status={$in:[1,2]};
         }
-        if (teachId) {
-            searchObj["defaultAnalyst.userNo"] = teachId;
-            limit = 2;
-            searchFields += " traninClient";
+        if(teachId){
+            searchObj["defaultAnalyst.userNo"]=teachId;
+            limit=2;
         }
-        chatGroup.find(searchObj).select(searchFields).limit(limit).sort({
-            'createDate': 'desc'
-        }).exec(function(err, rooms) {
-            if (err) {
+        chatGroup.find(searchObj).select(searchFields).limit(limit).sort({'createDate':'desc'}).exec(function(err,rooms){
+            if(err){
                 logger.error("获取房间列表失败! >>getChatGroupList:", err);
-                deferred.reject(err);
-            } else {
+                callback(null);
+            }else{
                 var tmList = [];
                 var row = null,
                     currDate = common.formatterDate(new Date(), '-');
