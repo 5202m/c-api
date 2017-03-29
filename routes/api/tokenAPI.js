@@ -1,13 +1,34 @@
+/**
+ * @apiDefine ParameterNotAvailableJSONError
+ *
+ * @apiError ParameterNotAvailableJSONError 参数数据不是合法的JSON字符串。
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 1,
+ *          "errcode": "10",
+ *          "errmsg": "操作异常!",
+ *          "data": null
+ *      }
+ */
+/**
+ * @apiDefine CommonResultDescription
+ *
+ * @apiSuccess {Number} result 结果码，0 - 成功；-1 - 未知或未定义的错误；other - API系统定义的错误
+ * @apiSuccess {String} errmsg  错误信息.
+ * @apiSuccess {Number} errcode  错误码.
+ */
 var logger =require("../../resources/logConf").getLogger("tokenAPI");
 var express = require('express');
 var router = express.Router();
 var tokenService = require('../../service/tokenService');
 var common = require('../../util/common');
 var errorMessage = require('../../util/errorMessage');
+
 /**
  * 新增tokenAccess
  */
-
 router.post('/setTokenAccess', function(req, res) {
     try {
         var result={isOK:false,error:null};
