@@ -186,7 +186,7 @@ var clientTrainService = {
      * @param isAll
      * @param callback
      */
-    getTrainList: function(groupType, teachId, isAll, callback) {
+    getTrainList: function(groupType, teachId, isAll, userId) {
         let deferred = new Deferred();
         var searchObj = {
             "groupType": groupType,
