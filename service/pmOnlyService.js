@@ -105,7 +105,7 @@ module.exports = {
             }
             if (!result) {
                 _this.saveTrain(params.groupId, userInfo.userId, params.nickname, params.noApprove).then(function(isOK) {
-                    var result = null;
+                    var result = errorMessage.code_10;
                     if (!isOK) {
                         result = errorMessage.code_4018;
                     } else if (!common.dateTimeWeekCheck(row.openDate, false)) {
