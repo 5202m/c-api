@@ -630,7 +630,7 @@ var subscribeService = {
                         }
                     });
                 } else {
-                    callback({isOK: false, msg: err.errmsg});
+                    callback({isOK: false, msg: '订阅失败'});
                 }
             });
         } else {
