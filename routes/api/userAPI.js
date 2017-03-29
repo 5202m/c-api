@@ -747,6 +747,33 @@ router.post("/modifyAvatar", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/getTeacherList 获取房间分析师列表
+ * @apiName getTeacherList
+ * @apiGroup user
+ *
+ * @apiParam {String} groupId  房间ID，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getTeacherList
+ * @apiExample Example usage:
+ *  /api/user/getTeacherList?groupId=studio_teach
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getTeacherList", (req, res) => {
     if (common.isBlank(req.query["groupId"])) {
         logger.warn("[getTeacherList] Parameters missed! Expecting parameters: ", "groupId");
@@ -884,6 +911,32 @@ router.get("/getClientGroupByMId", (req, res) => {
     );
 });
 
+/**
+ * @api {get} /user/getAnalystList 获取分析师列表
+ * @apiName getAnalystList
+ * @apiGroup user
+ *
+ * @apiParam {String} systemCategory  所属事业部，必填（pm/fx/hx/cf/ix）
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getAnalystList
+ * @apiExample Example usage:
+ *  /api/user/getAnalystList?systemCategory=pm
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getAnalystList", (req, res) => {
     let systemCategory = req.query["systemCategory"];
     if (common.isBlank(systemCategory)) {
