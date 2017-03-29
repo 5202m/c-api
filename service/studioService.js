@@ -141,7 +141,8 @@ var studioService = {
                 defTemplate: 1,
                 roomType: 1,
                 defaultAnalyst: 1,
-                defaultCS: 1
+                defaultCS: 1,
+                logo: 1
             })
             .sort({
                 'sequence': 'asc'
