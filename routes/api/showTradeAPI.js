@@ -314,7 +314,7 @@ router.post("/addComments", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    showTradeService.addComments(req.body["id"], req.body["userInfo"], req.body["content"])
+    showTradeService.addComments(req.body)
         .then(data => {
             res.json(APIUtil.APIResult(null, data));
         }).catch(e => {

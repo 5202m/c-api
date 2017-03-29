@@ -1,8 +1,8 @@
-var chatShowTrade = require('../models/chatShowTrade');//引入chatShowTrade数据模型
-var logger=require('../resources/logConf').getLogger('showTradeService');//引入log4js
-var chatPraiseService = require('../service/chatPraiseService');//引入chatPraiseService
-var constant = require('../constant/constant');//引入constant
-var common = require('../util/common');//引入common类
+var chatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数据模型
+var logger = require('../resources/logConf').getLogger('showTradeService'); //引入log4js
+var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
+var constant = require('../constant/constant'); //引入constant
+var common = require('../util/common'); //引入common类
 /**
  * 晒单服务类
  * 备注：查询各分析师的晒单数据
@@ -16,35 +16,35 @@ var showTradeService = {
      * @param userNo 如果有多个分析师，只取第一个
      * @param callback
      */
-    getShowTrade : function(groupType, userNo, callback){
+    getShowTrade: function(groupType, userNo, callback) {
         userNo = userNo.replace(/,.*$/g, "");
         chatShowTrade.find({
-            "boUser.userNo" : userNo,
-            "groupType" : groupType,
-            "valid" : 1,
-            "tradeType":1
-        }).sort({"showDate":-1}).exec("find", function(err, data){
-            if(err){
+            "boUser.userNo": userNo,
+            "groupType": groupType,
+            "valid": 1,
+            "tradeType": 1
+        }).sort({ "showDate": -1 }).exec("find", function(err, data) {
+            if (err) {
                 logger.error("查询晒单数据失败!>>getShowTrade:", err);
                 callback(null);
                 return;
             }
             var result = null;
-            if(data && data.length > 0){
+            if (data && data.length > 0) {
                 result = {
-                    analyst : data[0].toObject().boUser,
-                    tradeList : []
+                    analyst: data[0].toObject().boUser,
+                    tradeList: []
                 };
                 var tradeInfo = null;
-                for(var i = 0,lenI = data.length; i < lenI;i++){
+                for (var i = 0, lenI = data.length; i < lenI; i++) {
                     tradeInfo = data[i].toObject();
                     delete tradeInfo["boUser"];
                     result.tradeList.push(tradeInfo);
                 }
-                if(result.analyst){
+                if (result.analyst) {
                     result.analyst.praiseNum = 0;
-                    chatPraiseService.getPraiseNum(result.analyst.userNo,constant.chatPraiseType.user,groupType,function(rows){
-                        if(rows && rows.length > 0){
+                    chatPraiseService.getPraiseNum(result.analyst.userNo, constant.chatPraiseType.user, groupType, function(rows) {
+                        if (rows && rows.length > 0) {
                             result.analyst.praiseNum = rows[0].praiseNum;
                         }
                         callback(result);
@@ -60,17 +60,17 @@ var showTradeService = {
      * @param params
      * @param callback
      */
-    getShowTradeList:function(params, callback){
-        var searchObj = {"groupType":params.groupType, "valid":1, "status":1,"tradeType":2};
-        if(common.isValid(params.userNo)){
-            searchObj = {"groupType":params.groupType, "valid":1,"tradeType":(params.tradeType?params.tradeType:2),"boUser.userNo":params.userNo};
-            if(common.isValid(params.status)){
+    getShowTradeList: function(params, callback) {
+        var searchObj = { "groupType": params.groupType, "valid": 1, "status": 1, "tradeType": 2 };
+        if (common.isValid(params.userNo)) {
+            searchObj = { "groupType": params.groupType, "valid": 1, "tradeType": (params.tradeType ? params.tradeType : 2), "boUser.userNo": params.userNo };
+            if (common.isValid(params.status)) {
                 searchObj.status = params.status;
             }
         }
         //var from = (params.pageNo-1) * params.pageSize;
-        var orderByJsonObj={"showDate": 'desc' };
-        if(common.isValid(params.skipLimit)){
+        var orderByJsonObj = { "showDate": 'desc' };
+        if (common.isValid(params.skipLimit)) {
             callback(null);
             return;
         }
@@ -78,67 +78,67 @@ var showTradeService = {
             .sort(orderByJsonObj)
             //.skip(from)
             .limit(params.pageSize)
-            .exec("find",function(err, data){
-            if(err){
-                logger.error("查询晒单数据失败! >>getShowTradeList:", err);
-                callback(null);
-                return;
-            }
-            var result = null;
-            if(data && data.length > 0){
-                result = {
-                    tradeList : []
-                };
-                var tradeInfo = null;
-                for(var i = 0,lenI = data.length; i < lenI;i++){
-                    tradeInfo = data[i].toObject();
-                    tradeInfo.user = data[i].boUser.toObject();
-                    delete tradeInfo["boUser"];
-                    result.tradeList.push(tradeInfo);
+            .exec("find", function(err, data) {
+                if (err) {
+                    logger.error("查询晒单数据失败! >>getShowTradeList:", err);
+                    callback(null);
+                    return;
                 }
-            }
-            callback(result);
-        });
+                var result = null;
+                if (data && data.length > 0) {
+                    result = {
+                        tradeList: []
+                    };
+                    var tradeInfo = null;
+                    for (var i = 0, lenI = data.length; i < lenI; i++) {
+                        tradeInfo = data[i].toObject();
+                        tradeInfo.user = data[i].boUser.toObject();
+                        delete tradeInfo["boUser"];
+                        result.tradeList.push(tradeInfo);
+                    }
+                }
+                callback(result);
+            });
     },
     /**
      * 新增晒单
      * @param params
      * @param callback
      */
-    addShowTrade:function(params, callback){
+    addShowTrade: function(params, callback) {
         var insertModel = {
-            _id : null,
-            groupType : params.groupType, //聊天室组别
-            boUser : {
-                _id : null,   //userId
-                userNo : params.userNo,//userNo
-                avatar : params.avatar,//头像
-                userName : params.userName,//分析师姓名
-                telephone : params.telePhone,//手机号
-                wechatCode : '',//分析师微信号
-                wechatCodeImg : '',//分析师微信二维码
-                winRate : ''//分析师胜率
+            _id: null,
+            groupType: params.groupType, //聊天室组别
+            boUser: {
+                _id: null, //userId
+                userNo: params.userNo, //userNo
+                avatar: params.avatar, //头像
+                userName: params.userName, //分析师姓名
+                telephone: params.telePhone, //手机号
+                wechatCode: '', //分析师微信号
+                wechatCodeImg: '', //分析师微信二维码
+                winRate: '' //分析师胜率
             },
-            showDate : new Date(), //晒单时间
-            tradeImg : params.tradeImg, //晒单图片
-            profit : '', //盈利
-            remark : params.remark,//心得
-            valid : 1, //是否删除 1-有效 0-无效
-            updateDate : new Date(),
+            showDate: new Date(), //晒单时间
+            tradeImg: params.tradeImg, //晒单图片
+            profit: '', //盈利
+            remark: params.remark, //心得
+            valid: 1, //是否删除 1-有效 0-无效
+            updateDate: new Date(),
             createUser: params.userName,
             createIp: params.Ip,
             createDate: new Date(),
-            title: params.title,//标题
-            tradeType: params.tradeType,//类别：1 分析师晒单，2 客户晒单
+            title: params.title, //标题
+            tradeType: params.tradeType, //类别：1 分析师晒单，2 客户晒单
             status: 0, //状态：0 待审核， 1 审核通过， -1 审核不通过
             praise: 0 //点赞数
         };
-        new chatShowTrade(insertModel).save(function(err, trade, updateNumber){
+        new chatShowTrade(insertModel).save(function(err, trade, updateNumber) {
             if (err) {
                 logger.error("保存晒单数据失败! >>addShowTrade:", err);
-                callback({isOK:false, msg:'晒单失败'});
-            }else{
-                callback({isOK:true, msg: updateNumber + '个晒单成功'});
+                callback({ isOK: false, msg: '晒单失败' });
+            } else {
+                callback({ isOK: true, msg: updateNumber + '个晒单成功' });
             }
         });
     },
@@ -147,25 +147,25 @@ var showTradeService = {
      * @param params
      * @param callback
      */
-    setShowTradePraise:function(params, callback){
-        var searchObj = {_id:params.praiseId};
-        chatShowTrade.findOne(searchObj, function(err, row){
-            if(err){
+    setShowTradePraise: function(params, callback) {
+        var searchObj = { _id: params.praiseId };
+        chatShowTrade.findOne(searchObj, function(err, row) {
+            if (err) {
                 logger.error("查询数据失败! >>setShowTradePraise:", err);
-                callback({isOK:false, msg:'点赞失败'});
-            }else{
-                if(common.isBlank(row.praise)){
+                callback({ isOK: false, msg: '点赞失败' });
+            } else {
+                if (common.isBlank(row.praise)) {
                     row.praise = 1;
-                }else{
+                } else {
                     row.praise += 1;
                 }
-                var setObj = { '$set': {'praise': row.praise}};
-                chatShowTrade.findOneAndUpdate(searchObj, setObj, function(err1, row1){
+                var setObj = { '$set': { 'praise': row.praise } };
+                chatShowTrade.findOneAndUpdate(searchObj, setObj, function(err1, row1) {
                     if (err1) {
                         logger.error('setShowTradePraise=>fail!' + err1);
-                        callback({isOK: false,  msg: '点赞失败'});
-                    }else{
-                        callback({isOK: true, msg: '点赞成功'});
+                        callback({ isOK: false, msg: '点赞失败' });
+                    } else {
+                        callback({ isOK: true, msg: '点赞成功' });
                     }
                 });
             }
@@ -176,18 +176,63 @@ var showTradeService = {
      * @param tradeIds
      * @param callback
      */
-    getShowTradeByIds:function(tradeIds, callback){
-        var searchObj = {_id:{$in:tradeIds}};
-        chatShowTrade.find(searchObj,function(err, rows){
-            if(err){
-                logger.error('查询数据失败！>>getShowTradeByIds:',err);
+    getShowTradeByIds: function(tradeIds, callback) {
+        var searchObj = { _id: { $in: tradeIds } };
+        chatShowTrade.find(searchObj, function(err, rows) {
+            if (err) {
+                logger.error('查询数据失败！>>getShowTradeByIds:', err);
                 callback(null);
-            }else{
+            } else {
                 callback(rows);
+            }
+        });
+    },
+
+    /**
+     * 添加评论
+     * @param id
+     * @param userInfo
+     * @param content
+     * @param refId
+     * @param callback
+     */
+    addComments: function(params, callback) {
+        let id = params.id,
+            userInfo = params.userInfo,
+            content = params.content,
+            refId = params.refId;
+        chatShowTrade.findOne({
+            _id: id
+        }, function(err, row) {
+            if (err || !row) {
+                logger.error("查询数据失败! >>addComments:", err);
+                callback({ isOK: false, msg: '评论失败' });
+            } else {
+                if (!row.comments) {
+                    row.comments = [];
+                }
+                var comment = {
+                    _id: new ObjectId(),
+                    userId: userInfo.mobilePhone || "",
+                    userName: userInfo.nickname || "",
+                    avatar: userInfo.avatar || "",
+                    content: content || "",
+                    dateTime: new Date(),
+                    refId: refId || "",
+                    valid: 1
+                };
+                row.comments.push(comment);
+                row.save(function(err) {
+                    if (err) {
+                        logger.error("保存数据失败! >>addComments:", err);
+                        callback({ isOK: false, msg: '评论失败' });
+                    } else {
+                        callback({ isOK: true });
+                    }
+                });
             }
         });
     }
 };
 //导出服务类
-module.exports =showTradeService;
-
+module.exports = showTradeService;
