@@ -304,7 +304,7 @@ router.get("/getShowTradeByIds", (req, res) => {
     );
 });
 /**
- * @api {post} /showTrade/addComments 添加晒单
+ * @api {post} /showTrade/addComments 添加晒单评论
  * @apiName addComments
  * @apiGroup showTrade
  *
@@ -339,7 +339,6 @@ router.get("/getShowTradeByIds", (req, res) => {
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 200 OK
  *     { isOK: false, msg: '评论失败' }
- *
  * @apiUse ParametersMissedError
  */
 router.post("/addComments", (req, res) => {
