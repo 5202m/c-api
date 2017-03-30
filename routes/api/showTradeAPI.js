@@ -303,7 +303,49 @@ router.get("/getShowTradeByIds", (req, res) => {
         }
     );
 });
-
+/**
+ * @api {post} /showTrade/addComments 添加晒单
+ * @apiName addComments
+ * @apiGroup showTrade
+ *
+ * @apiParam {String} id 晒单数据ID，必填。
+ * @apiParam {Object} userInfo 用户信息，必填。
+ * @apiParam {String} userInfo.mobilePhone 用户手机号码
+ * @apiParam {String} userInfo.nickname 用户昵称。
+ * @apiParam {String} userInfo.avatar 用户头像。
+ * @apiParam {String} content 评论内容，必填。
+ * @apiParam {String} refId 被评论的评论ID。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/showTrade/addComments
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "groupType": "studio",
+ *       "userNo": "sxunppxunpxix",
+ *       "avatar": "http://xxx.xxx.xxx/xx.jpg",
+ *       "userName": "beatp",
+ *       "telePhone": "13800138000",
+ *       "tradeImg": "http://xxx.xxx.xxx/xx.jpg",
+ *       "remark": "小赚了一笔",
+ *       "Ip": "192.168.35.91",
+ *       "title": "小赚了一笔",
+ *       "tradeType": 2
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/addComments", (req, res) => {
     let requires = ["id", "userInfo", "content"];
     let isSatify = requires.every((name) => {

@@ -3,6 +3,7 @@ var logger = require('../resources/logConf').getLogger('showTradeService'); //�
 var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common'); //引入common类
+var ObjectId = require('mongoose').Types.ObjectId;
 /**
  * 晒单服务类
  * 备注：查询各分析师的晒单数据
@@ -196,17 +197,18 @@ var showTradeService = {
      * @param refId
      * @param callback
      */
-    addComments: function(params, callback) {
+    addComments: function(params) {
         let id = params.id,
             userInfo = params.userInfo,
             content = params.content,
             refId = params.refId;
+        let defferred = new common.Deferred();
         chatShowTrade.findOne({
             _id: id
         }, function(err, row) {
             if (err || !row) {
                 logger.error("查询数据失败! >>addComments:", err);
-                callback({ isOK: false, msg: '评论失败' });
+                defferred.reject({ isOK: false, msg: '评论失败' });
             } else {
                 if (!row.comments) {
                     row.comments = [];
@@ -225,13 +227,14 @@ var showTradeService = {
                 row.save(function(err) {
                     if (err) {
                         logger.error("保存数据失败! >>addComments:", err);
-                        callback({ isOK: false, msg: '评论失败' });
+                        defferred.reject({ isOK: false, msg: '评论失败' });
                     } else {
-                        callback({ isOK: true });
+                        defferred.resolve({ isOK: true });
                     }
                 });
             }
         });
+        return defferred.promise;
     }
 };
 //导出服务类
