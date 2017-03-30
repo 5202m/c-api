@@ -199,7 +199,7 @@ router.get("/getAnalysts", function(req, res) {
 });
 
  /**
- * @api {post} /chat/praiseAnalyst 查询分析师信息（点赞+胜率）
+ * @api {post} /chat/praiseAnalyst 分析师点赞
  * @apiName praiseAnalyst
  * @apiGroup chat
  *
@@ -735,7 +735,7 @@ router.post("/modifyRuleNotice", function(req, res) {
     res.json(ApiResult.result(null, { isOK: true }));
 });
 /**
- * @api {post} /chat/sendNoticeArticle 修改规则
+ * @api {post} /chat/sendNoticeArticle 发送推送通知
  * @apiName sendNoticeArticle
  * @apiGroup chat
  *
