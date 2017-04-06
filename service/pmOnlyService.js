@@ -105,14 +105,14 @@ module.exports = {
             }
             if (!result) {
                 _this.saveTrain(params.groupId, userInfo.userId, params.nickname, params.noApprove).then(function(isOK) {
-                    var result = errorMessage.code_10;
+                    var result = null;
                     if (!isOK) {
                         result = errorMessage.code_4018;
                     } else if (!common.dateTimeWeekCheck(row.openDate, false)) {
                         result = errorMessage.code_4019;
                     }
                     result = _this.fillOpenTime(result, row.openDate);
-                    deferred.resolve({ code: result.errcode, message: result.errmsg });
+                    result ? deferred.resolve({ code: result.errcode, message: result.errmsg }) : deferred.resolve(null);
                 });
             } else {
                 result = _this.fillOpenTime(result, row.openDate);
