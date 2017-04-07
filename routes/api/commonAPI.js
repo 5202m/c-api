@@ -162,7 +162,7 @@ router.get('/getBroadStrateList', function(req, res) {
  * @apiParam {String} platform 平台 pm(web24k,webui,app,pc)/fx(gwfx,uce,webui)/hx(uce,webui)
  * @apiParam {String} groupType 组别，必填. 取直播间groupType值
  * @apiParam {String} groupId 房间ID，取直播间groupId值
- * @apiParam {String} flag 获取课程安排标识 S/D/W
+ * @apiParam {String} flag 获取课程安排标识 S(下次课程安排)/D(全天课程安排)/W(一周课程安排)
  * @apiParam {Number} strategy 是否填充交易策略信息
  *
  * @apiUse CommonResultDescription
