@@ -3,6 +3,27 @@
  * author:Dick.guo
  * date:2016/03/25
  */
+/**
+ * @apiDefine ParameterNotAvailableJSONError
+ *
+ * @apiError ParameterNotAvailableJSONError 参数数据不是合法的JSON字符串。
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 1,
+ *          "errcode": "10",
+ *          "errmsg": "操作异常!",
+ *          "data": null
+ *      }
+ */
+/**
+ * @apiDefine CommonResultDescription
+ *
+ * @apiSuccess {Number} result 结果码，0 - 成功；-1 - 未知或未定义的错误；other - API系统定义的错误
+ * @apiSuccess {String} errmsg  错误信息.
+ * @apiSuccess {Number} errcode  错误码.
+ */
 var express = require('express');
 var router = express.Router();
 var ZxFinanceService = require('../../service/zxFinanceService.js');
@@ -129,7 +150,32 @@ router.get('/getLastReview', function(req, res){
         res.json(data);
     });
 });
+
 //adding this is for formatted response.
+/**
+ * @api {get} /zxFinance/getFinanceDataLastReview 获取最后点评的数据
+ * @apiName getFinanceDataLastReview
+ * @apiGroup zxFinance
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/zxFinance/getFinanceDataLastReview
+ * @apiExample Example usage:
+ *  /api/zxFinance/getFinanceDataLastReview
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get('/getFinanceDataLastReview', function(req, res){
     ZxFinanceService.getFinanceDataLastReview(function(data){
         res.json(ApiResult.result(null, data));
