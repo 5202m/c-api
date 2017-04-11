@@ -112,7 +112,7 @@ module.exports = {
                         result = errorMessage.code_4019;
                     }
                     result = _this.fillOpenTime(result, row.openDate);
-                    deferred.resolve({ code: result.errcode, message: result.errmsg });
+                    result ? deferred.resolve({ code: result.errcode, message: result.errmsg }) : deferred.resolve(null);
                 });
             } else {
                 result = _this.fillOpenTime(result, row.openDate);

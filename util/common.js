@@ -210,7 +210,7 @@ var common = {
      * @returns {Object}
      */
     getSplitMatchReg: function(val) {
-        return eval('/^' + val + '|,' + val + '$|,' + val + ',/g');
+        return eval('/^' + val + '$|^' + val + ',|,' + val + ',|,' + val + '$/g');
     },
     /**
      * 提取md5加密密文
