@@ -689,6 +689,35 @@ router.get("/getRoomCsUserList", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/checkRoomStatus 检查房间是否在开放时间内，或可用
+ * @apiName checkRoomStatus
+ * @apiGroup user
+ *
+ * @apiParam {String} groupId  房间ID，必填
+ * @apiParam {String} currCount  当前人数，必填
+ * @apiParam {String} userId  用户ID
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/checkRoomStatus
+ * @apiExample Example usage:
+ *  /api/user/checkRoomStatus?groupId=studio_teach&currCount=100&userId=sxunppxunpxix
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/checkRoomStatus", (req, res) => {
     let requires = ["groupId", "currCount"];
     let isSatify = requires.every((name) => {
