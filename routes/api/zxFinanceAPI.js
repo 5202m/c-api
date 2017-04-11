@@ -153,16 +153,16 @@ router.get('/getLastReview', function(req, res){
 
 //adding this is for formatted response.
 /**
- * @api {get} /zxFinance/getFinanceDataLastReview 获取最后点评的数据
+ * @api {get} /zxFinanceData/getFinanceDataLastReview 获取最后点评的数据
  * @apiName getFinanceDataLastReview
- * @apiGroup zxFinance
+ * @apiGroup zxFinanceData
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
- * @apiSampleRequest /api/zxFinance/getFinanceDataLastReview
+ * @apiSampleRequest /api/zxFinanceData/getFinanceDataLastReview
  * @apiExample Example usage:
- *  /api/zxFinance/getFinanceDataLastReview
+ *  /api/zxFinanceData/getFinanceDataLastReview
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
