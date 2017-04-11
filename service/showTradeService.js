@@ -1,6 +1,6 @@
 var chatShowTrade = require('../models/chatShowTrade');//引入chatShowTrade数据模型
 var logger=require('../resources/logConf').getLogger('showTradeService');//引入log4js
-var chatPraiseService = require('../service/chatPraiseService');//引入chatPraiseService
+//var chatPraiseService = require('../service/chatPraiseService');//引入chatPraiseService
 var constant = require('../constant/constant');//引入constant
 var common = require('../util/common');//引入common类
 /**
@@ -16,7 +16,7 @@ var showTradeService = {
      * @param userNo 如果有多个分析师，只取第一个
      * @param callback
      */
-    getShowTrade : function(groupType, userNo, callback){
+    /*getShowTrade : function(groupType, userNo, callback){
         userNo = userNo.replace(/,.*$/g, "");
         chatShowTrade.find({
             "boUser.userNo" : userNo,
@@ -54,7 +54,7 @@ var showTradeService = {
             }
             callback(result);
         });
-    },
+    },*/
     /**
      * 查询指定条数数据
      * @param params
@@ -105,7 +105,7 @@ var showTradeService = {
      * @param params
      * @param callback
      */
-    addShowTrade:function(params, callback){
+    /*addShowTrade:function(params, callback){
         var insertModel = {
             _id : null,
             groupType : params.groupType, //聊天室组别
@@ -141,13 +141,13 @@ var showTradeService = {
                 callback({isOK:true, msg: updateNumber + '个晒单成功'});
             }
         });
-    },
+    },*/
     /**
      * 更新点赞数
      * @param params
      * @param callback
      */
-    setShowTradePraise:function(params, callback){
+    /*setShowTradePraise:function(params, callback){
         var searchObj = {_id:params.praiseId};
         chatShowTrade.findOne(searchObj, function(err, row){
             if(err){
@@ -170,13 +170,13 @@ var showTradeService = {
                 });
             }
         });
-    },
+    },*/
     /**
      * 根据晒单id查询晒单数据
      * @param tradeIds
      * @param callback
      */
-    getShowTradeByIds:function(tradeIds, callback){
+    /*getShowTradeByIds:function(tradeIds, callback){
         var searchObj = {_id:{$in:tradeIds}};
         chatShowTrade.find(searchObj,function(err, rows){
             if(err){
@@ -186,7 +186,7 @@ var showTradeService = {
                 callback(rows);
             }
         });
-    }
+    }*/
 };
 //导出服务类
 module.exports =showTradeService;

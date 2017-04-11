@@ -24,7 +24,7 @@ var express = require('express');
 var router = express.Router();
 var showTradeService = require('../../service/showTradeService');
 var common = require('../../util/common');
-let APIUtil = require('../../util/APIUtil.js');
+var APIUtil = require('../../util/APIUtil.js');
 /**
  * @api {get} /showTrade/getShowTrade 获取指定用户晒单数据
  * @apiName getShowTrade
@@ -136,7 +136,7 @@ let APIUtil = require('../../util/APIUtil.js');
  *
  * @apiUse ParametersMissedError
  */
-router.get("/getShowTradeList", (req, res) => {
+router.get("/getShowTradeList", function(req, res){
     var groupType = req.query['groupType'], pageSize = req.query['pageSize'];
     if (common.isBlank(groupType) || common.isBlank(pageSize)) {
         logger.warn("[getShowTradeList] Parameters missed! Expecting parameters: ", req.query);
@@ -145,7 +145,9 @@ router.get("/getShowTradeList", (req, res) => {
     }
 
     showTradeService.getShowTradeList(req.query, function(data){
-        res.json({result: 0,errcode: '0',errmsg: '',data});
+        var resJson = {result: 0,errcode: '0',errmsg: '',data:null};
+        resJson.data = data;
+        res.json(resJson);
     });
 });
 
