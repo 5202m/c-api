@@ -24,6 +24,7 @@ var chatRoutes = require('./api/chatAPI');
 var zxFinanceRoutes = require('./api/zxFinanceAPI');                          //财经数据 API路由
 var uploadRoutes = require("./api/uploadAPI.js");                             //文件上传  API路由
 var noticeRoutes = require("./api/noticeAPI.js");                             //通知  API路由
+var showTradeRoutes = require("./api/showTradeAPI.js");                             //通知  API路由
 /**
  * 初始化入口
  * @param app
@@ -76,4 +77,5 @@ exports.init = function(app){
     apiRoutes.use("/upload/", uploadRoutes);
     apiRoutes.use("/zxFinanceData", zxFinanceRoutes);
     apiRoutes.use("/notice", noticeRoutes);
+    apiRoutes.use('/showTrade', showTradeRoutes);
 };
