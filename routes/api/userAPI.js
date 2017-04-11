@@ -738,6 +738,39 @@ router.get("/checkRoomStatus", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/modifyNickname 修改昵称
+ * @apiName modifyNickname
+ * @apiGroup user
+ *
+ * @apiParam {String} mobilePhone 手机号，必填
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} nickname 昵称，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/modifyNickname
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *        "mobilePhone":"13800138000",
+ *        "groupType":"studio",
+ *        "nickname":"test"
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/modifyNickname", (req, res) => {
     let requires = ["mobilePhone", "groupType", "nickname"];
     let isSatify = requires.some((name) => {
@@ -758,6 +791,47 @@ router.post("/modifyNickname", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/modifyAvatar 修改头像
+ * @apiName modifyAvatar
+ * @apiGroup user
+ *
+ * @apiParam {String} mobilePhone 手机号，必填
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} item 积分类别，必填
+ * @apiParam {String} clientGroup 客户组别，必填 取userInfo.clientGroup值
+ * @apiParam {String} userId 用户ID，必填 取userInfo.userId值
+ * @apiParam {String} ip 客户IP，必填
+ * @apiParam {String} avatar 头像路径，上传成功后的URL值
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/modifyAvatar
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *        "mobilePhone":"13800138012",
+ *        "groupType":"studio",
+ *        "item":"register_avatar",
+ *        "clientGroup":"notActive",
+ *        "userId":"sxunppxunpxix",
+ *        "ip":"172.30.5.150",
+ *        "avatar":"http://192.168.35.91:8090/upload/pic/header/chat/front/201703/20170330145322_68288711.jpg"
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/modifyAvatar", (req, res) => {
     let requires = ["mobilePhone", "groupType", "item", "clientGroup", "userId", "ip"];
     let isSatify = requires.every((name) => {
@@ -817,6 +891,33 @@ router.get("/getTeacherList", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/getTeacherByUserId 根据分析师ID获取分析师二维码等信息
+ * @apiName getTeacherByUserId
+ * @apiGroup user
+ *
+ * @apiParam {String} userId  分析师ID，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getTeacherByUserId
+ * @apiExample Example usage:
+ *  /api/user/getTeacherByUserId?userId=leo
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getTeacherByUserId", (req, res) => {
     if (common.isBlank(req.query["userId"])) {
         logger.warn("[getTeacherByUserId] Parameters missed! Expecting parameters: ", "userId");
@@ -831,6 +932,51 @@ router.get("/getTeacherByUserId", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/modifyUserName 修改用户名
+ * @apiName modifyUserName
+ * @apiGroup user
+ *
+ * @apiParam {String} mobilePhone 手机号，必填
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} clientGroup 客户组别，必填 取userInfo.clientGroup值
+ * @apiParam {String} userId 用户ID，必填 取userInfo.userId值
+ * @apiParam {String} userName 用户名，必填
+ * @apiParam {String} ip 客户IP，必填
+ * @apiParam {String} item 积分类别，对应mis后台配置的类别，目前未配置，留空
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/modifyUserName
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *        "userInfo":{
+ *          "mobilePhone":"13800138012",
+ *          "groupType":"studio",
+ *          "clientGroup":"notActive",
+ *          "userId":"sxunppxunpxix"
+ *        },
+ *        "params":{
+ *          "item":"",
+ *          "ip":"172.30.5.150",
+ *          "userName":"beatp"
+ *        }
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/modifyUserName", (req, res) => {
     let requires = ["userInfo", "params"];
     let isSatify = requires.every((name) => {
@@ -869,6 +1015,41 @@ router.post("/modifyUserName", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/modifyEmail 修改邮箱
+ * @apiName modifyEmail
+ * @apiGroup user
+ *
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} email 邮箱地址，必填
+ * @apiParam {String} userId 用户ID，必填 取userInfo.userId值
+ * @apiParam {String} item 积分类别，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/modifyEmail
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *          "groupType":"studio",
+ *          "email":"test@gwtsz.net",
+ *          "userId":"sxunppxunpxix",
+ *          "item":"register_email"
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/modifyEmail", (req, res) => {
     let requires = ["groupType", "email", "userId", "item"];
     let isSatify = requires.every((name) => {
@@ -886,6 +1067,51 @@ router.post("/modifyEmail", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {post} /user/modifyPwd 修改密码
+ * @apiName modifyPwd
+ * @apiGroup user
+ *
+ * @apiParam {String} mobilePhone 手机号，必填
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} clientGroup 客户组别，必填 取userInfo.clientGroup值
+ * @apiParam {String} userId 用户ID，必填 取userInfo.userId值
+ * @apiParam {String} password 原密码，必填
+ * @apiParam {String} newPwd 新密码，必填
+ * @apiParam {String} item 积分类别，对应mis后台配置的类别，目前未配置，留空
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/modifyPwd
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *        "userInfo":{
+ *          "mobilePhone":"13800138012",
+ *          "groupType":"studio",
+ *          "clientGroup":"notActive",
+ *          "userId":"sxunppxunpxix"
+ *        },
+ *        "params":{
+ *          "item":"",
+ *          "password":"123456",
+ *          "newPwd":"654321"
+ *        }
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/modifyPwd", (req, res) => {
     let requires = ["userInfo", "params"];
     let isSatify = requires.every((name) => {
@@ -922,6 +1148,34 @@ router.post("/modifyPwd", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /user/getClientGroupByMId 完善资料积分变化
+ * @apiName getClientGroupByMId
+ * @apiGroup user
+ *
+ * @apiParam {String} mobileArr  ,隔开的手机号码串，必填
+ * @apiParam {String} groupType  组别，必填 取userInfo.groupType值
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getClientGroupByMId
+ * @apiExample Example usage:
+ *  /api/user/getClientGroupByMId?mobileArr=13800138000,13800138001&groupType=studio
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getClientGroupByMId", (req, res) => {
     let requires = ["mobileArr", "groupType"];
     let isSatify = requires.every((name) => {
