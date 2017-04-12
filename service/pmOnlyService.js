@@ -269,6 +269,9 @@ module.exports = {
                         result = errorMessage.code_4008;
                     }
                 }
+                if (groupId == 'studio_26' && clientGroup == 'active' && authCode != 1) {
+                    result = errorMessage.code_4020;
+                }
             }
             if (!result && room.status == 1 && !common.containSplitStr(room.clientGroup, clientGroup)) { //有效，授权访问的情况单独判定
                 if (/^((,visitor)|(,register))+$/.test("," + room.clientGroup)) {
