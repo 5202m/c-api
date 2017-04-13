@@ -37,8 +37,23 @@ var Redirect4FXAPI = require('./redirect4FXAPI.js');
 var ZxFinanceService = require('../../service/zxFinanceService.js');
 
 /**
- * 提取24k报价数据
- * 先在缓存服务器中提取，没有则到24k链接中提取
+ * @api {get} /common/get24kPrice 提取24k报价数据
+ * @apiName get24kPrice
+ * @apiGroup common
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/get24kPrice
+ * @apiExample Example usage:
+ *  /api/common/get24kPrice
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          ...
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/get24kPrice', function(req, res) {
     var cacheClient = require('../../cache/cacheClient');
@@ -73,11 +88,29 @@ router.get('/get24kPrice', function(req, res) {
 });
 
 /**
- * 提取即时资讯或专业评论
- * @param pageNo
- * @param pageSize
- * @param lang
- * @param contentType 2:即时资讯,3:专业评论
+ * @api {get} /common/getNewsInfoList 提取即时资讯或专业评论
+ * @apiName getNewsInfoList
+ * @apiGroup common
+ *
+ * @apiParam {String} pageNo 页数
+ * @apiParam {String} pageSize 条数
+ * @apiParam {String} lang 语言
+ * @apiParam {String} contentType1 2:即时资讯,3:专业评论
+ * @apiParam {String} contentType2 2:即时资讯,3:专业评论
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/getNewsInfoList
+ * @apiExample Example usage:
+ *  /api/common/getNewsInfoList
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          ...
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/getNewsInfoList', function(req, res) {
     var pageNo = req.query["pageNo"],
@@ -118,6 +151,34 @@ router.get('/getNewsInfoList', function(req, res) {
  * @param platform
  * @param dateStr
  * @param lang
+ */
+/**
+ * @api {get} /common/getBroadStrateList 提取实盘直播
+ * @apiName getBroadStrateList
+ * @apiGroup common
+ *
+ * @apiParam {String} platform 平台，必填 pm(web24k,webui,app,pc)/fx(gwfx,uce,webui)/hx(uce,webui)
+ * @apiParam {String} dateStr 日期时间字符串，必填
+ * @apiParam {String} lang 语言，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/getBroadStrateList
+ * @apiExample Example usage:
+ *  /api/common/getBroadStrateList?platform=web24k&dateStr=&lang=
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/getBroadStrateList', function(req, res) {
     var lang = req.query["lang"],
@@ -213,7 +274,6 @@ router.get("/getCourse", function(req, res) {
     });
 });
 
-
 /**
  * @api {get} /common/getNextCourses 获取指定分析师的下次课程安排
  * @apiName getNextCourses
@@ -273,9 +333,31 @@ router.get("/getNextCourses", function(req, res) {
     });
 });
 
-
 /**
- * 备份课程表
+ * @api {get} /common/bakSyllabus 备份课程表
+ * @apiName bakSyllabus
+ * @apiGroup common
+ *
+ * @apiParam {String} date 日期字符串
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Array} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/bakSyllabus
+ * @apiExample Example usage:
+ *  /api/common/bakSyllabus?data=
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get("/bakSyllabus", function(req, res) {
     var date = req.query["date"];
@@ -319,7 +401,30 @@ router.post("/email", function(req, res) {
 });
 
 /**
- * 提取24kCFTC持仓比例数据
+ * @api {get} /common/get24kCftc 提取24kCFTC持仓比例数据
+ * @apiName get24kCftc
+ * @apiGroup common
+ *
+ * @apiParam {Number} limit 0 条数，默认只取最新的一条持仓比例数据
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Array} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/get24kCftc
+ * @apiExample Example usage:
+ *  /api/common/get24kCftc?limit=0
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/get24kCftc', function(req, res) {
     var limit = req.query['limit'] ? req.query['limit'] : 0; //默认只取最新的一条持仓比例数据
@@ -363,7 +468,28 @@ router.get('/get24kCftc', function(req, res) {
 });
 
 /**
- * 获取新闻快讯
+ * @api {get} /common/getInformation 获取新闻快讯
+ * @apiName getInformation
+ * @apiGroup common
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Array} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/getInformation
+ * @apiExample Example usage:
+ *  /api/common/getInformation
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/getInformation', function(req, res) {
     var cacheClient = require('../../cache/cacheClient');
@@ -477,7 +603,28 @@ router.get('/getLastReview', function(req, res) {
 });
 
 /**
- * 多空比例
+ * @api {get} /common/getSymbolLongShortRatios 多空比例
+ * @apiName getSymbolLongShortRatios
+ * @apiGroup common
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/getSymbolLongShortRatios
+ * @apiExample Example usage:
+ *  /api/common/getSymbolLongShortRatios
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/getSymbolLongShortRatios', function(req, res) {
     var cacheClient = require('../../cache/cacheClient');
@@ -516,7 +663,28 @@ router.get('/getSymbolLongShortRatios', function(req, res) {
 });
 
 /**
- * 未平仓品种比率
+ * @api {get} /common/getSymbolOpenPositionRatios 未平仓品种比率
+ * @apiName getSymbolOpenPositionRatios
+ * @apiGroup common
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/common/getSymbolOpenPositionRatios
+ * @apiExample Example usage:
+ *  /api/common/getSymbolOpenPositionRatios
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/getSymbolOpenPositionRatios', function(req, res) {
     var cacheClient = require('../../cache/cacheClient');

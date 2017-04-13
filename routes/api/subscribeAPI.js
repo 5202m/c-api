@@ -26,7 +26,31 @@ var SubscribeService = require('../../service/subscribeService');
 var APIUtil = require('../../util/APIUtil.js');
 
 /**
- * 发送短信
+ * @api {get} /subscribe/notice 发送订阅通知——文章发布（喊单策略、交易策略）
+ * @apiName notice
+ * @apiGroup subscribe
+ *
+ * @apiParam {String} type 类型 "ARTICLE"-文档（喊单策略、交易策略、日常行情、大行情、每日周评、金道周评）
+ * @apiParam {String} dataId 数据编号，必填.
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/subscribe/notice
+ * @apiExample Example usage:
+ *  /api/subscribe/notice?type=ARTICLE&dataId=10000756
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.post('/notice', function(req, res) {
     var loc_param = {
@@ -50,6 +74,7 @@ router.post('/notice', function(req, res) {
             res.json(APIUtil.APIResult("code_2003", null));
     }
 });
+
 /**
  * @api {get} /subscribe/getSubscribeList 查询已订阅数据
  * @apiName getSubscribeList
@@ -92,7 +117,7 @@ router.get('/getSubscribeList', function(req, res) {
     });
 });
 /**
- * @api {post} /subscribe/saveSubscribe 订阅服务
+ * @api {post} /subscribe/saveSubscribe 保存订阅服务
  * @apiName saveSubscribe
  * @apiGroup subscribe
  *

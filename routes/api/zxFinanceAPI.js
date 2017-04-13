@@ -31,7 +31,31 @@ var ApiResult = require('../../util/ApiResult.js');
 var Logger = require('../../resources/logConf').getLogger("zxFinanceAPI");
 
 /**
- * 财经数据列表
+ * @api {get} /zxFinanceData/list 财经数据列表
+ * @apiName list
+ * @apiGroup zxFinanceData
+ *
+ * @apiParam {String} releaseTime 财经日历发布时间，必填
+ * @apiParam {String} dataTypeCon 数据类型：1-外汇 2-贵金属，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/zxFinanceData/list
+ * @apiExample Example usage:
+ *  /api/zxFinanceData/list?releaseTime=2017-04-104&dataTypeCon=1
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/list', function(req, res) {
     var loc_param = {
@@ -61,7 +85,32 @@ router.get('/list', function(req, res) {
 });
 
 /**
- * 财经历史数据
+ * @api {get} /zxFinanceData/history 财经历史数据
+ * @apiName history
+ * @apiGroup zxFinanceData
+ *
+ * @apiParam {String} basicIndexId 指标编号，必填
+ * @apiParam {String} startTime 开始时间，必填
+ * @apiParam {String} endTime 结束时间，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/zxFinanceData/history
+ * @apiExample Example usage:
+ *  /api/zxFinanceData/history?basicIndexId=254&startTime=2016-12-01&endTime=2017-01-12
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/history', function(req, res) {
     var loc_param = {
@@ -93,7 +142,30 @@ router.get('/history', function(req, res) {
 });
 
 /**
- * 财经详情数据
+ * @api {get} /zxFinanceData/detail 财经详情数据
+ * @apiName detail
+ * @apiGroup zxFinanceData
+ *
+ * @apiParam {String} dataId 财经日历编号，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/zxFinanceData/detail
+ * @apiExample Example usage:
+ *  /api/zxFinanceData/detail?dataId=5703789c0cc7efb80e4bf441
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/detail', function(req, res) {
     var loc_dataId = req.query["dataId"];//财经日历编号
@@ -114,7 +186,31 @@ router.get('/detail', function(req, res) {
 });
 
 /**
- * 手动更新数据：预防异常情况
+ * @api {get} /zxFinanceData/refresh 手动更新数据：预防异常情况
+ * @apiName refresh
+ * @apiGroup zxFinanceData
+ *
+ * @apiParam {String} type 类型 event、data，必填
+ * @apiParam {String} date 日期 yyyy-MM-dd，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/zxFinanceData/refresh
+ * @apiExample Example usage:
+ *  /api/zxFinanceData/refresh?type=event&date=2017-04-11
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get('/refresh', function(req, res) {
     var loc_params = {

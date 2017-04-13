@@ -355,8 +355,9 @@ router.get("/getDefaultRoom", (req, res) => {
  * @apiName studioRegister
  * @apiGroup studio
  *
- * @apiParam {String} groupType 组别，必填 取直播间groupType值
- * @apiParam {String} userInfo
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} mobilePhone 手机号，必填
+ * @apiParam {String} clientGroup 客户组别，必填 取userInfo.clientGroup值
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -364,9 +365,10 @@ router.get("/getDefaultRoom", (req, res) => {
  * @apiSampleRequest /api/studio/studioRegister
  * @apiParamExample {json} Request-Example:
  *     {
- *       "groupType": "studio",
+ *       "clientGroup":"register",
  *       "userInfo": {
- *          "mobilePhone" : ""
+ *          "groupType": "studio",
+ *          "mobilePhone" : "13800138000"
  *       }
  *     }
  * @apiSuccessExample Success-Response:
@@ -409,6 +411,38 @@ router.post("/studioRegister", (req, res) => {
         }
     );
 });
+/**
+ * @api {post} /studio/checkMemberAndSave 检查客户信息是否存在
+ * @apiName checkMemberAndSave
+ * @apiGroup studio
+ *
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} mobilePhone 手机号
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/studio/checkMemberAndSave
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "userInfo": {
+ *          "groupType": "studio",
+ *          "mobilePhone" : "13800138000"
+ *       }
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/checkMemberAndSave", (req, res) => {
     if (!req.body["userInfo"]) {
         logger.warn("Parameters missed! Expecting parameters: ", "userInfo");

@@ -160,6 +160,34 @@ router.post('/add', function(req, res) {
     });
 });
 
+/**
+ * @api {get} /points/getChatPointsConfig 查询积分配置表
+ * @apiName getChatPointsConfig
+ * @apiGroup points
+ *
+ * @apiParam {String} groupType 组别，必填.取直播间groupType值
+ * @apiParam {String} type 类别，必填.
+ * @apiParam {String} item 项目，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/points/getChatPointsConfig
+ * @apiExample Example usage:
+ *  /api/points/getChatPointsConfig?groupType=studio&type=daily&item=daily_sign
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getChatPointsConfig", (req, res) => {
     let requires = ["groupType", "type", "item"];
     let isSatify = requires.every((name) => {
