@@ -1,5 +1,6 @@
 /*＃＃＃＃＃＃＃＃＃＃引入所需插件＃＃＃＃＃＃＃＃begin */
 var express = require('express');
+const compression = require('compression');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
@@ -17,6 +18,7 @@ app.set('view engine', 'html');
 app.engine('.html', require('ejs').__express); //两个下划线
 logConf.initConfig();
 logConf.use(app); //配置框架日志输出
+app.use(compression());
 app.use(bodyParser.json({ limit: '100mb' }));
 app.use(bodyParser.urlencoded({ limit: "100mb", extended: true, parameterLimit: 50000 }));
 app.use(cookieParser());
