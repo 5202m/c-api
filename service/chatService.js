@@ -16,6 +16,8 @@ var chatMessage = require("../message/ChatMessage");
 var baseMessage = require("../message/BaseMessage");
 var cacheClient = require("../cache/cacheClient");
 var ObjectId = require('mongoose').Types.ObjectId;
+var ApiResult = require('../util/ApiResult');
+var errorMessage = require('../util/errorMessage'); //引入errorMessage类
 
 let updateCacheClient = userInfo => {
     //设置到redis中 userId 与socketId
@@ -394,7 +396,7 @@ var chatService = {
             .exec('find', function(err, datas) {
                 if (err) {
                     logger.error('getShowTrade=>query fail:' + err);
-                    callback(ApiResult.result(ErrorMessage.code_10, null));
+                    callback(ApiResult.result(errorMessage.code_10, null));
                 } else {
                     var result = [],
                         data = null;

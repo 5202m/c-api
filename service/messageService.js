@@ -89,7 +89,7 @@ var messageService = {
      */
     findMessageList: function(userInfo, searchObj, selectSQL, selectRows, callback) {
         chatMessage.db().find(searchObj).select(selectSQL).limit(selectRows).sort({ 'publishTime': 'desc' }).exec(function(err, currList) {
-            var diffLength = selectRows - currList.length;
+            var diffLength = selectRows - (currList?currList.length:0);
             if (diffLength > 0) { //往上一年查询
                 var year = new Date().getFullYear();
                 chatMessage.db(year <= 2015 ? 2015 : year - 1).find(searchObj).select(selectSQL).limit(diffLength).sort({ 'publishTime': 'desc' }).exec(function(err, oldList) {
