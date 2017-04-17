@@ -156,7 +156,7 @@ router.get("/getMemberInfo", function(req, res) {
         });
     }
 });
- /**
+/**
  * @api {get} /chat/getAnalysts 查询分析师信息（点赞+胜率）
  * @apiName getAnalysts
  * @apiGroup chat
@@ -198,7 +198,7 @@ router.get("/getAnalysts", function(req, res) {
     }
 });
 
- /**
+/**
  * @api {post} /chat/praiseAnalyst 查询分析师信息（点赞+胜率）
  * @apiName praiseAnalyst
  * @apiGroup chat
@@ -605,8 +605,9 @@ router.post("/noticeArticle", function(req, res) {
         return;
     }
     try {
-        tradeInfoArray = JSON.parse(tradeInfoJSON);
+        articleJSON = JSON.parse(articleJSON);
     } catch (e) {
+        logger.error(e);
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
@@ -651,6 +652,7 @@ router.post("/showTradeNotice", function(req, res) {
     try {
         tradeInfoArray = JSON.parse(tradeInfoJSON);
     } catch (e) {
+        logger.error(e);
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
@@ -725,6 +727,7 @@ router.post("/modifyRuleNotice", function(req, res) {
     try {
         ruleInfo = JSON.parse(ruleInfo);
     } catch (e) {
+        logger.error(e);
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
@@ -776,6 +779,7 @@ router.post("/sendNoticeArticle", function(req, res) {
             article = JSON.parse(article);
         }
     } catch (e) {
+        logger.error(e);
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }

@@ -637,9 +637,8 @@ var chatService = {
      * @param articleJSON
      * @param opType
      */
-    noticeArticle: function(articleJSON, opType) {
+    noticeArticle: function(article, opType) {
         try {
-            var article = JSON.parse(articleJSON);
             if (article && article.platform) {
                 article.position = 5; //课堂笔记
                 article.opType = opType; //操作类型
