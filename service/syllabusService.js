@@ -1,14 +1,12 @@
 var chatSyllabus = require('../models/chatSyllabus'); //引入chatSyllabus数据模型
+var chatGroup = require('../models/chatGroup'); //引入chatGroup数据模型
 var chatSyllabusHis = require('../models/chatSyllabusHis'); //引入chatSyllabusHis数据模型
 var boUser = require('../models/boUser'); //引入boUser数据模型
 var ArticleService = require('../service/articleService'); //引入ArticleService服务类
-var userService = require('../service/userService'); //引入userService
-var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
-var constant = require('../constant/constant'); //引入constant
 var logger = require('../resources/logConf').getLogger('syllabusService'); //引入log4js
 var APIUtil = require('../util/APIUtil'); //引入API工具类js
 var Utils = require('../util/Utils'); //引入工具类js
-var common = require('../util/common'); //引入公共工具类js
+var Common = require('../util/common'); //引入公共工具类js
 var ApiResult = require('../util/ApiResult');
 var errorMessage = require('../util/errorMessage.js');
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -28,98 +26,24 @@ var syllabusService = {
      * @param today
      * @param callback
      */
-    getSyllabus: function(groupType, groupId, callback) {
+    getSyllabus: function(groupType, groupId, today, callback) {
         groupId = groupId || "";
-        var loc_dateNow = new Date();
-        var searchObj = {
-            groupType: groupType,
-            isDeleted: 0,
-            publishStart: { $lte: loc_dateNow },
-            publishEnd: { $gt: loc_dateNow }
-        };
-        var groupIdArr = null;
-        if (common.isValid(groupId)) {
-            groupIdArr = groupId.split(",");
-            searchObj.groupId = { $in: groupIdArr };
-        }
-        chatSyllabus.find(searchObj, "groupType groupId courseType studioLink courses updateDate", function(err, row) {
+        APIUtil.DBFindOne(chatSyllabus, {
+            query: {
+                groupType: groupType,
+                groupId: groupId,
+                isDeleted: 0,
+                publishStart: { $lte: today },
+                publishEnd: { $gt: today }
+            }
+        }, function(err, row) {
             if (err) {
                 logger.error("查询聊天室课程安排失败!", err);
-                callback(null);
-            } else {
-                callback(row ? ((groupIdArr && groupIdArr.length > 1) ? row : row[0]) : null);
+                callback(ApiResult.result("查询聊天室课程安排失败!", null));
+                return;
             }
+            callback(ApiResult.result(null, !row ? null : row.courses));
         });
-    },
-    /**
-     * 通过参数提取课程信息,包括课程分析师的个人信息
-     * @param params
-     */
-    getCourseInfo: function(params, outCallback) {
-        var result = { remark: '', authors: [] };
-        Async.parallel({
-                courseRemark: function(callback) {
-                    syllabusService.getSyllabus(params.groupType, params.groupId, function(rows) {
-                        var remark = '';
-                        if (rows) {
-                            var courses = rows.courses;
-                            if (courses) {
-                                courses = JSON.parse(courses);
-                                var days = courses.days,
-                                    tmArr = courses.timeBuckets,
-                                    tmObj = null;
-                                for (var i in days) {
-                                    if (days[i].day == params.day) {
-                                        for (var k in tmArr) {
-                                            tmObj = tmArr[k];
-                                            if (tmObj.startTime == params.startTime && tmObj.endTime == params.endTime) {
-                                                remark = tmObj.course[i].context;
-                                                break;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        callback(null, remark);
-                    });
-                },
-                courseAuthors: function(callback) {
-                    userService.getUserList(params.authorId, function(rows) {
-                        callback(null, rows);
-                    });
-                },
-                getPraise: function(callback) {
-                    chatPraiseService.getPraiseNum(params.authorId, constant.chatPraiseType.user, params.groupType, function(rows) {
-                        callback(null, rows);
-                    });
-                }
-            },
-            function(err, datas) {
-                if (!err) {
-                    result.remark = datas.courseRemark;
-                    var crs = datas.courseAuthors;
-                    var pre = datas.getPraise;
-                    var crow = null,
-                        praiseNum = 0;
-                    if (crs) {
-                        for (var i in crs) {
-                            crow = crs[i];
-                            if (pre) {
-                                for (var k in pre) {
-                                    if (pre[k].praiseId == crow.userNo) {
-                                        praiseNum = pre[k].praiseNum;
-                                        break;
-                                    }
-                                }
-                            }
-                            result.authors.push({ userId: crow.userNo, name: crow.userName, position: crow.position, avatar: crow.avatar, praiseNum: praiseNum });
-                        }
-                    }
-                }
-                outCallback(result);
-            });
     },
     /**
      * 查询聊天室课程安排(指定日期课程安排)
@@ -148,29 +72,8 @@ var syllabusService = {
                 return;
             }
             var loc_result = [];
-            var rowTmp = rows ? rows[0] : null;
-            if (rowTmp) {
-                var loc_courses = JSON.parse(rowTmp.courses);
-                var loc_day = today.getDay();
-                if (flag == 'S') { //获取单次课程安排
-                    loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, today, false);
-                    if ((!loc_result || loc_result.length == 0) && rows.length > 1) {
-                        rowTmp = rows[1];
-                        loc_courses = JSON.parse(rowTmp.courses);
-                        loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, rowTmp.publishStart, true);
-                    }
-                    //补充课程表信息（分析师头像）
-                    syllabusService.fillLecturerInfo(loc_result, function(courseArr) {
-                        if (strategy) {
-                            syllabusService.fillArticleIfo(groupId, courseArr, function(courseArr) {
-                                callback(ApiResult.result(null, courseArr));
-                            });
-                        } else {
-                            callback(ApiResult.result(null, courseArr));
-                        }
-                    });
-                    return;
-                } else if (flag == 'SN') { //获取下一次课程安排
+            if (rows && rows.length > 0) {
+                if (flag == 'S' || flag == 'SN') { //获取一次课程安排
                     var index = 0;
                     var isNext = false;
                     var loc_courses = null;
@@ -179,7 +82,7 @@ var syllabusService = {
                         rowTmp = rows[index];
                         loc_courses = JSON.parse(rowTmp.courses);
                         isNext = rowTmp.publishStart > today;
-                        loc_result = syllabusService.getNextCourseSingle(loc_courses, rowTmp.publishEnd, isNext ? rowTmp.publishStart : today);
+                        loc_result = syllabusService.getCourseSingle(loc_courses, rowTmp.publishEnd, isNext ? rowTmp.publishStart : today, isNext, flag == 'SN');
                         index++;
                     }
                     //补充课程表信息（分析师头像）
@@ -193,12 +96,13 @@ var syllabusService = {
                         }
                     });
                     return;
-                } else if (flag == 'D') {
-                    if (rowTmp.publishStart.getTime() <= today.getTime()) { //获取全天课程安排
+                } else if (rows[0].publishStart <= today) {
+                    var loc_courses = JSON.parse(rows[0].courses);
+                    if (flag == 'D') {
                         loc_result = syllabusService.getCourseByDay(loc_courses, today);
+                    } else if (flag == 'W') {
+                        loc_result = syllabusService.getCourseByWeek(rows[0], loc_courses);
                     }
-                } else if (flag == 'W') {
-                    loc_result = syllabusService.getCourseByWeek(rowTmp, loc_courses);
                 }
             }
             callback(ApiResult.result(null, loc_result));
@@ -278,16 +182,17 @@ var syllabusService = {
             publishEnd: syllabusObj.publishEnd.getTime()
         };
     },
+
     /**
-     * 提取下节课课程数据，此方法拷贝自拆分前版本的getCourseSingle方法。
+     * 提取下节课课程数据
      * @param coursesObj 课程表数据
      * @param publishEnd 发布结束时间
      * @param currDate   当前日期
+     * @param isNext     是否下次课程
+     * @param onlyNext   是否仅取下次课
      * @returns {*}
      */
-    getNextCourseSingle: function(coursesObj, publishEnd, currDate) {
-        var isNext = true,
-            onlyNext = true;
+    getCourseSingle: function(coursesObj, publishEnd, currDate, isNext, onlyNext) {
         if (!coursesObj || !coursesObj.days || !coursesObj.timeBuckets) {
             return [];
         }
@@ -322,76 +227,6 @@ var syllabusService = {
                         if (!onlyNext) {
                             courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, isNext || false);
                         }
-                    } else { //tmBk.startTime>currTime
-                        courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, true);
-                    }
-                    if (courseObj) {
-                        return [courseObj];
-                    }
-                }
-            }
-        }
-        //课程安排跨周，返回首次课程
-        for (i = 0; i < days.length; i++) {
-            if (days[i].status == 0) {
-                continue;
-            }
-            tmpDay = (days[i].day + 6) % 7;
-            for (k in timeBuckets) {
-                tmBk = timeBuckets[k];
-                courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, true);
-                if (courseObj) {
-                    if (!publishEnd || publishEnd.getTime() >= courseObj.date) {
-                        return [courseObj];
-                    } else {
-                        return [];
-                    }
-                }
-            }
-        }
-        return [];
-    },
-    /**
-     * 提取单节课课程数据
-     * @param coursesObj 课程表数据
-     * @param publishEnd 发布结束时间
-     * @param currDate   当前日期
-     * @param isNext     是否下次课程
-     * @returns {*}
-     */
-    getCourseSingle: function(coursesObj, publishEnd, currDate, isNext) {
-        if (!coursesObj || !coursesObj.days || !coursesObj.timeBuckets) {
-            return [];
-        }
-        var days = coursesObj.days,
-            timeBuckets = coursesObj.timeBuckets;
-        var currDay = (currDate.getDay() + 6) % 7;
-        var currTime = Utils.dateFormat(currDate, 'hh:mm');
-        var tmBk = null;
-        var courseObj = null;
-        var i = 0,
-            k = 0,
-            tmpDay = 0;
-        for (i = 0; i < days.length; i++) {
-            if (days[i].status == 0) {
-                continue;
-            }
-            tmpDay = (days[i].day + 6) % 7;
-            if (tmpDay > currDay) {
-                for (k in timeBuckets) {
-                    tmBk = timeBuckets[k];
-                    courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, true);
-                    if (courseObj) {
-                        return [courseObj];
-                    }
-                }
-            } else if (tmpDay == currDay) {
-                for (k in timeBuckets) {
-                    tmBk = timeBuckets[k];
-                    if (tmBk.endTime <= currTime) {
-                        continue;
-                    } else if (tmBk.startTime <= currTime && tmBk.endTime > currTime) {
-                        courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, isNext || false);
                     } else { //tmBk.startTime>currTime
                         courseObj = syllabusService.getCourseObj(coursesObj, i, k, currDate, true);
                     }
@@ -463,7 +298,7 @@ var syllabusService = {
     isValidCourse: function(course) {
         return course &&
             course.status != 0 &&
-            !common.isBlank(course.lecturerId) &&
+            !Common.isBlank(course.lecturerId) &&
             course.courseType != 2;
     },
     /**
@@ -487,19 +322,27 @@ var syllabusService = {
             return;
         }
         syllabusService.getLecturerInfoMap(userNoArr, function(lecturerMap) {
-            var lecturerTmp, avatarArr, courseTmp;
+            var lecturerTmp, avatarArr, courseTmp, userNameArr, positionArr, intaroductionArr, tagArr;
             for (var i = 0, lenI = !courseArr ? 0 : courseArr.length; i < lenI; i++) {
                 courseTmp = courseArr[i];
                 if (!courseTmp) {
                     continue;
                 }
-                avatarArr = [];
+                avatarArr = [], userNameArr = [], positionArr = [], intaroductionArr = [], tagArr = [];
                 for (var j = 0, lenJ = courseTmp.userNoArr.length; j < lenJ; j++) {
                     lecturerTmp = lecturerMap[courseTmp.userNoArr[j]];
                     avatarArr.push((lecturerTmp && lecturerTmp.avatar) ? lecturerTmp.avatar : "");
+                    userNameArr.push((lecturerTmp && lecturerTmp.userName) ? lecturerTmp.userName : "");
+                    positionArr.push((lecturerTmp && lecturerTmp.position) ? lecturerTmp.position : "");
+                    intaroductionArr.push((lecturerTmp && lecturerTmp.introduction) ? lecturerTmp.introduction : "");
+                    tagArr.push((lecturerTmp && lecturerTmp.tag) ? lecturerTmp.tag : "");
                 }
                 delete courseTmp["userNoArr"];
                 courseTmp.avatar = avatarArr.join(",");
+                courseTmp.userName = userNameArr.join(",");
+                courseTmp.position = positionArr.join(",");
+                courseTmp.introduction = intaroductionArr.join(",");
+                courseTmp.tag = tagArr.join(",");
             }
             callback(courseArr);
         });
@@ -518,11 +361,14 @@ var syllabusService = {
         }
         var course = courseArr[0];
         var tagRegAll = /<[^>]+>|<\/[^>]+>/g;
-        ArticleService.findArticle("trade_strategy_article", groupId, false, function(article) {
+        ArticleService.findArticle("class_note", groupId, "trading_strategy", false, function(article) {
             if (article && article.detailList && article.detailList.length > 0) {
                 var articleDetail = article.detailList[0];
                 course.strategyTitle = articleDetail.title || "";
                 course.strategyContent = (articleDetail.content || "").replace(tagRegAll, "");
+            } else {
+                course.strategyTitle = "";
+                course.strategyContent = "";
             }
             callback(courseArr);
         });
@@ -677,7 +523,30 @@ var syllabusService = {
                     }
                 }
             }
-            callback(loc_result);
+            //查询房间名称信息
+            APIUtil.DBFind(chatGroup, {
+                query: {
+                    valid: 1,
+                    status: { $ne: "0" },
+                    _id: { $in: Object.keys(loc_groupMap) }
+                },
+                fieldIn: ["_id", "groupType", "name"]
+            }, function(err, rooms) {
+                var roomsMap = {};
+                if (err) {
+                    logger.error("查询聊天室房间名称失败!", err);
+                } else if (rooms) {
+                    for (var i = 0, lenI = rooms.length; i < lenI; i++) {
+                        roomsMap[rooms[i]._id] = rooms[i].name || "";
+                    }
+                }
+                var courseTmp = null;
+                for (var i = 0, lenI = loc_result.length; i < lenI; i++) {
+                    courseTmp = loc_result[i];
+                    courseTmp.groupName = roomsMap[courseTmp.groupId] || "";
+                }
+                callback(loc_result);
+            });
         });
     },
 
@@ -746,9 +615,10 @@ var syllabusService = {
      * @param groupType
      * @param groupId
      * @param lecturerIds
+     * @param hasCurr
      * @param callback
      */
-    getNextCources: function(date, groupType, groupId, lecturerIds, callback) {
+    getNextCources: function(date, groupType, groupId, lecturerIds, hasCurr, callback) {
         Async.parallel({
                 lecturers: function(callbackTmp) {
                     syllabusService.getLecturerInfoMap(lecturerIds, function(analystMap) {
@@ -779,7 +649,7 @@ var syllabusService = {
                         var row = rows[0];
                         try {
                             var courses = JSON.parse(row.courses);
-                            result = syllabusService.getNextCourseMap(courses, date);
+                            result = syllabusService.getNextCourseMap(courses, date, hasCurr);
                         } catch (e) {}
                         callbackTmp(null, result);
                     });
@@ -813,10 +683,14 @@ var syllabusService = {
                             resultTmp.lecturer = courseTmp.lecturer;
                             resultTmp.courseType = courseTmp.courseType;
                             resultTmp.title = courseTmp.title;
+                            resultTmp.isNext = courseTmp.isNext;
                         }
                         if (lecturerMap.hasOwnProperty(lecturerIdTmp)) {
                             resultTmp.avatar = lecturerMap[lecturerIdTmp].avatar;
                             resultTmp.lecturer = lecturerMap[lecturerIdTmp].userName;
+                            resultTmp.tag = lecturerMap[lecturerIdTmp].tag || '';
+                            resultTmp.introduction = lecturerMap[lecturerIdTmp].introduction || '';
+                            resultTmp.position = lecturerMap[lecturerIdTmp].position || '';
                         }
                         result.push(resultTmp);
                     }
@@ -846,7 +720,7 @@ var syllabusService = {
             'userNo': { $in: lecturerIds },
             'status': 0,
             'valid': 1
-        }, "_id userNo userName avatar", function(err, rows) {
+        }, "_id userNo userName avatar tag introduction position", function(err, rows) {
             if (err || !rows || rows.length == 0) {
                 callback(result);
                 return;
@@ -864,9 +738,10 @@ var syllabusService = {
      * 将课程表转化为分析师为key，课程为val的map
      * @param coursesObj
      * @param date
+     * @param hasCurr
      * @returns {*}
      */
-    getNextCourseMap: function(coursesObj, date) {
+    getNextCourseMap: function(coursesObj, date, hasCurr) {
         var result = {};
         if (!coursesObj || !coursesObj.days || !coursesObj.timeBuckets) {
             return result;
@@ -889,7 +764,9 @@ var syllabusService = {
             loc_courseDate = loc_courseDate.getTime() + (tmpDay - currDay) * 86400000;
             for (k in timeBuckets) {
                 tmBk = timeBuckets[k];
-                if (tmpDay == currDay && tmBk.startTime <= currTime) {
+                if (tmpDay == currDay &&
+                    (tmBk.endTime <= currTime ||
+                        (tmBk.startTime <= currTime && !hasCurr))) {
                     continue;
                 }
                 courseObj = tmBk.course[i];
@@ -907,7 +784,8 @@ var syllabusService = {
                                 lecturerId: idTmp,
                                 lecturer: names[j],
                                 courseType: courseObj.courseType,
-                                title: courseObj.title
+                                title: courseObj.title,
+                                isNext: tmpDay > currDay || tmBk.startTime > currTime
                             };
                         }
                     }
@@ -915,40 +793,6 @@ var syllabusService = {
             }
         }
         return result;
-    },
-
-    /**
-     * 查询聊天室课程安排历史记录
-     * @param groupType
-     * @param groupId
-     * @param date
-     * @param callback
-     */
-    getSyllabusHis: function(groupType, groupId, date, callback) {
-        groupId = groupId || "";
-        var timezoneOffset = new Date().getTimezoneOffset() * 60000;
-        date = date === "null" ? null : date;
-        date = date === "false" ? null : date;
-        date = date === "undefined" ? null : date;
-        if (!date) {
-            date = new Date().getTime();
-            date = new Date(date - (date % 86400000) - 86400000 + timezoneOffset);
-        } else {
-            date = new Date(date);
-            date = new Date(date - (date % 86400000) + timezoneOffset);
-        }
-        chatSyllabusHis.find({
-            groupType: groupType,
-            groupId: groupId,
-            date: date
-        }).sort({ startTime: 1 }).exec("find", function(err, rows) {
-            if (err) {
-                logger.error("查询聊天室课程安排历史记录失败!", err);
-                callback(null);
-            } else {
-                callback(rows);
-            }
-        });
     }
 };
 //导出服务类
