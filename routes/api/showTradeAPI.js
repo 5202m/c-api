@@ -73,9 +73,10 @@ router.get("/getShowTrade", (req, res) => {
         }
     );
 });
+
 /**
  * @api {get} /showTrade/getShowTradeList 获取指定条数晒单数据
- * @apiName getShowTrade
+ * @apiName getShowTradeList
  * @apiGroup showTrade
  *
  * @apiParam {String} groupType 成员类型，必需. 取直播间groupType值
@@ -153,6 +154,7 @@ router.get("/getShowTradeList", (req, res) => {
         }
     );
 });
+
 /**
  * @api {post} /showTrade/addShowTrade 添加晒单
  * @apiName addShowTrade
@@ -321,24 +323,29 @@ router.get("/getShowTradeByIds", (req, res) => {
  *
  * @apiSampleRequest /api/showTrade/addComments
  * @apiParamExample {json} Request-Example:
- * {
- * 	"id": "58da1bb99e391112382588a0",
- * 	"refId": "",
- * 	"content": "大丰收",
- * 	"userInfo": {
- * 		"nickname": "匿名_cfxu"
- * 		"mobilePhone": "18111112222",
- * 		"avatar": ""
- * 	},
- * 	"refId": ""
- * }
+ *     {
+ *       "groupType": "studio",
+ *       "userNo": "sxunppxunpxix",
+ *       "avatar": "http://xxx.xxx.xxx/xx.jpg",
+ *       "userName": "beatp",
+ *       "telePhone": "13800138000",
+ *       "tradeImg": "http://xxx.xxx.xxx/xx.jpg",
+ *       "remark": "小赚了一笔",
+ *       "Ip": "192.168.35.91",
+ *       "title": "小赚了一笔",
+ *       "tradeType": 2
+ *     }
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     { isOK: true }
- * 
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 200 OK
- *     { isOK: false, msg: '评论失败' }
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
  * @apiUse ParametersMissedError
  */
 router.post("/addComments", (req, res) => {

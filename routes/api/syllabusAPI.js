@@ -80,10 +80,10 @@ router.get("/getSyllabus", (req, res) => {
  * @apiGroup syllabus
  *
  * @apiParam {String} groupType 组别，必填. 取直播间groupType值
- * @apiParam {String} groupId 房间Id，取直播间userInfo.groupId值
- * @apiParam {String} startTime 开始时间
- * @apiParam {String} endTime 结束时间
- * @apiParam {String} authorId 分析师Id
+ * @apiParam {String} groupId 房间Id，必填 取直播间userInfo.groupId值
+ * @apiParam {String} startTime 开始时间，必填
+ * @apiParam {String} endTime 结束时间，必填
+ * @apiParam {String} authorId 分析师Id，必填
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -129,6 +129,35 @@ router.get("/getCourseInfo", (req, res) => {
         }
     );
 });
+
+/**
+ * @api {get} /syllabus/getSyllabusHis 查询聊天室课程安排历史记录
+ * @apiName getSyllabusHis
+ * @apiGroup syllabus
+ *
+ * @apiParam {String} groupType 组别，必填. 取userInfo.groupType值
+ * @apiParam {String} groupId 房间Id  取userInfo.groupId值
+ * @apiParam {String} date 日期
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/syllabus/getSyllabusHis
+ * @apiExample Example usage:
+ *  /api/syllabus/getSyllabusHis?groupType=studio&groupId=studio_teach&date=
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getSyllabusHis", (req, res) => {
     if (common.isBlank(req.query["groupType"])) {
         logger.warn("Parameters missed! Expecting parameter 'groupType': ", req.query["groupType"]);

@@ -27,6 +27,37 @@ let studioService = require('../../service/studioService');
 let common = require('../../util/common');
 let APIUtil = require('../../util/APIUtil.js');
 
+/**
+ * @api {get} /studio/getIndexLoadData 提取主页需要加载的数据
+ * @apiName getIndexLoadData
+ * @apiGroup studio
+ *
+ * @apiParam {String} groupType 组别，必填.
+ * @apiParam {Boolean} isGetRoomList 是否加载房间
+ * @apiParam {Boolean} isGetSyllabus 是否加载课程表数据
+ * @apiParam {Boolean} isGetMember 是否加载客户信息
+ * @apiParam {String} userId 用户ID
+ * @apiParam {String} groupId 房间ID，取userInfo.groupId值
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/studio/getIndexLoadData
+ * @apiExample Example usage:
+ *  /api/studio/getIndexLoadData?groupType=studio&isGetRoomList=true&isGetSyllabus=true&isGetMember=true&userId=sxunppxunpxix&groupId=studio_teach
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getIndexLoadData", (req, res) => {
     let requires = ["groupType"]; //, "groupId"
     let isSatify = requires.every((name) => {
@@ -324,8 +355,9 @@ router.get("/getDefaultRoom", (req, res) => {
  * @apiName studioRegister
  * @apiGroup studio
  *
- * @apiParam {String} groupType 组别，必填 取直播间groupType值
- * @apiParam {String} userInfo
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} mobilePhone 手机号，必填
+ * @apiParam {String} clientGroup 客户组别，必填 取userInfo.clientGroup值
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -333,9 +365,10 @@ router.get("/getDefaultRoom", (req, res) => {
  * @apiSampleRequest /api/studio/studioRegister
  * @apiParamExample {json} Request-Example:
  *     {
- *       "groupType": "studio",
+ *       "clientGroup":"register",
  *       "userInfo": {
- *          "mobilePhone" : ""
+ *          "groupType": "studio",
+ *          "mobilePhone" : "13800138000"
  *       }
  *     }
  * @apiSuccessExample Success-Response:
@@ -378,6 +411,38 @@ router.post("/studioRegister", (req, res) => {
         }
     );
 });
+/**
+ * @api {post} /studio/checkMemberAndSave 检查客户信息是否存在
+ * @apiName checkMemberAndSave
+ * @apiGroup studio
+ *
+ * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
+ * @apiParam {String} mobilePhone 手机号
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/studio/checkMemberAndSave
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "userInfo": {
+ *          "groupType": "studio",
+ *          "mobilePhone" : "13800138000"
+ *       }
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/checkMemberAndSave", (req, res) => {
     if (!req.body["userInfo"]) {
         logger.warn("Parameters missed! Expecting parameters: ", "userInfo");
