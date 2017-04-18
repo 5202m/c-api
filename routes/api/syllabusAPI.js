@@ -56,7 +56,7 @@ let APIUtil = require('../../util/APIUtil.js');
  * @apiUse ParametersMissedError
  */
 router.get("/getSyllabus", (req, res) => {
-    let requires = ["groupType", "today"];
+    let requires = ["groupType"];
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
@@ -75,7 +75,7 @@ router.get("/getSyllabus", (req, res) => {
 });
 
 /**
- * @api {get} /syllabus/getCourseInfo 通过参数提取课程信息,包括课程分析师的个人信息
+ * @api {get} /syllabus/getCourseInfo 获取指定分析师在指定时间内的课程信息，返回信息包括课程分析师的个人信息
  * @apiName getCourseInfo
  * @apiGroup syllabus
  *
