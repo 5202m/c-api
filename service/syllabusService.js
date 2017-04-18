@@ -26,8 +26,9 @@ var syllabusService = {
      * @param today
      * @param callback
      */
-    getSyllabus: function(groupType, groupId, today, callback) {
+    getSyllabus: function(groupType, groupId, callback) {
         groupId = groupId || "";
+        let today = new Date();
         APIUtil.DBFindOne(chatSyllabus, {
             query: {
                 groupType: groupType,
