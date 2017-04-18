@@ -9,7 +9,7 @@ var constant = require('../constant/constant');
 var logger = require('../resources/logConf').getLogger('syllabusService'); //引入log4js
 var APIUtil = require('../util/APIUtil'); //引入API工具类js
 var Utils = require('../util/Utils'); //引入工具类js
-var Common = require('../util/common'); //引入公共工具类js
+var Common = common = require('../util/common'); //引入公共工具类js
 var ApiResult = require('../util/ApiResult');
 var errorMessage = require('../util/errorMessage.js');
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -31,24 +31,28 @@ var syllabusService = {
      */
     getSyllabus: function(groupType, groupId, callback) {
         groupId = groupId || "";
-        let today = new Date();
-        APIUtil.DBFindOne(chatSyllabus, {
-            query: {
-                groupType: groupType,
-                groupId: groupId,
-                isDeleted: 0,
-                publishStart: { $lte: today },
-                publishEnd: { $gt: today }
-            }
-        }, function(err, row) {
+        var loc_dateNow = new Date();
+        var searchObj = {
+            groupType: groupType,
+            isDeleted: 0,
+            publishStart: { $lte: loc_dateNow },
+            publishEnd: { $gt: loc_dateNow }
+        };
+        var groupIdArr = null;
+        if (common.isValid(groupId)) {
+            groupIdArr = groupId.split(",");
+            searchObj.groupId = { $in: groupIdArr };
+        }
+        chatSyllabus.find(searchObj, "groupType groupId courseType studioLink courses updateDate", function(err, row) {
             if (err) {
                 logger.error("查询聊天室课程安排失败!", err);
-                callback(ApiResult.result("查询聊天室课程安排失败!", null));
-                return;
+                callback(null);
+            } else {
+                callback(row ? ((groupIdArr && groupIdArr.length > 1) ? row : row[0]) : null);
             }
-            callback(ApiResult.result(null, !row ? null : row.courses));
         });
     },
+
     /**
      * 通过参数提取课程信息,包括课程分析师的个人信息
      * @param params
