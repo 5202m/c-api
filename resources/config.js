@@ -21,9 +21,9 @@ var config = {
         hx: 'http://192.168.75.27:4467/SMS_Channel_Send.ucs?phone=${phone}&content=${content}&catalog=others&platform=HX'
     },
     utm: {
-        smsUrl: "http://testweboa.gwfx.com:8070/das_web/smsTemplate/send", //http://dmp.gwghk.com/smsTemplate/send
-        emailUrl: "http://testweboa.gwfx.com:8070/das_web/emailTemplate/send", //http://dmp.gwghk.com/emailTemplate/send
-        cstGroupUrl: "http://testweboa.gwfx.com:8070/das_web/customerGroup/updateCustomer", //http://dmp.gwghk.com/customerGroup/updateCustomer
+        smsUrl: "http://192.168.35.222:8070/das_web/smsTemplate/send", //http://dmp.gwghk.com/smsTemplate/send
+        emailUrl: "http://192.168.35.222:8070/das_web/emailTemplate/send", //http://dmp.gwghk.com/emailTemplate/send
+        cstGroupUrl: "http://192.168.35.222:8070/das_web/customerGroup/updateCustomer", //http://dmp.gwghk.com/customerGroup/updateCustomer
         studio: {
             sid: "fa573c78eaa8402cb6c84dabfcce7159",
             token: "8867af2616da47d7927ff0df7ea60669"

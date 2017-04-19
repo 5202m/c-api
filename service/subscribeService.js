@@ -201,36 +201,6 @@ var subscribeService = {
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
-                attachDataArr = data.remark;
-                if(attachDataArr){
-                    try{
-                        attachDataArr = JSON.parse(attachDataArr);
-                    }catch(e){
-                    }
-                }
-                if(attachDataArr){
-                    templateCode = "ShoutSingleStrategy";
-                    templateParam = {
-                        time : common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
-                        teacherName : data.authName,
-                        typeLabel : data.tag == "resting_order" ? "挂单" : "喊单",
-                        content : data.content,
-                        shoutSingleList : []
-                    };
-                    //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
-                    for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
-                        attachData = attachDataArr[i];
-                        templateParam.shoutSingleList.push({
-                            name : attachData.name,
-                            trend : attachData.longshort == "long" ? "看涨" : "看跌",
-                            entryPoint : attachData.point,
-                            stopPoint : attachData.loss,
-                            profitPoint : attachData.profit
-                        });
-                    }
-                }
-                break;
-
             case subscribeService.subscribeType.strategy :
                 attachDataArr = data.remark;
                 if(attachDataArr){
@@ -241,19 +211,28 @@ var subscribeService = {
                 }
                 if(attachDataArr){
                     templateCode = "TradingStrategy";
+                    var tagMap = {"trading_strategy":"交易策略", "shout_single":"喊单", "resting_order":"挂单"};
                     templateParam = {
                         time : common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
-                        teacherName : data.authName,
+                        authId : data.authId,
+                        authName : data.authName,
+                        tag : data.tag,
+                        tagLabel :  tagMap[data.tag] || "",
                         content : data.content,
-                        varietyList : []
+                        dataList : []
                     };
-                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456","drag_level":"123456"}
+                    //[{"symbol":"AUDUSD","name":"澳元美元","upordown":"up","open":"1","loss":"2","profit":"3","description":"test"}]
                     for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
-                        templateParam.varietyList.push({
-                            variety : attachData.name,
-                            support : attachData.support_level,
-                            drag    : attachData.drag_level
+                        templateParam.dataList.push({
+                            symbol         : attachData.symbol || "",
+                            symbolLabel    : attachData.name || "",
+                            direction      : attachData.upordown || "",
+                            directionLabel : attachData.upordown == "down" ? "看跌" : "看涨",
+                            open           : attachData.open || "",
+                            profit         : attachData.profit || "",
+                            loss           : attachData.loss || "",
+                            description    : attachData.description || ""
                         });
                     }
                 }
@@ -313,34 +292,6 @@ var subscribeService = {
                 break;
 
             case subscribeService.subscribeType.shoutTrade :
-                attachDataArr = data.remark;
-                if(attachDataArr){
-                    try{
-                        attachDataArr = JSON.parse(attachDataArr);
-                    }catch(e){
-                    }
-                }
-                if(attachDataArr && attachDataArr.length > 0){
-                    templateCode = "ShoutSingleStrategy";
-                    templateParam = {
-                        teacherName : data.authName,
-                        typeLabel : data.tag == "resting_order" ? "挂单" : "喊单",
-                        shoutSingleList : []
-                    };
-                    //{"symbol":"AUDUSD","name":"澳元美元","longshort":"long","point":"12","profit":"13","loss":"11"}
-                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
-                        attachData = attachDataArr[i];
-                        templateParam.shoutSingleList.push({
-                            name : attachData.name,
-                            trend : attachData.longshort == "long" ? "看涨" : "看跌",
-                            entryPoint : attachData.point,
-                            stopPoint : attachData.loss,
-                            profitPoint : attachData.profit
-                        });
-                    }
-                }
-                break;
-
             case subscribeService.subscribeType.strategy :
                 attachDataArr = data.remark;
                 if(attachDataArr){
@@ -349,19 +300,30 @@ var subscribeService = {
                     }catch(e){
                     }
                 }
-                if(attachDataArr && attachDataArr.length > 0){
+                if(attachDataArr){
                     templateCode = "TradingStrategy";
+                    var tagMap = {"trading_strategy":"交易策略", "shout_single":"喊单", "resting_order":"挂单"};
                     templateParam = {
-                        teacherName : data.authName,
-                        varietyList : []
+                        time : Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                        authId : data.authId,
+                        authName : data.authName,
+                        tag : data.tag,
+                        tagLabel :  tagMap[data.tag] || "",
+                        content : data.content,
+                        dataList : []
                     };
-                    //{"symbol":"USDJPY","name":"美元日元","support_level":"123456","drag_level":"123456"}
-                    for(var i = 0, lenI = attachDataArr.length; i < lenI; i++){
+                    //[{"symbol":"AUDUSD","name":"澳元美元","upordown":"up","open":"1","loss":"2","profit":"3","description":"test"}]
+                    for(var i = 0, lenI = !attachDataArr ? 0 : attachDataArr.length; i < lenI; i++){
                         attachData = attachDataArr[i];
-                        templateParam.varietyList.push({
-                            variety : attachData.name,
-                            support : attachData.support_level,
-                            drag    : attachData.drag_level
+                        templateParam.dataList.push({
+                            symbol         : attachData.symbol || "",
+                            symbolLabel    : attachData.name || "",
+                            direction      : attachData.upordown || "",
+                            directionLabel : attachData.upordown == "down" ? "看跌" : "看涨",
+                            open           : attachData.open || "",
+                            profit         : attachData.profit || "",
+                            loss           : attachData.loss || "",
+                            description    : attachData.description || ""
                         });
                     }
                 }
@@ -729,7 +691,7 @@ var subscribeService = {
             "valid": 1,
             "status": 1,
             "loginPlatform.chatUserGroup._id" : groupType
-        }, "loginPlatform.chatUserGroup.$.email", function(err, row){
+        }, "loginPlatform.chatUserGroup.$.email", function(err, row){console.log('saveSubscribe4UTM---',err);
             if(err){
                 logger.error("<<saveSubscribe4UTM:提取用户邮箱失败，[errMessage:%s]", err);
                 callback({isOK : false, msg : "提取用户邮箱失败！"});
