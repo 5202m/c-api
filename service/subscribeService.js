@@ -691,7 +691,7 @@ var subscribeService = {
             "valid": 1,
             "status": 1,
             "loginPlatform.chatUserGroup._id" : groupType
-        }, "loginPlatform.chatUserGroup.$.email", function(err, row){console.log('saveSubscribe4UTM---',err);
+        }, "loginPlatform.chatUserGroup.$.email", function(err, row){
             if(err){
                 logger.error("<<saveSubscribe4UTM:提取用户邮箱失败，[errMessage:%s]", err);
                 callback({isOK : false, msg : "提取用户邮箱失败！"});
