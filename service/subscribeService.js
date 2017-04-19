@@ -499,7 +499,7 @@ var subscribeService = {
             startDate : {$lte : now},
             endDate : {$gt : now}
         };
-        ChatSubscribe.find(searchObj,"type analyst noticeType startDate endDate point",function(err, result){
+        ChatSubscribe.find(searchObj,"type analyst noticeType startDate endDate point createDate",function(err, result){
             if(err){
                 logger.error("查询数据失败! >>getSubscribeList:", err);
                 callback({isOK: false, msg: '查询数据失败！'});
