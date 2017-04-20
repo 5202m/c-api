@@ -2,4 +2,6 @@
 /logs
 /.idea
 /.idea
-/test/ToolTest.js
+/npm-debug.log
+/apidoc/
+/.vscode

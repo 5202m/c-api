@@ -37,8 +37,8 @@ var common = require('../../util/common');
 var logger = require("../../resources/logConf").getLogger("chatAPI");
 var errorMessage = require('../../util/errorMessage.js');
 var chatService = require('../../service/chatService');
-var chatPointsService = require('../../service/chatPointsService');
 var userService = require('../../service/userService');
+let chatPointsService = require('../../service/chatPointsService');
 var ApiResult = require('../../util/ApiResult');
 let APIUtil = require('../../util/APIUtil'); //引入API工具类js
 
@@ -157,7 +157,34 @@ router.get("/getMemberInfo", function(req, res) {
     }
 });
 /**
- * 查询分析师信息（点赞+胜率）
+ * @api {get} /chat/getAnalysts 查询分析师信息（点赞+胜率）
+ * @apiName getAnalysts
+ * @apiGroup chat
+ *
+ * @apiParam {String} platform 平台类型类型，必需。pm是"studio"；fx是"fxstudio"；hx是"hxstudio"。
+ * @apiParam {String} analystIds 分析师编号列表，英文逗号分隔，必需。比如"andrew"代表伦老师; "sunman_chu"代表朱老师。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/getAnalysts
+ * @apiExample Example usage:
+ *  /api/chat/getAnalysts?platform=studio&analystIds=andrew
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * [{
+ * 		"userNo": "andrew",
+ * 		"userName": "伦老师",
+ * 		"position": "金道研究院",
+ * 		"avatar": "http://192.168.35.91:8090/upload/pic/header/chat/201508/20150817140000_analyst1.png",
+ * 		"introduction": "",
+ * 		"wechatCode": "",
+ * 		"winRate": "79.60%",
+ * 		"praise": 0
+ * 	}
+ * ]
+ *
+ * @apiUse ParametersMissedError
  */
 router.get("/getAnalysts", function(req, res) {
     var platform = req.query["platform"];
@@ -172,7 +199,28 @@ router.get("/getAnalysts", function(req, res) {
 });
 
 /**
- * 分析师点赞
+ * @api {post} /chat/praiseAnalyst 分析师点赞
+ * @apiName praiseAnalyst
+ * @apiGroup chat
+ *
+ * @apiParam {String} platform 平台类型类型，必需。pm是"studio"；fx是"fxstudio"；hx是"hxstudio"。
+ * @apiParam {String} analystId 分析师编号，必需。比如"andrew"代表伦老师; "sunman_chu"代表朱老师。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/praiseAnalyst
+ * @apiExample Example usage:
+ *  /api/chat/praiseAnalyst?platform=studio&analystId=andrew
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ * 	"isOK": true,
+ * 	"msg": "",
+ * 	"num": 1
+ * }
+ *
+ * @apiUse ParametersMissedError
  */
 router.post("/praiseAnalyst", function(req, res) {
     var platform = req.body["platform"] || req.query["platform"];
@@ -187,7 +235,31 @@ router.post("/praiseAnalyst", function(req, res) {
 });
 
 /**
- * 分析师晒单
+ * @api {get} /chat/getShowTrade 分析师晒单
+ * @apiName getShowTrade
+ * @apiGroup chat
+ *
+ * @apiParam {String} platform 成员类型，必需
+ * @apiParam {String} userId 分析师ID，必需
+ * @apiParam {Number} tradeType 晒单类型，1 分析师晒单，2 客户晒单
+ * @apiParam {Number} onlyHis 仅查询已平仓的晒单，1 是， 0 否
+ * @apiParam {Number} num 条数
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/getShowTrade
+ * @apiExample Example usage:
+ *  /api/chat/getShowTrade?platform=studio&userId=Eugene_ana&tradeType=1&onlyHis=0&num=4
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {}
+ * }
+ *
+ * @apiUse ParametersMissedError
  */
 router.get("/getShowTrade", function(req, res) {
     var params = {
@@ -245,7 +317,34 @@ router.get("/getRoomOnlineTotalNum", function(req, res) {
         res.json(ApiResult.result(null, data));
     });
 });
-
+/**
+ * @api {post} /chat/checkChatPraise 检查客户是否已经点赞
+ * @apiName checkChatPraise
+ * @apiGroup chat
+ *
+ * @apiParam {String} clientId 用户ID，必需
+ * @apiParam {String} praiseId 点赞对象ID，必需
+ * @apiParam {String} fromPlatform 成员类型，必需 直播间groupType值 studio/fxstudio/hxstudio
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data 返回的数据
+ *
+ * @apiSampleRequest /api/chat/checkChatPraise
+ * @apiExample {json} Request-Example:
+ *  {clientId : 'sxunppxunpxix',
+ *      praiseId : 'Eugene_ana',
+ *      fromPlatform : 'studio'}
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/checkChatPraise", function(req, res) {
     var clientId = req.body.clientId,
         praiseId = req.body.praiseId,
@@ -258,7 +357,33 @@ router.post("/checkChatPraise", function(req, res) {
         });
     }
 });
-
+/**
+ * @api {post} /chat/acceptMsg 审批聊天消息
+ * @apiName acceptMsg
+ * @apiGroup chat
+ *
+ * @apiParam {String} fromUser 发送用户
+ * @apiParam {String} content 消息内容
+ * @apiParam {String} uiId 消息ID
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/removeMsg
+ * @apiParamExample {json} Request-Example:
+ *     {fromUser: "",
+ *      content: ""，
+ *      uiId: ""}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/acceptMsg", function(req, res) {
     let requires = ["fromUser", "content", "uiId"];
     let isSatify = requires.every(name => {
@@ -276,7 +401,31 @@ router.post("/acceptMsg", function(req, res) {
         res.json(ApiResult.result(e, false));
     }
 });
-
+/**
+ * @api {post} /chat/removeMsg 移除聊天消息
+ * @apiName removeMsg
+ * @apiGroup chat
+ *
+ * @apiParam {String} groupId 分组ID列表
+ * @apiParam {String} msgIds 消息ID列表，逗号分隔
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/removeMsg
+ * @apiParamExample {json} Request-Example:
+ *     {groupId: "studio_teach",
+ *      msgIds: "1489470593313_773839992"}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.post("/removeMsg", function(req, res) {
     let requires = ["groupId", "msgIds"];
     let isSatify = requires.every(name => {
@@ -456,8 +605,9 @@ router.post("/noticeArticle", function(req, res) {
         return;
     }
     try {
-        tradeInfoArray = JSON.parse(tradeInfoJSON);
+        articleJSON = JSON.parse(articleJSON);
     } catch (e) {
+        logger.error(e);
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
@@ -502,6 +652,7 @@ router.post("/showTradeNotice", function(req, res) {
     try {
         tradeInfoArray = JSON.parse(tradeInfoJSON);
     } catch (e) {
+        logger.error(e);
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
@@ -576,6 +727,7 @@ router.post("/modifyRuleNotice", function(req, res) {
     try {
         ruleInfo = JSON.parse(ruleInfo);
     } catch (e) {
+        logger.error(e);
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }
@@ -586,7 +738,7 @@ router.post("/modifyRuleNotice", function(req, res) {
     res.json(ApiResult.result(null, { isOK: true }));
 });
 /**
- * @api {post} /chat/sendNoticeArticle 修改规则
+ * @api {post} /chat/sendNoticeArticle 发送推送通知
  * @apiName sendNoticeArticle
  * @apiGroup chat
  *
@@ -627,6 +779,7 @@ router.post("/sendNoticeArticle", function(req, res) {
             article = JSON.parse(article);
         }
     } catch (e) {
+        logger.error(e);
         res.json(APIUtil.APIResult("code_10", null));
         return;
     }

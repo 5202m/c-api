@@ -18,6 +18,7 @@ var baseApiService = require('./baseApiService'); //引入baseApiService
 var chatPraiseService = require('./chatPraiseService'); //引入chatPraiseService
 var clientTrainService = require('./clientTrainService'); //引入clientTrainService
 var showTradeService = require('./showTradeService'); //引入showTradeService
+let Deferred = common.Deferred;
 /**
  * 定义直播服务类
  * @type {{}}
@@ -140,7 +141,8 @@ var studioService = {
                 defTemplate: 1,
                 roomType: 1,
                 defaultAnalyst: 1,
-                defaultCS: 1
+                defaultCS: 1,
+                logo: 1
             })
             .sort({
                 'sequence': 'asc'
@@ -198,7 +200,12 @@ var studioService = {
     /**
      * 检查用户组权限
      */
-    checkGroupAuth: function(roomType, groupId, clientGroup, userId, callback) {
+    checkGroupAuth: function(params) {
+        let roomType = params.roomType,
+            groupId = params.groupId,
+            clientGroup = params.clientGroup,
+            userId = params.userId;
+        let deferred = new Deferred();
         var searchObj = { valid: 1 };
         if (roomType) {
             searchObj.roomType = roomType;
@@ -220,9 +227,11 @@ var studioService = {
         chatGroup.findOne(searchObj, function(err, group) {
             if (err) {
                 logger.warn("checkGroupAuth->not auth:" + err);
+                deferred.reject(group, err);
             }
-            callback(group);
+            deferred.resolve(group);
         });
+        return deferred.promise;
     },
 
     /**
@@ -336,7 +345,7 @@ var studioService = {
      */
     checkMemberAndSave: function(userInfo, callback) {
         var result = { isOK: false, error: errorMessage.code_10 };
-        member.findOne({ mobilePhone: userInfo.mobilePhone, valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
+        member.findOne({ mobilePhone: userInfo.mobilePhone.replace(/^\d+$|^\d+-/ , ''), valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
                 logger.error("checkMemberAndSave fail:" + err);
                 callback(result);
@@ -816,8 +825,10 @@ var studioService = {
                     });
                 },
                 trainList: function(callback) {
-                    clientTrainService.getTrainList(params.groupType, params.authorId, true, function(rooms) {
+                    clientTrainService.getTrainList(params.groupType, params.authorId, true).then(rooms => {
                         callback(null, rooms);
+                    }).catch(e => {
+                        callback(null, null);
                     });
                 },
                 trAndClNum: function(callback) {

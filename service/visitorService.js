@@ -95,6 +95,8 @@ var visitorService = {
                         data.save(function(err) {
                             if (err) {
                                 logger.error('saveVisitorRecord-update fail', err);
+                            } else {
+                                logger.debug('saveVisitorRecord-update Success', JSON.stringify(data));
                             }
                         });
                     }
@@ -188,14 +190,18 @@ var visitorService = {
      */
     getVistiorByName: function(groupType, roomId, nickname, callback) {
         var deferred = new common.Deferred();
-        chatVisitor.find({ groupType: groupType, roomId: roomId, valid: 1, nickname: eval('/.*?' + nickname + '.*/g') }).select("clientGroup nickname userId visitorId clientStoreId onlineStatus userAgent").sort({ 'onlineStatus': 'desc' }).exec(function(err, data) {
-            if (err) {
-                logger.error('getVistiorByName fail', err);
-                deferred.reject(null);
-            } else {
-                deferred.resolve(data);
-            }
-        });
+        chatVisitor.find({ groupType: groupType, roomId: roomId, valid: 1, nickname: eval('/.*?' + nickname + '.*/g') })
+            .select("clientGroup nickname userId visitorId clientStoreId onlineStatus userAgent")
+            .sort({ 'onlineStatus': 'desc' })
+            .limit(50)
+            .exec(function(err, data) {
+                if (err) {
+                    logger.error('getVistiorByName fail', err);
+                    deferred.reject(null);
+                } else {
+                    deferred.resolve(data);
+                }
+            });
         return deferred.promise;
     },
     /**
@@ -205,14 +211,16 @@ var visitorService = {
      * @param clientStoreId
      */
     getByClientStoreId: function(groupType, groupId, clientStoreId, callback) {
-        chatVisitor.findOne({ groupType: groupType, roomId: groupId, valid: 1, clientStoreId: clientStoreId }).select("nickname visitorId clientStoreId offlineDate").exec(function(err, data) {
-            if (err || !data) {
-                logger.warn('getByClientStoreId fail', err, JSON.stringify({ groupType: groupType, roomId: groupId, valid: 1, clientStoreId: clientStoreId }));
-                callback(null);
-            } else {
-                callback(data.offlineDate);
-            }
-        });
+        chatVisitor.findOne({ groupType: groupType, roomId: groupId, valid: 1, clientStoreId: clientStoreId })
+            .select("nickname visitorId clientStoreId offlineDate")
+            .exec(function(err, data) {
+                if (err || !data) {
+                    logger.warn('getByClientStoreId fail', err, JSON.stringify({ groupType: groupType, roomId: groupId, valid: 1, clientStoreId: clientStoreId }));
+                    callback(null);
+                } else {
+                    callback(data.offlineDate);
+                }
+            });
     },
     /**
      * 通过userId或visitorId

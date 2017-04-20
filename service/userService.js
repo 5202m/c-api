@@ -33,6 +33,11 @@ var userService = {
      */
     getUserInfoByUserNo: function(userNo, callback) {
         boUser.findOne({ userNo: userNo }, "userNo userName position avatar introduction introductionImg winRate earningsM", function(err, row) {
+            if (err) {
+                logger.error(err);
+                callback(null);
+                return;
+            }
             callback(row);
         });
     },
@@ -41,7 +46,12 @@ var userService = {
      * @param ids
      */
     getUserList: function(userNOs, callback) {
-        boUser.find({ userNo: { $in: userNOs.split(",") } }, "userNo userName position avatar", function(err, rows) {
+        boUser.find({ userNo: { $in: userNOs.split(",") } }, "userNo userName position avatar status valid", function(err, rows) {
+            if (err) {
+                logger.error(err);
+                callback(null);
+                return;
+            }
             callback(rows);
         });
     },
@@ -964,7 +974,7 @@ var userService = {
      * @param callback
      */
     getAnalystList: function(systemCategory, callback) {
-        boUser.find({ valid: 1, status: 0, systemCategory: systemCategory, 'role.roleNo': common.getPrefixReg("analyst") }, "userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag introduction", function(err, rows) {
+        boUser.find({ valid: 1, status: 0, /*systemCategory: systemCategory,*/ 'role.roleNo': common.getPrefixReg("analyst") }, "userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag introduction", function(err, rows) {
             callback(rows);
         });
     }

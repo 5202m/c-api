@@ -28,7 +28,7 @@ var path = require('path');
  * @param callback
  * @constructor
  */
-var TestRequest = function(url, param, method, callback){
+var TestRequest = function(url, param, method, callback) {
     /**url*/
     this.url = url;
     /**参数*/
@@ -41,35 +41,35 @@ var TestRequest = function(url, param, method, callback){
     this.init();
 };
 //测试接口工具(原型)--初始化
-TestRequest.prototype.init = function(){
-    if(typeof this.url !== "string" || this.url === ""){
+TestRequest.prototype.init = function() {
+    if (typeof this.url !== "string" || this.url === "") {
         logger.error("url is error: " + this.url);
         throw new Error("url is error: " + this.url);
     }
 
-    if(!this.param){
+    if (!this.param) {
         this.param = "";
     }
 
-    if(typeof this.method !== "string" || this.method === ""){
+    if (typeof this.method !== "string" || this.method === "") {
         this.method = "POST";
-    }else{
+    } else {
         this.method = this.method.toUpperCase();
     }
 
-    if(typeof this.callback !== "function"){
-        this.callback = function(error, data){
-            if(error){
-            	logger.error(error);
+    if (typeof this.callback !== "function") {
+        this.callback = function(error, data) {
+            if (error) {
+                logger.error(error);
                 throw error;
-            }else{
-            	logger.info("[RESULT]: ", data);
+            } else {
+                logger.info("[RESULT]: ", data);
             }
         }
     }
 };
 //测试接口工具(原型)--请求
-TestRequest.prototype.request = function(){
+TestRequest.prototype.request = function() {
     var urlObj = URL.parse(this.url);
 
     var options = {
@@ -85,7 +85,7 @@ TestRequest.prototype.request = function(){
     var thatCallback = this.callback;
     var req = HTTP.request(options, function(res) {
         res.setEncoding('utf8');
-        res.on('data', function (data) {
+        res.on('data', function(data) {
             thatCallback(null, data);
         });
     });
@@ -93,13 +93,13 @@ TestRequest.prototype.request = function(){
     req.on('error', function(err) {
         thatCallback(err, null);
     });
-    if(typeof this.param === "object" && this.method === "POST") {
+    if (typeof this.param === "object" && this.method === "POST") {
         req.write(JSON.stringify(this.param) + "\r\n");
     }
     req.end();
 };
 //文件上传
-TestRequest.prototype.upload = function(){
+TestRequest.prototype.upload = function() {
     var boundaryKey = Math.random().toString(16);
     var urlObj = URL.parse(this.url);
 
@@ -116,7 +116,7 @@ TestRequest.prototype.upload = function(){
     var thatCallback = this.callback;
     var req = HTTP.request(options, function(res) {
         res.setEncoding('utf8');
-        res.on('data', function (data) {
+        res.on('data', function(data) {
             thatCallback(null, data);
         });
     });
@@ -125,17 +125,17 @@ TestRequest.prototype.upload = function(){
         thatCallback(err, null);
     });
 
-    if(typeof this.param === "object"){
-        for(var key in this.param){
-            if(key === "files"){
+    if (typeof this.param === "object") {
+        for (var key in this.param) {
+            if (key === "files") {
                 continue;
             }
-            req.write('\r\n----' + boundaryKey
-            + '\r\nContent-Disposition: form-data; name="' + key + '"\r\n\r\n'
-            + this.param[key].toString());
+            req.write('\r\n----' + boundaryKey +
+                '\r\nContent-Disposition: form-data; name="' + key + '"\r\n\r\n' +
+                this.param[key].toString());
         }
-        var loc_submitOneFile = function(index, len, fileKeys, files, req, callback){
-            if(index >= len){
+        var loc_submitOneFile = function(index, len, fileKeys, files, req, callback) {
+            if (index >= len) {
                 callback(null);
                 return;
             }
@@ -148,48 +148,48 @@ TestRequest.prototype.upload = function(){
                 '\r\n' + 'Content-Transfer-Encoding: binary\r\n\r\n'
             );
             //设置1K的缓冲区
-            var fileStream = fs.createReadStream(loc_filePath, {bufferSize : 1024});
-            fileStream.pipe(req, {end:false});
-            fileStream.on('error',function(err){
+            var fileStream = fs.createReadStream(loc_filePath, { bufferSize: 1024 });
+            fileStream.pipe(req, { end: false });
+            fileStream.on('error', function(err) {
                 callback(err);
             });
-            fileStream.on('end',function(){
+            fileStream.on('end', function() {
                 loc_submitOneFile(++index, len, fileKeys, files, req, callback);
             });
         };
 
         var loc_fileKeys = Object.keys(this.param.files);
         var lenFile = loc_fileKeys.length;
-        if(lenFile > 0){
-            loc_submitOneFile(0, lenFile, loc_fileKeys, this.param.files, req, function(err){
-                if(err){
+        if (lenFile > 0) {
+            loc_submitOneFile(0, lenFile, loc_fileKeys, this.param.files, req, function(err) {
+                if (err) {
                     thatCallback(err, null);
                 }
                 req.write('\r\n----' + boundaryKey + '--');
                 req.end();
             });
-        }else{
+        } else {
             req.end();
         }
-    }else{
+    } else {
         req.end();
     }
 };
 
 //测试接口工具(类方法)--请求
-TestRequest.request = function(url, param, method, callback){
+TestRequest.request = function(url, param, method, callback) {
     new TestRequest(url, param, method, callback).request();
 };
 //测试接口工具(类方法)--post请求
-TestRequest.post = function(url, param, callback){
+TestRequest.post = function(url, param, callback) {
     TestRequest.request(url, param, 'POST', callback);
 };
 //测试接口工具(类方法)--get请求
-TestRequest.get = function(url, callback){
+TestRequest.get = function(url, callback) {
     TestRequest.request(url, null, 'GET', callback);
 };
 //测试接口工具(类方法)--get请求
-TestRequest.upload = function(url, param, callback){
+TestRequest.upload = function(url, param, callback) {
     new TestRequest(url, param, "POST", callback).upload();
 };
 
@@ -199,36 +199,37 @@ TestRequest.upload = function(url, param, callback){
  * @param data 数据信息
  * @param [page] 分页信息
  */
-var APIResult = function(error, data, page){
+var APIResult = function(error, data, page) {
     var loc_result = {
-        result : 0,
-        errcode : "0",
-        errmsg : "",
+        result: 0,
+        errcode: "0",
+        errmsg: "",
 
-        data : null
+        data: null
     };
-
-    if(error === null || error === undefined){
+    if (data) {
         loc_result.data = data;
-        if(page){
-            loc_result.page = page;
-        }
+    }
+    if (page) {
+        loc_result.page = page;
+    }
+    if (error === null || error === undefined) {
         return loc_result;
     }
-    
-    if(typeof error === "object" && error instanceof Error){
+
+    if (typeof error === "object" && error instanceof Error) {
         loc_result.result = 1;
         loc_result.errcode = "-1";
         loc_result.errmsg = error.message;
         return loc_result;
     }
-    
+
     loc_result.result = 1;
     var loc_error = ErrorMessage[error];
-    if(loc_error){
+    if (loc_error) {
         loc_result.errcode = loc_error.errcode;
         loc_result.errmsg = loc_error.errmsg;
-    }else{
+    } else {
         loc_result.errcode = "-1";
         loc_result.errmsg = typeof error == "string" ? error : "未知错误";
     }
@@ -237,12 +238,12 @@ var APIResult = function(error, data, page){
     return loc_result;
 };
 
-var APIResultFromData = function(data){
-    if(!data){
+var APIResultFromData = function(data) {
+    if (!data) {
         return APIResult();
     }
-    if("isOK" in data && "msg" in data){
-        if(data["isOK"]){
+    if ("isOK" in data && "msg" in data) {
+        if (data["isOK"]) {
             return APIResult(null, data["msg"]);
         }
         return APIResult(data["msg"]);
@@ -259,8 +260,8 @@ var APIResultFromData = function(data){
  * @param value 每一个元素的值
  * @returns {*}
  */
-var convertField = function(target, arr, value){
-    for(var i = 0, lenI = arr.length; i < lenI; i++){
+var convertField = function(target, arr, value) {
+    for (var i = 0, lenI = arr.length; i < lenI; i++) {
         target[arr[i]] = value;
     }
     return target;
@@ -273,28 +274,28 @@ var convertField = function(target, arr, value){
  * @param options 包含query、sortAsc、sortDesc、fieldIn、fieldEx
  * @param callback 回调，包含error和data两个参数, 如果没有错误信息，error为null。
  */
-var DBFind = function(schema, options, callback){
-    try{
+var DBFind = function(schema, options, callback) {
+    try {
         var defaultOp = {
             //查询条件
-            query : {},
+            query: {},
             //正序字段名数组
-            sortAsc : [],
+            sortAsc: [],
             //逆序字段名数组
-            sortDesc : [],
+            sortDesc: [],
             //包含字段名数组
-            fieldIn : [],
+            fieldIn: [],
             //排除字段名数组
-            fieldEx : []
+            fieldEx: []
         };
         var loc_op = null;
-        if(options){
+        if (options) {
             loc_op = {};
             var keys = Object.keys(defaultOp);
-            for(var i = 0, lenI = keys.length; i < lenI; i++){
+            for (var i = 0, lenI = keys.length; i < lenI; i++) {
                 loc_op[keys[i]] = options.hasOwnProperty(keys[i]) ? options[keys[i]] : defaultOp[keys[i]];
             }
-        }else{
+        } else {
             loc_op = defaultOp;
         }
 
@@ -304,21 +305,21 @@ var DBFind = function(schema, options, callback){
         loc_sorts = convertField(loc_sorts, loc_op.sortDesc, -1);
 
         var loc_query = schema.find(loc_op.query);
-        if(Object.keys(loc_sorts).length > 0){
+        if (Object.keys(loc_sorts).length > 0) {
             loc_query.sort(loc_sorts);
         }
-        if(Object.keys(loc_fields).length > 0){
+        if (Object.keys(loc_fields).length > 0) {
             loc_query.select(loc_fields);
         }
-        loc_query.exec('find', function(err, data){
-            if(err!=null){
+        loc_query.exec('find', function(err, data) {
+            if (err != null) {
                 callback(err, null);
                 return;
             }
             callback(null, data);
         });
-    }catch(err){
-    	logger.error(err);
+    } catch (err) {
+        logger.error(err);
         callback(err, null);
     }
 };
@@ -330,8 +331,8 @@ var DBFind = function(schema, options, callback){
  * @param callback
  * @constructor
  */
-var DBFindAPIResult = function(schema, options, callback){
-    DBFind(schema, options, function(error, data){
+var DBFindAPIResult = function(schema, options, callback) {
+    DBFind(schema, options, function(error, data) {
         callback(APIResult(error, data, null));
     });
 };
@@ -343,20 +344,20 @@ var DBFindAPIResult = function(schema, options, callback){
  *
  * @return {{pageLast : String, pageSize : Number, totalCnt : Number, totalPageCnt : Number}}
  */
-var getPageInfo = function(pageLast, pageSize){
+var getPageInfo = function(pageLast, pageSize) {
     var loc_result = {
         //当前请求页码
         pageLast: '',
         //每页记录数
         pageSize: Constant.pageSize,
-        totalCnt : 0,
-        totalPageCnt : 0
+        totalCnt: 0,
+        totalPageCnt: 0
     };
-    if(typeof pageLast === "string" && pageLast !== ""){
+    if (typeof pageLast === "string" && pageLast !== "") {
         loc_result.pageLast = pageLast;
     }
     var loc_pageSize = parseInt(pageSize, 10);
-    if(typeof loc_pageSize === "number" && loc_pageSize > 0){
+    if (typeof loc_pageSize === "number" && loc_pageSize > 0) {
         loc_result.pageSize = loc_pageSize;
     }
     return loc_result;
@@ -369,27 +370,29 @@ var getPageInfo = function(pageLast, pageSize){
  * @param isDesc 是否降序，true时，分页的顺序从后往前, 默认false
  * @param IdGetter Id获取器，参数为arr的元素，默认直接返回Id元素
  */
-var getPageListByArr = function(arr, page, isDesc, IdGetter){
+var getPageListByArr = function(arr, page, isDesc, IdGetter) {
     var loc_isDesc = !(isDesc !== true);
     var lenArr = arr instanceof Array ? arr.length : 0;
     page.totalCnt = lenArr;
-    page.totalPageCnt = parseInt((page.totalCnt - 1)/page.pageSize + 1, 10);
-    if(lenArr === 0){
+    page.totalPageCnt = parseInt((page.totalCnt - 1) / page.pageSize + 1, 10);
+    if (lenArr === 0) {
         return [];
     }
-    if(typeof IdGetter !== "function"){
-        IdGetter = function(item){
+    if (typeof IdGetter !== "function") {
+        IdGetter = function(item) {
             return item;
         }
     }
     var loc_isFirst = !page.pageLast;
-    var loc_start = 0, loc_end = 0, loc_result = [];
+    var loc_start = 0,
+        loc_end = 0,
+        loc_result = [];
     var i = 0;
 
-    if(loc_isDesc){
+    if (loc_isDesc) {
         //降序
         loc_end = lenArr;
-        if(loc_isFirst === false){
+        if (loc_isFirst === false) {
             //非首页
             loc_end = 0;
             for (i = lenArr - 1; i >= 0; i--) {
@@ -402,10 +405,10 @@ var getPageListByArr = function(arr, page, isDesc, IdGetter){
         loc_start = Math.max(loc_end - page.pageSize, 0);
         loc_result = arr.slice(loc_start, loc_end).reverse();
         page.pageLast = IdGetter(arr[loc_start]);
-    }else{
+    } else {
         //升序
         loc_start = 0;
-        if(loc_isFirst === false){
+        if (loc_isFirst === false) {
             //非首页
             loc_start = lenArr;
             for (i = 0; i < lenArr; i++) {
@@ -429,7 +432,7 @@ var getPageListByArr = function(arr, page, isDesc, IdGetter){
  * @param options 包含query、sortAsc、sortDesc、fieldIn、fieldEx、pageLast、pageSize、pageId、pageDesc
  * @param callback 回调，包含error和data, page三个参数, 如果没有错误信息，error为null。
  */
-var DBPage = function(schema, options, callback){
+var DBPage = function(schema, options, callback) {
     var loc_pageInfo = getPageInfo(options["pageLast"], options["pageSize"]);
     var loc_page = {
         //总记录数
@@ -441,43 +444,43 @@ var DBPage = function(schema, options, callback){
         //每页记录数
         pageSize: loc_pageInfo.pageSize
     };
-    try{
+    try {
         var defaultOp = {
             //查询条件
-            query : {},
+            query: {},
             //包含字段名数组
-            fieldIn : [],
+            fieldIn: [],
             //排除字段名数组
-            fieldEx : []
+            fieldEx: []
         };
         var loc_op = null;
-        if(options){
+        if (options) {
             loc_op = {};
             var keys = Object.keys(defaultOp);
-            for(var i = 0, lenI = keys.length; i < lenI; i++){
+            for (var i = 0, lenI = keys.length; i < lenI; i++) {
                 loc_op[keys[i]] = options.hasOwnProperty(keys[i]) ? options[keys[i]] : defaultOp[keys[i]];
             }
-        }else{
+        } else {
             loc_op = defaultOp;
         }
 
         //计算总数
-        schema.count(loc_op.query, function(err, cnt){
-            if(err!=null){
+        schema.count(loc_op.query, function(err, cnt) {
+            if (err != null) {
                 callback(err, null, null);
                 return;
             }
-            try{
+            try {
                 loc_page.totalCnt = cnt;
-                loc_page.totalPageCnt = parseInt((loc_page.totalCnt - 1)/loc_page.pageSize + 1, 10);
+                loc_page.totalPageCnt = parseInt((loc_page.totalCnt - 1) / loc_page.pageSize + 1, 10);
 
                 var loc_pageDesc = !(options["pageDesc"] !== true);
                 var loc_pageId = !options["pageId"] ? "_id" : options["pageId"];
-                if(!!loc_pageInfo.pageLast){
-                    if(loc_pageDesc){
-                        loc_op.query[loc_pageId] = {$lt : loc_pageInfo.pageLast};
-                    }else{
-                        loc_op.query[loc_pageId] = {$gt : loc_pageInfo.pageLast};
+                if (!!loc_pageInfo.pageLast) {
+                    if (loc_pageDesc) {
+                        loc_op.query[loc_pageId] = { $lt: loc_pageInfo.pageLast };
+                    } else {
+                        loc_op.query[loc_pageId] = { $gt: loc_pageInfo.pageLast };
                     }
                 }
 
@@ -488,29 +491,29 @@ var DBPage = function(schema, options, callback){
 
                 var loc_query = schema.find(loc_op.query);
                 loc_query.limit(loc_page.pageSize);
-                if(Object.keys(loc_sorts).length > 0){
+                if (Object.keys(loc_sorts).length > 0) {
                     loc_query.sort(loc_sorts);
                 }
-                if(Object.keys(loc_fields).length > 0){
+                if (Object.keys(loc_fields).length > 0) {
                     loc_query.select(loc_fields);
                 }
-                loc_query.exec('find', function(err, data){
-                    if(err!=null){
+                loc_query.exec('find', function(err, data) {
+                    if (err != null) {
                         callback(err, null, null);
                         return;
                     }
-                    if(data && data.length > 0){
+                    if (data && data.length > 0) {
                         loc_page.pageLast = data[data.length - 1][loc_pageId];
                     }
                     callback(null, data, loc_page);
                 });
-            }catch(err){
-            	logger.error(err);
+            } catch (err) {
+                logger.error(err);
                 callback(err, null, null);
             }
         });
-    }catch(err){
-    	logger.error(err);
+    } catch (err) {
+        logger.error(err);
         callback(err, null, null);
     }
 };
@@ -522,8 +525,8 @@ var DBPage = function(schema, options, callback){
  * @param callback
  * @constructor
  */
-var DBPageAPIResult = function(schema, options, callback){
-    DBPage(schema, options, function(error, data, page){
+var DBPageAPIResult = function(schema, options, callback) {
+    DBPage(schema, options, function(error, data, page) {
         callback(APIResult(error, data, page));
     });
 };
@@ -535,38 +538,38 @@ var DBPageAPIResult = function(schema, options, callback){
  * @param options 包含query、fieldIn、fieldEx
  * @param callback 回调，包含error和data两个参数, 如果没有错误信息，error为null。
  */
-var DBFindOne = function(schema, options, callback){
-    try{
+var DBFindOne = function(schema, options, callback) {
+    try {
         var defaultOp = {
             //查询条件
-            query : {},
+            query: {},
             //包含字段名数组
-            fieldIn : [],
+            fieldIn: [],
             //排除字段名数组
-            fieldEx : []
+            fieldEx: []
         };
         var loc_op = null;
-        if(options){
+        if (options) {
             loc_op = {};
             var keys = Object.keys(defaultOp);
-            for(var i = 0, lenI = keys.length; i < lenI; i++){
+            for (var i = 0, lenI = keys.length; i < lenI; i++) {
                 loc_op[keys[i]] = options.hasOwnProperty(keys[i]) ? options[keys[i]] : defaultOp[keys[i]];
             }
-        }else{
+        } else {
             loc_op = defaultOp;
         }
 
         var loc_fields = convertField({}, loc_op.fieldIn, 1);
         loc_fields = convertField(loc_fields, loc_op.fieldEx, 0);
-        schema.findOne(loc_op.query, loc_fields, function(err, data){
-            if(err){
+        schema.findOne(loc_op.query, loc_fields, function(err, data) {
+            if (err) {
                 callback(err, null);
                 return;
             }
             callback(null, data);
         });
-    }catch(err){
-    	logger.error(err);
+    } catch (err) {
+        logger.error(err);
         callback(err, null);
     }
 };
@@ -578,8 +581,8 @@ var DBFindOne = function(schema, options, callback){
  * @param callback
  * @constructor
  */
-var DBFindOneAPIResult = function(schema, options, callback){
-    DBFind(schema, options, function(error, data){
+var DBFindOneAPIResult = function(schema, options, callback) {
+    DBFind(schema, options, function(error, data) {
         callback(APIResult(error, data, null));
     });
 };
@@ -589,7 +592,7 @@ var DBFindOneAPIResult = function(schema, options, callback){
  * @param req
  * @param fileName
  */
-var logRequestInfo = function(req, fileName){
+var logRequestInfo = function(req, fileName) {
     fileName = !fileName ? "" : fileName;
     var loc_method = req.method;
     var loc_params = "POST" === loc_method ? JSON.stringify(req.body) : JSON.stringify(req.query);
@@ -600,35 +603,35 @@ module.exports = {
     /**
      * 测试相关方法
      */
-    TestAPIRequest : TestRequest.request,
-    TestAPIPost : TestRequest.post,
-    TestAPIGet : TestRequest.get,
-    TestAPIUpload : TestRequest.upload,
+    TestAPIRequest: TestRequest.request,
+    TestAPIPost: TestRequest.post,
+    TestAPIGet: TestRequest.get,
+    TestAPIUpload: TestRequest.upload,
 
     /**
      * 获取分页信息
      */
-    getPageInfo : getPageInfo,
-    getPageListByArr : getPageListByArr,
+    getPageInfo: getPageInfo,
+    getPageListByArr: getPageListByArr,
 
     /**
      * API结果
      */
-    APIResult : APIResult,
+    APIResult: APIResult,
     APIResultFromData: APIResultFromData,
 
     /**
      * 数据库操作相关
      */
-    DBFind : DBFind,
-    DBFindAPIResult : DBFindAPIResult,
-    DBPage : DBPage,
-    DBPageAPIResult : DBPageAPIResult,
-    DBFindOne : DBFindOne,
-    DBFindOneAPIResult : DBFindOneAPIResult,
+    DBFind: DBFind,
+    DBFindAPIResult: DBFindAPIResult,
+    DBPage: DBPage,
+    DBPageAPIResult: DBPageAPIResult,
+    DBFindOne: DBFindOne,
+    DBFindOneAPIResult: DBFindOneAPIResult,
 
     /**
      * 日志相关
      */
-    logRequestInfo : logRequestInfo
+    logRequestInfo: logRequestInfo
 };

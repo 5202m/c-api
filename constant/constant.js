@@ -1,10 +1,10 @@
-/**
+﻿/**
  * 摘要：常量公共类
  * author：Gavin.guo
  * date:2015/4/15
  */
 var constant = {
-	fromPlatform:{//来源平台,区分系统用户登录来源
+    fromPlatform:{//来源平台,区分系统用户登录来源
         pm_mis:'pm_mis',//后台
         wechat:'wechat',//黄金微解盘
         fxchat:'fxchat',//外汇微解盘
@@ -26,60 +26,60 @@ var constant = {
         fxstudio:"fxstudio" //fx直播间
     },
     studioDefRoom:{
-        studio : "studio_3",  //pm直播间
-        fxstudio:"fxstudio_15", //fx直播间
-        hxstudio:"hxstudio_1" //hx直播间
+        studio : "studio_teach",  //pm直播间
+        fxstudio:"fxstudio_11", //fx直播间
+        hxstudio:"hxstudio_26" //hx直播间
     },
     studioThirdUsed:{//第三方引用直播间默认房间
         pm : {
             web24k : {       //PM官网
                 groupType : "studio",    //房间组别
-                roomId : "studio_3", //房间ID
+                roomId : "studio_teach", //房间ID
                 flag : 'S'      //是否只取一次课，用于课程安排接口
             },
             webui : {       //webui
                 groupType : "studio",    //房间组别
-                roomId : "studio_3", //房间ID
+                roomId : "studio_teach", //房间ID
                 flag : 'D'     //一天的课程
             },
             app : {         //APP Android+IOS
                 groupType : "studio",    //房间组别
-                roomId : "studio_3", //房间ID
+                roomId : "studio_teach", //房间ID
                 flag : 'D'   //一天的课程
             },
             pc : {          //PC ui
                 groupType : "studio",    //房间组别
-                roomId : "studio_3", //房间ID
+                roomId : "studio_teach", //房间ID
                 flag : 'D'     //一天的课程
             }
         },
         fx : {
             gwfx : {        //FX官网
                 groupType : "fxstudio",  //房间组别
-                roomId : "fxstudio_15",  //房间ID
+                roomId : "fxstudio_11",  //房间ID
                     flag : 'S'      //是否只取一次课，用于课程安排接口，一节课
             },
             uce : { //客户中心
                 groupType : "fxstudio",  //房间组别
-                roomId : "fxstudio_15",  //房间ID
+                roomId : "fxstudio_11",  //房间ID
                 flag : 'W'      //一周课程
             },
             webui : {       //webui
                 groupType : "fxstudio",    //房间组别
-                roomId : "fxstudio_15",    //房间ID
-                flag : 'D'       //一天的课程
+                roomId : "fxstudio_11",    //房间ID
+                flag : 'D'       //一周课程
             }
         },
         hx : {
         	uce : { //客户中心
                 groupType : "hxstudio",  //房间组别
-                roomId : "hxstudio_1",  //房间ID
+                roomId : "hxstudio_26",  //房间ID
                 flag : 'W'     //一周课程
             },
             webui : {       //webui
                 groupType : "hxstudio",    //房间组别
-                roomId : "hxstudio_1",    //房间ID
-                flag : 'D' //一天的课程
+                roomId : "hxstudio_26",    //房间ID
+                flag : 'D' //一周课程
             }
         },
         getConfig : function(type, platform){
@@ -90,7 +90,7 @@ var constant = {
             return null;
         }
     },
-	clientGroup:{//客户类别
+    clientGroup:{//客户类别
       vip:'vip',
       active : 'active', //真实客户-激活
       notActive : 'notActive', //真实客户-未激活

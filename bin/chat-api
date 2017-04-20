@@ -4,8 +4,55 @@
  * Module dependencies.
  */
 var app = require('../app');
+var logger = require('../resources/logConf').getLogger('pm_chat_executor'); //引入log4js
+const debug = require('debug')('chat-api:server');
+
+var port = "3000";
 //启动服务
-var apiServer=app.listen('3000',function(){
-    console.log('API server running. Listening on port ' + apiServer.address().port);
+var apiServer = app.listen(port, function() {
+    logger.info('API server running. Listening on port ' + apiServer.address().port);
     //开启定时器
 });
+apiServer.on('error', onError);
+apiServer.on('listening', onListening);
+process.on('uncaughtException', err => {
+    logger.error("this is some error,please check:", err);
+});
+process.on('unhandledRejection', (reason, ...args) => {
+    let strReason = JSON.stringify(reason);
+    logger.info(`Promise unhandledRejection >> Reason: ${strReason}`, args || "");
+});
+
+function onError(error) {
+    if (error.syscall !== 'listen') {
+        throw error;
+    }
+
+    var bind = `Pipe ${port}`;
+
+    // handle specific listen errors with friendly messages
+    switch (error.code) {
+        case 'EACCES':
+            logger.error(`${bind} requires elevated privileges`);
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            logger.error(`${bind} is already in use`);
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+    var addr = apiServer.address();
+    var bind = typeof addr === 'string' ?
+        'pipe ' + addr :
+        'port ' + addr.port;
+    debug('Listening on ' + bind);
+}

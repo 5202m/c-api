@@ -15,6 +15,9 @@ var noticeMessage = require("../message/NoticeMessage");
 var chatMessage = require("../message/ChatMessage");
 var baseMessage = require("../message/BaseMessage");
 var cacheClient = require("../cache/cacheClient");
+var ObjectId = require('mongoose').Types.ObjectId;
+var ApiResult = require('../util/ApiResult');
+var errorMessage = require('../util/errorMessage'); //引入errorMessage类
 
 let updateCacheClient = userInfo => {
     //设置到redis中 userId 与socketId
@@ -88,7 +91,7 @@ var chatService = {
             delete userInfo.mobile;
             delete userInfo.email;
         } catch (e) {
-            logger.error("parseInt userInfo userType error");
+            logger.error("parseInt userInfo userType error: \n", userInfo, e);
         }
         userInfo.isMobile = common.isMobile(userAgent);
         if (common.isBlank(userInfo.groupType)) {
@@ -153,7 +156,7 @@ var chatService = {
                     }
                 });
             }
-            //公聊框推送 
+            //公聊框推送
             pushInfoService.checkPushInfo(userInfo.groupType, userInfo.groupId, userInfo.clientGroup, constant.pushInfoPosition.talkBox, false, function(pushInfos) {
                 if (pushInfos && pushInfos.length > 0) {
                     var infos = [];
@@ -192,6 +195,7 @@ var chatService = {
             var userInfo = data.user;
             userService.removeOnlineUser(userInfo, true, function() {
                 //直播间记录离线数据
+                logger.debug("disconnect", userInfo);
                 visitorService.saveVisitorRecord('offline', { roomId: userInfo.groupId, groupType: userInfo.groupType, clientStoreId: userInfo.clientStoreId });
             });
             return { clientStoreId: userInfo.clientStoreId, nickname: userInfo.nickname };
@@ -392,7 +396,7 @@ var chatService = {
             .exec('find', function(err, datas) {
                 if (err) {
                     logger.error('getShowTrade=>query fail:' + err);
-                    callback(ApiResult.result(ErrorMessage.code_10, null));
+                    callback(ApiResult.result(errorMessage.code_10, null));
                 } else {
                     var result = [],
                         data = null;
@@ -525,7 +529,7 @@ var chatService = {
                                 userId: userInfo.toUser.userId,
                                 groupId: userInfo.groupId,
                                 groupType: userInfo.groupType
-                            };
+                            }
                             chatMessage.sendMsg(userInfo.groupType, userInfo.toUser.socketId, chatService.getUserUUId(newToUser), data);
                             var key = chatService.getRedisKey(userInfo.groupType, userInfo.groupId, userInfo.toUser.userId);
                             var cacheClient = require("../cache/cacheClient");
@@ -633,9 +637,8 @@ var chatService = {
      * @param articleJSON
      * @param opType
      */
-    noticeArticle: function(articleJSON, opType) {
+    noticeArticle: function(article, opType) {
         try {
-            var article = JSON.parse(articleJSON);
             if (article && article.platform) {
                 article.position = 5; //课堂笔记
                 article.opType = opType; //操作类型

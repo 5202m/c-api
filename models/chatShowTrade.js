@@ -40,6 +40,16 @@ var chatShowTradeSchema = new Schema({
     title: String, //标题
     tradeType: Number, //类别：1 分析师晒单，2 客户晒单
     status: Number, //状态：0 待审核， 1 审核通过， -1 审核不通过
-    praise: Number //点赞数
+    praise: Number, //点赞数
+    comments: [{ //评论
+        _id: ObjectId, //评论编号
+        userId: String, //用户编号
+        userName: String, //用户名称
+        avatar: String, //头像
+        content: String, //内容
+        dateTime: Date, //评论时间
+        refId: String, //参照编号
+        valid: { type: Number, default: 1 } //是否有效
+    }]
 });
 module.exports = mongoose.model('chatShowTrade', chatShowTradeSchema, "chatShowTrade");
