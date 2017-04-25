@@ -37,7 +37,7 @@ var Logger = require('../../resources/logConf').getLogger("zxFinanceAPI");
  *
  * @apiParam {String} releaseTime 财经日历发布时间，必填
  * @apiParam {String} dataTypeCon 数据类型：1-外汇 2-贵金属，必填
- * @apiParam {String} country 地区/国家
+ * @apiParam {String} country 地区/国家 多个国家用,隔开
  * @apiParam {String} level 重要等级 1,2,3 4,5
  * @apiParam {Number} status 状态 1：已公布 0：未公布
  *

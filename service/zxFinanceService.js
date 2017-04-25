@@ -44,7 +44,11 @@ var zxFinanceService = {
             loc_query.dataType = {$in : [0,2]}
         }
         if(Common.isValid(country)){
-            loc_query.country = country;
+            if(country.indexOf(',') > -1){
+                loc_query.country = {$in: country.split(',')};
+            }else {
+                loc_query.country = country;
+            }
         }
         if(Common.isValid(importanceLevel)){
             if(importanceLevel.indexOf(',') > -1) {
@@ -107,7 +111,11 @@ var zxFinanceService = {
             loc_query.dataType = {$in : [0,2]}
         }
         if(Common.isValid(country)){
-            loc_query.country = country;
+            if(country.indexOf(',') > -1){
+                loc_query.country = {$in: country.split(',')};
+            }else {
+                loc_query.country = country;
+            }
         }
         if(Common.isValid(importanceLevel)){
             if(importanceLevel.indexOf(',') > -1) {
