@@ -46,7 +46,7 @@ var Logger = require('../../resources/logConf').getLogger("zxFinanceAPI");
  *
  * @apiSampleRequest /api/zxFinanceData/list
  * @apiExample Example usage:
- *  /api/zxFinanceData/list?releaseTime=2017-04-104&dataTypeCon=1&country=美国&level=1,2,3&status=
+ *  /api/zxFinanceData/list?releaseTime=2017-04-10&dataTypeCon=1&country=美国&level=1,2,3&status=
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
