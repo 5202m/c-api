@@ -40,13 +40,14 @@ var Logger = require('../../resources/logConf').getLogger("zxFinanceAPI");
  * @apiParam {String} country 地区/国家 多个国家用,隔开
  * @apiParam {String} level 重要等级 1,2,3 4,5
  * @apiParam {Number} status 状态 1：已公布 0：未公布
+ * @apiParam {String} name 数据名
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
  *
  * @apiSampleRequest /api/zxFinanceData/list
  * @apiExample Example usage:
- *  /api/zxFinanceData/list?releaseTime=2017-04-10&dataTypeCon=1&country=美国&level=1,2,3&status=
+ *  /api/zxFinanceData/list?releaseTime=2017-04-10&dataTypeCon=1&country=美国&level=1,2,3&status=&name=
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -63,10 +64,13 @@ var Logger = require('../../resources/logConf').getLogger("zxFinanceAPI");
 router.get('/list', function(req, res) {
     var loc_param = {
         releaseTime : req.query["releaseTime"],    //财经日历发布时间（yyyy-MM-dd）
-        dataTypeCon : req.query["dataTypeCon"],  //数据类型：1-外汇 2-贵金属
+        dataTypeCon : req.query["dataTypeCon"]  //数据类型：1-外汇 2-贵金属
+    };
+    let otherParam = {
         country: req.query['country'], //地区，国家
         importanceLevel: req.query['level'],//重要程度， 1,2,3 4,5
-        status: req.query['status'] //状态，1：已公布，0：未公布试驾
+        status: req.query['status'], //状态，1：已公布，0：未公布试驾
+        name: req.query['name'] //数据名
     };
 
     var loc_msg = null;
@@ -84,7 +88,7 @@ router.get('/list', function(req, res) {
         res.json(ApiResult.result(loc_msg, null));
     }else{
         loc_param.dataTypeCon = parseInt(loc_param.dataTypeCon, 10);
-        ZxFinanceService.getFinanceDataCache(loc_param.releaseTime, loc_param.dataTypeCon, loc_param.country, loc_param.importanceLevel, loc_param.status, function(err, data){
+        ZxFinanceService.getFinanceDataCache(loc_param.releaseTime, loc_param.dataTypeCon, otherParam, function(err, data){
             res.json(ApiResult.result(null, data));
         });
     }
