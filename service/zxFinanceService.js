@@ -28,9 +28,13 @@ var zxFinanceService = {
      * 获取财经数据列表
      * @param date 数据日期
      * @param dataType 数据类型 1-外汇 2-贵金属
+     * @param otherParams.country 地区/国家
+     * @param otherParams.importanceLevel 重要等级 1,2,3 4,5
+     * @param otherParams.status 状态 1：已公布 0：未公布
+     * @param otherParams.name 名称
      * @param callback (err, datas)
      */
-    getDataList : function(date, dataType, callback){
+    getDataList : function(date, dataType, otherParams, callback){
         var loc_query = {
             date : date,
             valid : 1
@@ -39,6 +43,37 @@ var zxFinanceService = {
             loc_query.dataType = {$in : [0,1]}
         }else if(dataType==2){
             loc_query.dataType = {$in : [0,2]}
+        }
+        if(Common.isValid(otherParams.country)){
+            if(otherParams.country.indexOf(',') > -1){
+                loc_query.country = {$in: otherParams.country.split(',')};
+            }else {
+                loc_query.country = otherParams.country;
+            }
+        }
+        if(Common.isValid(otherParams.importanceLevel)){
+            if(otherParams.importanceLevel.indexOf(',') > -1) {
+                loc_query.importanceLevel = {$in: otherParams.importanceLevel.split(',')};
+            }else{
+                loc_query.importanceLevel = {$in: [otherParams.importanceLevel]};
+            }
+        }
+        if(Common.isValid(otherParams.status)){
+            if(otherParams.status == 1) {
+                loc_query.value = {$nin: [null, '']};
+            }else if(otherParams.status == 0){
+                loc_query.value = {$in: [null, '']};
+            }
+        }
+        if(Common.isValid(otherParams.name)){
+            loc_query.$or = [
+                {
+                    name:{$regex:otherParams.name}
+                },
+                {
+                    name:otherParams.name
+                }
+            ];
         }
         APIUtil.DBFind(ZxFinanceData, {
             query : loc_query,
@@ -57,9 +92,11 @@ var zxFinanceService = {
      * 获取财经事件列表（查询当天的财经事件，和未来四天的假日预告）
      * @param date 数据日期
      * @param dataType 数据类型 1-外汇 2-贵金属
+     * @param otherParams.country 地区/国家
+     * @param otherParams.importanceLevel 重要等级 1,2,3 4,5
      * @param callback (err, events)
      */
-    getEventList : function(date, dataType, callback){
+    getEventList : function(date, dataType, otherParams, callback){
         var endDate = new Date(date);
         if(endDate instanceof Date){
             endDate = endDate.getTime() + 86400000 * 4;
@@ -84,7 +121,20 @@ var zxFinanceService = {
         }else if(dataType==2){
             loc_query.dataType = {$in : [0,2]}
         }
-
+        if(Common.isValid(otherParams.country)){
+            if(otherParams.country.indexOf(',') > -1){
+                loc_query.country = {$in: otherParams.country.split(',')};
+            }else {
+                loc_query.country = otherParams.country;
+            }
+        }
+        if(Common.isValid(otherParams.importanceLevel)){
+            if(otherParams.importanceLevel.indexOf(',') > -1) {
+                loc_query.importanceLevel = {$in: otherParams.importanceLevel.split(',')};
+            }else{
+                loc_query.importanceLevel = {$in: [otherParams.importanceLevel]};
+            }
+        }
         APIUtil.DBFind(ZxFinanceEvent, {
             query : loc_query,
             sortAsc : ["time", "country"]
@@ -101,10 +151,10 @@ var zxFinanceService = {
     /**
      * 从缓存中获取财经数据：财经日历 + 财经事件 + 假期预告
      */
-    getFinanceDataCache : function(date, dataType, callback){
+    getFinanceDataCache : function(date, dataType, otherParams, callback){
         var today = Utils.dateFormat(new Date(), "yyyy-MM-dd");
         if(today == date){//当日数据不做缓存
-            zxFinanceService.getFinanceData(date, dataType, callback);
+            zxFinanceService.getFinanceData(date, dataType, otherParams, callback);
         }else{
             var cacheKey = "FinanceData:" + date + "_" + dataType;
             CacheClient.get(cacheKey, function(err, financeData){
@@ -114,7 +164,7 @@ var zxFinanceService = {
                 if(financeData){
                     callback(null, JSON.parse(financeData));
                 }else{
-                    zxFinanceService.getFinanceData(date, dataType, function(errDb, financeDataDb){
+                    zxFinanceService.getFinanceData(date, dataType, otherParams, function(errDb, financeDataDb){
                         if(!errDb){
                             CacheClient.set(cacheKey, JSON.stringify(financeDataDb));
                             CacheClient.expire(cacheKey,4);//一个小时有效
@@ -130,12 +180,16 @@ var zxFinanceService = {
      * 获取财经数据：财经日历 + 财经事件 + 假期预告
      * @param date
      * @param dataType
+     * @param otherParams.country 地区/国家
+     * @param otherParams.importanceLevel 重要等级 1,2,3 4,5
+     * @param otherParams.status 状态 1：已公布 0：未公布
+     * @param otherParams.name 名称
      * @param callback (err, datas)
      */
-    getFinanceData : function(date, dataType, callback){
+    getFinanceData : function(date, dataType, otherParams, callback){
         Async.parallel({
             datas : function(callbackTmp){
-                zxFinanceService.getDataList(date, dataType, function(err, datas){
+                zxFinanceService.getDataList(date, dataType, otherParams, function(err, datas){
                     var loc_datas = [];
                     var loc_data = null;
                     for(var i = 0, lenI = datas == null ? 0 : datas.length; i < lenI; i++){
@@ -160,7 +214,7 @@ var zxFinanceService = {
                 });
             },
             events : function(callbackTmp){
-                zxFinanceService.getEventList(date, dataType, function(err, events){
+                zxFinanceService.getEventList(date, dataType, otherParams, function(err, events){
                     var loc_events = {
                         events : [],
                         vacations : []
