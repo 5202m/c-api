@@ -56,7 +56,7 @@ exports.init = app => {
     //授权处理
     apiRoutes.all('/*', (req, res, next) => { //拦截token授权接口
         var url = req.originalUrl;
-        var reg = /\/common\/*|\/chat\/getMessageList|\/message\/*|\/token\/getToken|\/token\/verifyToken/;
+        var reg = /\/common\/*|\/chat\/getMessageList|\/message\/*|\/token\/*/;
         if (reg.test(url)) {
             next();
             return;
