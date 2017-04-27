@@ -200,7 +200,8 @@ var tokenService = {
                 expires = parseFloat(row.expires);
             if (common.isValid(token) && expires > 0) {
                 cacheClient.hgetall(tokenService.formatTokenKey(token), (err, result) => {
-                    if (result) {
+                    let verify = verifyAccessToken(token, appSecret, result);
+                    if (verify.isOK) {
                         result.token = token;
                         callback(result);
                         return;

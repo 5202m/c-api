@@ -72,7 +72,8 @@ exports.init = app => {
                 next();
             } else {
                 var ApiResult = require('../util/ApiResult');
-                logger.warn("check token fail->token:" + token);
+                logger.warn("check token fail->token:", token, " for URL: ", url);
+				logger.debug("verify result: ", data);
                 if (req.path.indexOf('.xml') != -1) {
                     res.end(ApiResult.result(data.error, null, ApiResult.dataType.xml));
                 } else {
