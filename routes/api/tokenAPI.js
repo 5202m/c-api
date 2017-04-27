@@ -19,7 +19,7 @@
  * @apiSuccess {String} errmsg  错误信息.
  * @apiSuccess {Number} errcode  错误码.
  */
-var logger =require("../../resources/logConf").getLogger("tokenAPI");
+var logger = require("../../resources/logConf").getLogger("tokenAPI");
 var express = require('express');
 var router = express.Router();
 var tokenService = require('../../service/tokenService');
@@ -80,25 +80,25 @@ var errorMessage = require('../../util/errorMessage');
  */
 router.post('/setTokenAccess', function(req, res) {
     try {
-        var result={isOK:false,error:null};
-        var model=req.body;
-        if(common.isBlank(model.appId)||common.isBlank(model.appSecret)||common.isBlank(model.platform)){
-            result.error=errorMessage.code_1000;
+        var result = { isOK: false, error: null };
+        var model = req.body;
+        if (common.isBlank(model.appId) || common.isBlank(model.appSecret) || common.isBlank(model.platform)) {
+            result.error = errorMessage.code_1000;
             res.json(result);
-        }else{
-            if(common.isValid(model.tokenAccessId)){
-                tokenService.updateTokenAccess(model,function(resultTmp){
+        } else {
+            if (common.isValid(model.tokenAccessId)) {
+                tokenService.updateTokenAccess(model, function(resultTmp) {
                     res.json(resultTmp);
                 });
-            }else{
-                tokenService.createTokenAccess(model,function(resultTmp){
+            } else {
+                tokenService.createTokenAccess(model, function(resultTmp) {
                     res.json(resultTmp);
                 });
             }
         }
-    }catch(e){
+    } catch (e) {
         logger.error(e);
-        result.error=errorMessage.code_10;
+        result.error = errorMessage.code_10;
         res.json(result);
     }
 });
@@ -132,11 +132,11 @@ router.post('/setTokenAccess', function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.get('/getTokenAccessList', function(req, res) {
-    var model=null;
-    if(common.isValid(req.query.appId) || common.isValid(req.query.appSecret) || common.isValid(req.query.platform)){
-        model={appId:req.query.appId,appSecret:req.query.appSecret,platform:req.query.platform};
+    var model = null;
+    if (common.isValid(req.query.appId) || common.isValid(req.query.appSecret) || common.isValid(req.query.platform)) {
+        model = { appId: req.query.appId, appSecret: req.query.appSecret, platform: req.query.platform };
     }
-    tokenService.getTokenAccessList(model,function(result){
+    tokenService.getTokenAccessList(model, function(result) {
         res.json(result);
     });
 });
@@ -170,12 +170,12 @@ router.get('/getTokenAccessList', function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.post('/deleteTokenAccess', function(req, res) {
-    var ids=req.body.ids;
-    if(common.isBlank(ids)){
-        res.json({isOK:false,error:errorMessage.code_1000});
-    }else{
-        tokenService.deleteTokenAccess(ids,function(){
-            res.json({isOK:true,error:null});
+    var ids = req.body.ids;
+    if (common.isBlank(ids)) {
+        res.json({ isOK: false, error: errorMessage.code_1000 });
+    } else {
+        tokenService.deleteTokenAccess(ids, function() {
+            res.json({ isOK: true, error: null });
         });
     }
 });
@@ -207,11 +207,11 @@ router.post('/deleteTokenAccess', function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.get('/getTokenAccessById', function(req, res) {
-    var tokenAccessId=req.query.tokenAccessId;
-    if(common.isBlank(tokenAccessId)){
+    var tokenAccessId = req.query.tokenAccessId;
+    if (common.isBlank(tokenAccessId)) {
         res.json(null);
-    }else{
-        tokenService.getTokenAccessById(tokenAccessId,function(data){
+    } else {
+        tokenService.getTokenAccessById(tokenAccessId, function(data) {
             res.json(data);
         });
     }
@@ -244,11 +244,11 @@ router.get('/getTokenAccessById', function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.get('/getTokenAccessByPlatform', function(req, res) {
-    var platform=req.query.platform;
-    if(common.isBlank(platform)){
+    var platform = req.query.platform;
+    if (common.isBlank(platform)) {
         res.json(null);
-    }else{
-        tokenService.getTokenAccessByPlatform(platform,function(data){
+    } else {
+        tokenService.getTokenAccessByPlatform(platform, function(data) {
             res.json(data);
         })
     }
@@ -277,26 +277,25 @@ router.get('/getTokenAccessByPlatform', function(req, res) {
  *          "result": 0,
  *          "errcode": "0",
  *          "errmsg": "",
- *          "data": {
- *          	...
- *          }
+ *          "data": { token: token, expires: time, beginTime: beginTime }
  *      }
  *
  * @apiUse ParametersMissedError
  */
 router.post('/getToken', function(req, res) {
     try {
-        var appId = req.body['appId'],appSecret =req.body['appSecret'];
+        var appId = req.body['appId'],
+            appSecret = req.body['appSecret'];
         logger.info("getToken->appId:" + appId + ",appSecret:" + appSecret);
         if (common.isBlank(appId) || common.isBlank(appSecret)) {
             res.json(errorMessage.code_1000);
-        }else{
-            tokenService.getToken(appId,appSecret,function (data) {
-                logger.info("getToken->data:"+JSON.stringify(data));
+        } else {
+            tokenService.getToken(appId, appSecret, function(data) {
+                logger.info("getToken->data:" + JSON.stringify(data));
                 res.json(data);
             });
         }
-    }catch(e){
+    } catch (e) {
         logger.error(e);
         res.json(errorMessage.code_10);
     }
@@ -331,12 +330,12 @@ router.post('/getToken', function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.post('/destroyToken', function(req, res) {
-    var token=req.body.token;
-    if(common.isBlank(token)){
-        res.json({isOK:false,error:errorMessage.code_1000});
-    }else{
-        tokenService.destroyToken(token,function(isOK){
-            res.json({isOK:isOK});
+    var token = req.body.token;
+    if (common.isBlank(token)) {
+        res.json({ isOK: false, error: errorMessage.code_1000 });
+    } else {
+        tokenService.destroyToken(token, function(isOK) {
+            res.json({ isOK: isOK });
         });
     }
 });
@@ -347,6 +346,7 @@ router.post('/destroyToken', function(req, res) {
  * @apiGroup token
  *
  * @apiParam {String} token 必填
+ * @apiParam {String} appSecret 必填
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -370,13 +370,14 @@ router.post('/destroyToken', function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.post('/verifyToken', function(req, res) {
-    var token=req.body.token;
-    logger.info("verifyToken token:"+token);
-    if(common.isBlank(token)){
-       res.json({success:false});
-    }else{
-        tokenService.verifyToken(token,function(data){
-            res.json({success:data});
+    var token = req.body.token;
+	var appSecret = req.body.appSecret;
+    logger.info("verifyToken token:" + token);
+    if (common.isBlank(token)) {
+        res.json({ isOK: false, error: errorMessage.code_5003 });
+    } else {
+        tokenService.verifyToken(token, appSecret, function(data) {
+            res.json(data);
         });
     }
 });
