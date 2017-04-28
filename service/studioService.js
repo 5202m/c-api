@@ -345,7 +345,8 @@ var studioService = {
      */
     checkMemberAndSave: function(userInfo, callback) {
         var result = { isOK: false, error: errorMessage.code_10 };
-        member.findOne({ mobilePhone: userInfo.mobilePhone.replace(/^\d+$|^\d+-/ , ''), valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
+        var mobilePhone = /^\d/.test(userInfo.mobilePhone) ? common.getValidPhoneNumber(userInfo.mobilePhone) : userInfo.mobilePhone;
+        member.findOne({ mobilePhone: mobilePhone, valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
                 logger.error("checkMemberAndSave fail:" + err);
                 callback(result);
