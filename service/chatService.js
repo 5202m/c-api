@@ -503,7 +503,8 @@ var chatService = {
                 //验证规则
                 userService.verifyRule(userInfo, { isWh: isWh, speakNum: speakNum }, data.content).then(resultVal => {
                     if (!resultVal.isOK) { //匹配规则，则按规则逻辑提示
-                        logger.info('acceptMsg=>resultVal:' + JSON.stringify(resultVal));
+                        logger.info('acceptMsg=>resultVal:', JSON.stringify(resultVal));
+                        logger.info('verifyRule unmatched: ', JSON.stringify(data.content));
                         //通知自己的客户端
                         chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), { fromUser: userInfo, uiId: data.uiId, value: resultVal, rule: true });
                     } else {
