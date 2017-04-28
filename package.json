@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node ./bin/pm_api",
-    "debug": "node-inspector --web-port 3000 --debug-port 5850 | node --debug=5850 ./bin/pm_api"
+    "start": "node ./bin/chat-api"
   },
   "dependencies": {
     "async": "^1.4.0",
