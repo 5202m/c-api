@@ -211,8 +211,11 @@ router.get('/getTokenAccessById', function(req, res) {
     if (common.isBlank(tokenAccessId)) {
         res.json(null);
     } else {
-        tokenService.getTokenAccessById(tokenAccessId, function(data) {
+        tokenService.getTokenAccessById(tokenAccessId).then(function(data) {
             res.json(data);
+        }).catch(e => {
+            logger.error("getTokenAccessById failure", e);
+            res.json(null);
         });
     }
 });
@@ -371,7 +374,7 @@ router.post('/destroyToken', function(req, res) {
  */
 router.post('/verifyToken', function(req, res) {
     var token = req.body.token;
-	var appSecret = req.body.appSecret;
+    var appSecret = req.body.appSecret;
     logger.info("verifyToken token:" + token);
     if (common.isBlank(token)) {
         res.json({ isOK: false, error: errorMessage.code_5003 });

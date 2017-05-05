@@ -8,6 +8,8 @@ const common = require('../util/common');
 const logger = require('../resources/logConf').getLogger('tokenService'); //引入log4js
 const errorMessage = require('../util/errorMessage');
 const cacheClient = require('../cache/cacheClient');
+const TokenAccess = require('../models/tokenAccess');
+const ObjectId = require('mongoose').Types.ObjectId;
 const async = require('async'); //引入async
 
 let generateToken = (appId, appSecret, hours) => {
@@ -28,23 +30,106 @@ let verifyAccessToken = (token, appSecret, result) => {
         }
         if (decode.iss !== result.appId) {
             return { isOK: false, error: errorMessage.code_5001 };
-        } else return { isOK: true };
+        } else return { isOK: true, appId: result.appId };
     } catch (e) {
         console.error(token, "invalid!");
         return { isOK: false, error: errorMessage.code_5001 };
     }
 };
+
+class TokenAccessOnDB {
+    constructor() {}
+    getAll() {
+        let deferred = new common.Deferred();
+        TokenAccess.find().then(deferred.resolve).catch(deferred.reject);
+        return deferred.promise;
+    }
+    getByQuery(query) {
+        let deferred = new common.Deferred();
+        TokenAccess.findOne(query).then(deferred.resolve).catch(deferred.reject);
+        return deferred.promise;
+    }
+    save(model) {
+        let currDate = new Date();
+        let deferred = new common.Deferred();
+        let tokenAccess = new TokenAccess({
+            '_id': new ObjectId(),
+            'tokenAccessId': 'TokenAccess:' + model.appId + '_' + model.appSecret,
+            'platform': model.platform,
+            'appId': model.appId,
+            'appSecret': model.appSecret,
+            'expires': (model.expires ? model.expires : 2),
+            'valid': 1,
+            'status': 1,
+            'createUser': model.createUser || "",
+            'createIp': model.createIp || "",
+            'createDate': model.createDate || currDate,
+            'updateUser': model.updateUser || (model.createUser || ""),
+            'updateIp': model.updateIp || (model.createIp || ""),
+            'updateDate': model.updateDate || currDate,
+            'remark': model.remark || ""
+        });
+        tokenAccess.save().then(deferred.resolve).catch(deferred.reject);
+        return deferred.promise;
+    }
+    update(tokenAccessId, model) {
+        let deferred = new common.Deferred();
+        let _this = this;
+        let updateFieldsByModel = (row) => {
+            row = row ? row : {};
+            row.platform = model.platform || row.platform;
+            row.appId = model.appId || row.appId;
+            row.appSecret = model.appSecret || row.appSecret;
+            row.tokenAccessId = model.appId && model.appSecret ? `TokenAccess:${model.appId}_${model.appSecret}` : row.tokenAccessId;
+            row.expires = model.expires || row.expires;
+            row.valid = model.valid || row.valid;
+            row.status = model.status || row.status;
+            row.createUser = model.createUser || row.createUser;
+            row.createIp = model.createIp || row.createIp;
+            row.createDate = model.createDate || row.createDate;
+            row.updateUser = model.updateUser || row.updateUser;
+            row.updateIp = model.updateIp || row.updateIp;
+            row.updateDate = model.updateDate || row.updateDate;
+            row.remark = model.remark || row.remark;
+            return row;
+        };
+        this.getByQuery({ tokenAccessId: tokenAccessId })
+            .then(row => {
+                let isCreate = !row;
+                row = updateFieldsByModel(row);
+                if (isCreate) {
+                    _this.save(row).then(deferred.resolve).catch(deferred.reject);
+                } else {
+                    row.save().then(deferred.resolve).catch(deferred.reject);
+                    // TokenAccess.findOneAndUpdate({ tokenAccessId: tokenAccessId }, model, (err, data) => {
+                    //     if (err) {
+                    //         logger.error(err);
+                    //     }
+                    //     console.log(data);
+                    // });
+                }
+            }).catch(e => {
+                logger.error(e);
+            });
+        return deferred.promise;
+    }
+};
+
 /**
  * 定义token服务类
  */
 var tokenService = {
+
     /**
      * 格式TokenAccessById
      * @param tokenAccessById
      * @returns {string}
      */
     formatTokenAccessById: function(tokenAccessById) {
-        return 'tokenAccess:' + tokenAccessById;
+        if (/^TokenAccess:/.test(tokenAccessById)) {
+            return tokenAccessById;
+        }
+        return 'TokenAccess:' + tokenAccessById;
     },
     /**
      * 格式TokenKey
@@ -54,16 +139,52 @@ var tokenService = {
     formatTokenKey: function(token) {
         return 'token:' + token;
     },
+    resyncTokenAccess: function() {
+        let tokenAccessOnDB = new TokenAccessOnDB();
+        let _this = this;
+        let doResync = (listOnDB, listOnRedis) => {
+            let dbUpdater = item => {
+                return tokenAccessOnDB.update(item.tokenAccessId, item);
+            };
+            let redisUpdater = item => {
+                let deferred = new common.Deferred();
+                _this.updateTokenAccess(item, result => {
+                    if (result.isOK) {
+                        deferred.resolve(result);
+                    } else {
+                        deferred.reject(result);
+                    }
+                });
+                return deferred.promise;
+            };
+            let seriesUpdate = (list, updater) => {
+                async.eachSeries(list, function(item, callbackTmp) {
+                    updater(item).then(callbackTmp).catch(e => {
+                        logger.error(e);
+                    });
+                }, function(result) {
+                    logger.info(result);
+                });
+            };
+            seriesUpdate(listOnDB, redisUpdater);
+            seriesUpdate(listOnRedis, dbUpdater);
+        };
+        this.getTokenAccessList(null, listOnRedis => {
+            tokenAccessOnDB.getAll().then(listOnDB => {
+                doResync(listOnDB, listOnRedis);
+            }).catch(logger.error);
+        });
+    },
     /**
-     * 创建新的tokenAccess
+     * 创建新的TokenAccess
      * @param model
      */
     createTokenAccess: function(model, callback) {
         var currDate = new Date();
+        let tokenAccessOnDB = new TokenAccessOnDB();
         cacheClient.hmset(this.formatTokenAccessById(model.appId + '_' + model.appSecret),
             'platform', model.platform,
             'appId', model.appId,
-            'token', model.token || '',
             'appSecret', model.appSecret,
             'expires', (model.expires ? model.expires : 2),
             'valid', 1,
@@ -76,10 +197,14 @@ var tokenService = {
             'updateDate', model.updateDate || currDate,
             'remark', model.remark || ""
         );
-        callback({ isOK: true, error: null });
+        // tokenAccessOnDB.update(model.appId + '_' + model.appSecret, model).then(() => {
+        //     callback({ isOK: true, error: null });
+        // }).catch(e => {
+        //     callback({ isOK: false, error: e });
+        // });
     },
     /**
-     * 更新tokenAccess
+     * 更新TokenAccess
      * @param model
      */
     deleteTokenAccess: function(ids, callback) {
@@ -93,7 +218,7 @@ var tokenService = {
         });
     },
     /**
-     * 更新tokenAccess
+     * 更新TokenAccess
      * @param model
      */
     updateTokenAccess: function(model, callback) {
@@ -111,11 +236,11 @@ var tokenService = {
         });
     },
     /**
-     * 查询tokenAccess
+     * 查询TokenAccess
      * @param model
      */
     getTokenAccessList: function(model, callback) {
-        cacheClient.keys('tokenAccess:*', function(err, keys) {
+        cacheClient.keys('TokenAccess:*', function(err, keys) {
             var tokenAccessList = [];
             async.eachSeries(keys, function(item, callbackTmp) {
                 cacheClient.hgetall(item, function(err, result) {
@@ -135,11 +260,11 @@ var tokenService = {
         });
     },
     /**
-     * 查询tokenAccess
+     * 查询TokenAccess
      * @param model
      */
     getTokenAccessByPlatform: function(platform, callback) {
-        cacheClient.keys('tokenAccess:*', function(err, keys) {
+        cacheClient.keys('TokenAccess:*', function(err, keys) {
             var resultTmp = null;
             async.eachSeries(keys, function(item, callbackTmp) {
                 cacheClient.hgetall(item, function(err, result) {
@@ -155,18 +280,21 @@ var tokenService = {
         });
     },
     /**
-     * 查询tokenAccess
+     * 查询TokenAccess
      * @param model
      */
-    getTokenAccessById: function(tokenAccessById, callback) {
-        cacheClient.hgetall(tokenAccessById, function(err, result) {
+    getTokenAccessById: function(tokenAccessById) {
+        let deferred = new common.Deferred();
+        cacheClient.hgetall(tokenService.formatTokenAccessById(tokenAccessById), function(err, result) {
             if (err || !result) {
-                callback(null);
+                logger.error("getTokenAccessById failure:", tokenAccessById, err);
+                deferred.reject(err);
             } else {
                 result.tokenAccessId = tokenService.formatTokenAccessById(result.appId + '_' + result.appSecret);
-                callback(result);
+                deferred.resolve(result);
             }
         });
+        return deferred.promise;
     },
     /**
      * 验证token
@@ -190,12 +318,7 @@ var tokenService = {
      * @param expires 0:一次有效  1:1个小时  2:2个小时
      */
     getToken: function(appId, appSecret, callback) {
-        tokenService.getTokenAccessById(this.formatTokenAccessById(appId + "_" + appSecret), function(row) {
-            if (!row) {
-                logger.warn("getToken fail,please check!");
-                callback(errorMessage.code_1001);
-                return;
-            }
+        tokenService.getTokenAccessById(this.formatTokenAccessById(appId + "_" + appSecret)).then(function(row) {
             var token = row.token,
                 expires = parseFloat(row.expires);
             if (common.isValid(token) && expires > 0) {
@@ -215,9 +338,12 @@ var tokenService = {
 
             } else {
                 tokenService.createToken(expires, row, function(newToken) {
-                    callback(newTokenObject); //返回token
+                    callback(newToken); //返回token
                 });
             }
+        }).catch(e => {
+            logger.error("getToken failure, due to: ", e);
+            callback(errorMessage.code_1001);
         });
     },
     /**
@@ -236,18 +362,13 @@ var tokenService = {
             time = 0.1 * 3600; //如果是零，即一次性使用，默认给6分钟有效
         }
         let token = generateToken(row.appId, row.appSecret, expires);
-        row.token = token;
-        //更新TokenAccess
-        tokenService.createTokenAccess(row, function(result) {
-            //更新Token
-            var key = tokenService.formatTokenKey(token);
-            cacheClient.hmset(key,
-                'expires', expires,
-                'beginTime', beginTime,
-                'appId', row.appId
-            );
-            callback({ token: token, expires: expires, beginTime: beginTime, appId: row.appId }); //返回token
-        });
+        var key = tokenService.formatTokenKey(token);
+        cacheClient.hmset(key,
+            'expires', expires,
+            'beginTime', beginTime,
+            'appId', row.appId
+        );
+        callback({ token: token, expires: expires, beginTime: beginTime, appId: row.appId }); //返回token
     },
     /**
      * 注销token
