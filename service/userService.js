@@ -404,6 +404,29 @@ var userService = {
                 logger.error('createUser=>create member fail,' + err);
             }
             if (callback) {
+                if (common.isValid(userInfo.item)) {
+                    //注册积分
+                    var pointsParams = { clientGroup: userInfo.clientGroup, groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: userInfo.item, val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: userInfo.ip };
+                    chatPointsService.add(pointsParams, function() {
+                        //DEMO积分
+                        if (userInfo.clientGroup == constant.clientGroup.simulate || userInfo.clientGroup == constant.clientGroup.notActive || userInfo.clientGroup == constant.clientGroup.active) {
+                            var pointsParamsD = { clientGroup: userInfo.clientGroup, groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: "hand_openDemo", val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: userInfo.ip };
+                            chatPointsService.add(pointsParamsD, function() {
+                                //N客户积分
+                                if (userInfo.clientGroup == constant.clientGroup.notActive || userInfo.clientGroup == constant.clientGroup.active) {
+                                    var pointsParamsN = { clientGroup: userInfo.clientGroup, groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: "hand_openReal", val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: userInfo.ip };
+                                    chatPointsService.add(pointsParamsN, function() {
+                                        //A客户积分
+                                        if (userInfo.clientGroup == constant.clientGroup.active) {
+                                            var pointsParamsA = { clientGroup: userInfo.clientGroup, groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: "hand_deposit", val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: userInfo.ip };
+                                            chatPointsService.add(pointsParamsA, function(result) {});
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
                 callback(!err && rowTmp);
             }
         });

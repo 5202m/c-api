@@ -357,7 +357,8 @@ var studioService = {
      */
     checkMemberAndSave: function(userInfo, callback) {
         var result = { isOK: false, error: errorMessage.code_10 };
-        member.findOne({ mobilePhone: userInfo.mobilePhone.replace(/^\d+$|^\d+-/, ''), valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
+        var mobilePhone = /^\d/.test(userInfo.mobilePhone) ? common.getValidPhoneNumber(userInfo.mobilePhone) : userInfo.mobilePhone;
+        member.findOne({ mobilePhone: mobilePhone, valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
                 logger.error("checkMemberAndSave fail:" + err);
                 callback(result);
@@ -391,11 +392,13 @@ var studioService = {
                         delete result.error;
                         callback(result);
                     } else {
+                        userInfo.item = 'register_reg';//使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
                         studioService.setClientInfo(row, userInfo, function(resultTmp) {
                             callback(resultTmp);
                         });
                     }
                 } else {
+                    userInfo.item = 'register_reg';//使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
                     studioService.setClientInfo(row, userInfo, function(resultTmp) {
                         callback(resultTmp);
                     });

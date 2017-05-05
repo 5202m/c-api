@@ -270,6 +270,12 @@ var common = {
             }
         }
     },
+    getValidPhoneNumber: num => {
+        let phone = num;
+        phone = phone.match(/[0-9]{6,11}$/);
+        phone = phone ? phone[0] : null;
+        return phone;
+    },
     /**
      * 验证是否符合手机号码格式
      * 

@@ -232,6 +232,7 @@ var subscribeService = {
                             open           : attachData.open || "",
                             profit         : attachData.profit || "",
                             loss           : attachData.loss || "",
+                            drag2           : attachData.drag2 || "",
                             description    : attachData.description || ""
                         });
                     }
@@ -323,6 +324,7 @@ var subscribeService = {
                             open           : attachData.open || "",
                             profit         : attachData.profit || "",
                             loss           : attachData.loss || "",
+                            drag2           : attachData.drag2 || "",
                             description    : attachData.description || ""
                         });
                     }

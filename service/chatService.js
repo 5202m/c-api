@@ -14,6 +14,7 @@ var ChatPraise = require('../models/chatPraise'); //引入chatPraise数据模型
 var noticeMessage = require("../message/NoticeMessage");
 var chatMessage = require("../message/ChatMessage");
 var baseMessage = require("../message/BaseMessage");
+var chatMessageModel = require("../models/chatMessage").db();
 var cacheClient = require("../cache/cacheClient");
 var ObjectId = require('mongoose').Types.ObjectId;
 var ApiResult = require('../util/ApiResult');
@@ -502,7 +503,8 @@ var chatService = {
                 //验证规则
                 userService.verifyRule(userInfo, { isWh: isWh, speakNum: speakNum }, data.content).then(resultVal => {
                     if (!resultVal.isOK) { //匹配规则，则按规则逻辑提示
-                        logger.info('acceptMsg=>resultVal:' + JSON.stringify(resultVal));
+                        logger.info('acceptMsg=>resultVal:', JSON.stringify(resultVal));
+                        logger.info('verifyRule unmatched: ', JSON.stringify(data.content));
                         //通知自己的客户端
                         chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), { fromUser: userInfo, uiId: data.uiId, value: resultVal, rule: true });
                     } else {
@@ -742,6 +744,81 @@ var chatService = {
     },
     getRedisKey: function(groupType, groupId, userId) {
         return "chat_socket_" + groupType + "_" + groupId + "_" + userId;
+    },
+    /**
+     * 提取聊天信息
+     */
+    getMessagePage: function(params, callback) {
+        var roomCode = params.roomCode;
+        var isNullCode = common.isBlank(roomCode);
+        if (isNullCode) {
+            roomCode = constant.studioGroupType.studio;
+        }
+        var searchObj = { 'toUser.talkStyle': 0, groupType: roomCode, status: 1, valid: 1, 'content.msgType': 'text' };
+        var isStudio = (roomCode == constant.studioGroupType.studio || roomCode == constant.studioGroupType.fxstudio);
+        if (isStudio) {
+            searchObj.groupId = constant.studioDefRoom[roomCode];
+            var lastTm = params.lastPublishTime;
+            if (common.isValid(lastTm)) {
+                params.pageNo = 1;
+                params.pageSize = 10000;
+                searchObj.publishTime = { "$gt": lastTm };
+            }
+        } else {
+            searchObj.userType = { '$in': [0, 2] };
+        }
+        if (common.isValid(params.userType)) {
+            searchObj.userType = params.userType;
+        }
+        if (common.isValid(params.nickname)) {
+            searchObj.nickname = params.nickname;
+        }
+        var from = (params.pageNo - 1) * params.pageSize;
+        var orderByJsonObj = { publishTime: -1 };
+        if (common.isValid(params.orderByJsonStr)) {
+            orderByJsonObj = JSON.parse(params.orderByJsonStr);
+        }
+        async.parallel({
+                list: function(callbackTmp) {
+                    chatMessageModel.find(searchObj).skip(from)
+                        .limit(params.pageSize)
+                        .sort(orderByJsonObj)
+                        .select("avatar toUser userType nickname content.msgType content.value publishTime")
+                        .exec('find', function(err, infos) {
+                            if (err) {
+                                logger.error(err);
+                                callbackTmp(null, null);
+                            } else {
+                                var dataList = [],
+                                    row = null,
+                                    newRow = null;
+                                for (var i in infos) {
+                                    row = infos[i];
+                                    newRow = { avatar: row.avatar, userType: row.userType, nickname: row.nickname, content: row.content.value };
+                                    if (isStudio && !isNullCode) {
+                                        newRow.toUser = row.toUser;
+                                        newRow.publishTime = row.publishTime;
+                                    } else {
+                                        newRow.publishTime = row.publishTime.replace(/_.+/, "");
+                                        if (common.isValid(row.toUser.userId) && common.isValid(row.toUser.question)) {
+                                            newRow.questionInfo = { nickname: row.toUser.nickname, question: row.toUser.question };
+                                        }
+                                    }
+                                    dataList.push(newRow);
+                                }
+                                callbackTmp(null, dataList);
+                            }
+                        });
+                },
+                totalSize: function(callbackTmp) {
+                    chatMessageModel.find(searchObj).count(function(err, rowNum) {
+                        callbackTmp(null, rowNum);
+                    });
+                }
+            },
+            function(err, results) {
+                callback(ApiResult.page(params.pageNo, params.pageSize, results.totalSize, results.list));
+            });
     }
 };
 chatService.init();
