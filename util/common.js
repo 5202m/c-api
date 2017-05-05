@@ -668,6 +668,13 @@ var common = {
         this.reject = function() {
             _reject.apply(this.promise, arguments);
         };
+    },
+    wrapSystemCategory: function(searchObj, systemCategory) {
+        if (systemCategory) {
+            searchObj['systemCategory'] = systemCategory;
+            return searchObj;
+        }
+        return searchObj;
     }
 };
 
