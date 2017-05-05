@@ -70,15 +70,14 @@ router.post("/checkSystemUserInfo", (req, res) => {
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[checkSystemUserInfo] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
 
     adminService.checkSystemUserInfo(
-        req.body.userNo, 
-        req.body.password,         
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -116,7 +115,7 @@ router.post("/updateMember", (req, res) => {
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[updateMember] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -124,7 +123,7 @@ router.post("/updateMember", (req, res) => {
     adminService.updateMember(
         req.body,
         (isSuccess) => {
-            res.json(APIUtil.APIResult(null, {isOK: isSuccess}));
+            res.json(APIUtil.APIResult(null, { isOK: isSuccess }));
         }
     );
 
@@ -167,7 +166,7 @@ router.get("/getChatGroupListByAuthUser", (req, res) => {
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[getChatGroupListByAuthUser] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -280,7 +279,7 @@ router.post("/setUserGag", (req, res) => {
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[setUserGag] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -288,7 +287,7 @@ router.post("/setUserGag", (req, res) => {
     adminService.setUserGag(
         req.body,
         (isSuccess) => {
-            res.json(APIUtil.APIResult(null, {isOK: isSuccess}));
+            res.json(APIUtil.APIResult(null, { isOK: isSuccess }));
         }
     );
 });
@@ -331,7 +330,7 @@ router.post("/setVisitorGag", (req, res) => {
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[setVisitorGag] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
@@ -384,7 +383,7 @@ router.get("/getUserGag", (req, res) => {
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         logger.warn("[getUserGag] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;

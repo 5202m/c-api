@@ -72,13 +72,17 @@ router.get("/getIndexLoadData", (req, res) => {
         isGetSyllabus = req.query["isGetSyllabus"] || true,
         isGetMember = req.query["isGetMember"] || false;
 
+    let params = {
+        userId: req.query["userId"],
+        groupType: req.query["groupType"],
+        groupId: req.query["groupId"],
+        isGetRoomList: isGetRoomList === "true",
+        isGetSyllabus: isGetSyllabus === "true",
+        isGetMember: isGetMember === "true"
+    };
+
     studioService.getIndexLoadData(
-        req.query["userId"],
-        req.query["groupType"],
-        req.query["groupId"],
-        isGetRoomList === "true",
-        isGetSyllabus === "true",
-        isGetMember === "true",
+        params,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }

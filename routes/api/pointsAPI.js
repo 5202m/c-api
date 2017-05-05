@@ -57,8 +57,9 @@ router.get('/pointsInfo', function(req, res) {
     var params = {
         groupType: req.query["groupType"],
         userId: req.query["userId"],
-        hasJournal: req.query["noJournal"] != "1"
+        hasJournal: req.query["noJournal"] != "1",
     };
+    common.wrapSystemCategory(params, req.query.systemCategory);
     if (common.isBlank(params.groupType) ||
         common.isBlank(params.userId)) {
         res.json(APIUtil.APIResult("code_1000", null));
@@ -66,7 +67,7 @@ router.get('/pointsInfo', function(req, res) {
     }
 
     //查询积分
-    ChatPointsService.getPointsInfo(params.groupType, params.userId, params.hasJournal, function(pointsInfo) {
+    ChatPointsService.getPointsInfo(params, function(pointsInfo) {
         //    res.json(pointsInfo);
         if (pointsInfo) {
             res.json(APIUtil.APIResult(null, pointsInfo));

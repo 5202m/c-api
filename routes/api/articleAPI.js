@@ -11,6 +11,11 @@
  *	}
  */
 /**
+ * @apiDefine commonParameters
+ *
+ * @apiParam {String} systemCategory 系统分类，目前传入公司代码，例如贵金属是pm，外汇是fx，恒信是hx等等。
+ */
+/**
  * @apiDefine ParametersDataBrokenError
  * 
  * @apiError ParametersDataBroken 参数数据格式错误，无法完成请求。
@@ -29,11 +34,11 @@
  * @apiSuccess {String} errmsg  错误信息.
  * @apiSuccess {Number} errcode  错误码.
  */
+"use strict";
 var logger = require("../../resources/logConf").getLogger("articleAPI");
 var express = require('express');
 var router = express.Router();
 var articleService = require('../../service/articleService');
-"use strict";
 let errorMessage = require('../../util/errorMessage');
 let common = require('../../util/common');
 let constant = require('../../constant/constant');
@@ -49,6 +54,7 @@ let ApiResult = require('../../util/ApiResult'); //引起聊天室工具类js
  * @apiParam {String} code 文章类型，对应数据库中的categoryId.
  * @apiParam {String} platform 文章平台，对应mis后台应用位置，取直播间的groupId值
  * @apiParam {String} [format] 待补充说明
+ * @apiUse commonParameters
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
@@ -75,7 +81,8 @@ router.get('/getGroupArticles', (req, res) => {
         days: req.query["days"],
         code: req.query["code"],
         platform: req.query["platform"],
-        format: req.query["format"]
+        format: req.query["format"],
+        systemCategory: req.query["systemCategory"]
     };
     let requires = ["code", "platform"];
     let isSatify = requires.every(name => {
@@ -100,6 +107,7 @@ router.get('/getGroupArticles', (req, res) => {
  * @apiParam {String} code 文章类型，对应数据库中的categoryId.
  * @apiParam {String} platform 文章平台，对应mis后台应用位置，取直播间的groupId值.
  * @apiParam {String} [format] 待补充说明
+ * @apiUse commonParameters
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
@@ -124,7 +132,8 @@ router.get('/getArticleCount', (req, res) => {
     var params = {
         code: req.query["code"],
         platform: req.query["platform"],
-        dateTime: req.query["dateTime"]
+        dateTime: req.query["dateTime"],
+        systemCategory: req.query["systemCategory"]
     };
     let requires = ["code", "platform"];
     let isSatify = requires.every(name => {
@@ -157,6 +166,7 @@ router.get('/getArticleCount', (req, res) => {
  * @apiParam {String} [orderByJsonStr] 排序字段 {"publishStartDate":"desc"}
  * @apiParam {String} [hasContent] 是否包含内容 true/false
  * @apiParam {String} [format] 待补充说明
+ * @apiUse commonParameters
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
@@ -191,6 +201,7 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
     params.orderByJsonStr = req.query["orderByJsonStr"];
     params.hasContent = req.query["hasContent"];
     params.format = req.query["format"];
+    params.systemCategory = req.query["systemCategory"];
     if (!params.pageNo || params.pageNo <= 0) {
         params.pageNo = 1;
     }
@@ -229,6 +240,7 @@ router.get(/^\/getArticleList(\.(json|xml))?$/, function(req, res) {
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
+ * @apiUse commonParameters
  *
  * @apiSampleRequest /api/article/getArticleInfo
  * @apiExample Example usage:
@@ -274,6 +286,7 @@ router.get('/getArticleInfo', function(req, res) {
  * @apiParam {String} [data.mediaImgUrl] 媒体图片封面url.
  * @apiParam {String} [data.linkUrl] 链接Url.
  * @apiParam {Array} data.detailList 文档内容.
+ * @apiUse commonParameters
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -301,6 +314,7 @@ router.get('/getArticleInfo', function(req, res) {
 router.post('/add', function(req, res) {
     APIUtil.logRequestInfo(req, "articleAPI");
     var param = req.body['data'];
+    let systemCategory = req.body["systemCategory"];
     if (typeof param == 'string') {
         param = JSON.parse(param);
     }
@@ -332,6 +346,7 @@ router.post('/add', function(req, res) {
         res.json(APIUtil.APIResult("code_2002", null, null));
         return;
     }
+    loc_article.systemCategory = systemCategory;
     articleService.addArticle(loc_article, function(apiResult) {
         res.json(APIUtil.APIResult(null, apiResult, null));
     });
@@ -345,6 +360,7 @@ router.post('/add', function(req, res) {
  * @apiParam {String} query 请求体中的query字段，json字符串，用于为Mongodb传入额外的query选项.
  * @apiParam {String} data 请求体中的data字段，json字符串.
  * @apiParam {String} [field] 请求体中的data字段.
+ * @apiUse commonParameters
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -370,6 +386,7 @@ router.post('/modify', function(req, res) {
     var query = req.body['query'];
     var updater = req.body['data'];
     var field = req.body['field'];
+    let systemCategory = req.body["systemCategory"];
 
     let requires = ["query", "data"];
     let isSatify = requires.every(name => {
@@ -397,6 +414,7 @@ router.post('/modify', function(req, res) {
             return;
         }
     }
+    query.systemCategory = systemCategory;
     articleService.modifyArticle(query, field, updater, function(apiResult) {
         APIUtil.APIResult(null, apiResult, null);
     });
@@ -409,6 +427,7 @@ router.post('/modify', function(req, res) {
  *
  * @apiParam {String} query 请求体中的query字段，json字符串.
  * @apiParam {String} type 请求体中的query字段.
+ * @apiUse commonParameters
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -433,6 +452,7 @@ router.post('/modifyPraiseOrDownloads', function(req, res) {
     APIUtil.logRequestInfo(req, "articleAPI");
     var query = req.body['query'];
     var type = req.body['type'];
+    let systemCategory = req.body["systemCategory"];
     let requires = ["query", "type"];
     let isSatify = requires.every(name => {
         return common.isValid(req.body[name]);
@@ -450,6 +470,7 @@ router.post('/modifyPraiseOrDownloads', function(req, res) {
             return;
         }
     }
+    query.systemCategory = systemCategory;
     articleService.modifyPraiseOrDownloads(query, type, function(apiResult) {
         APIUtil.APIResult(null, apiResult, null);
     });
