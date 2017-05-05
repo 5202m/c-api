@@ -379,11 +379,13 @@ var studioService = {
                         delete result.error;
                         callback(result);
                     } else {
+                        userInfo.item = 'register_reg';//使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
                         studioService.setClientInfo(row, userInfo, function(resultTmp) {
                             callback(resultTmp);
                         });
                     }
                 } else {
+                    userInfo.item = 'register_reg';//使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
                     studioService.setClientInfo(row, userInfo, function(resultTmp) {
                         callback(resultTmp);
                     });
