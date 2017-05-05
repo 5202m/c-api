@@ -4,14 +4,14 @@
  * date:2015/4/23
  */
 var logger = require('../resources/logConf').getLogger("articleService");
-var article = require('../models/article');          //引入article数据模型
-var IdSeqManager = require('../constant/IdSeqManager.js');  //引入序号生成器js
-var category = require('../models/category');   //引入category数据模型
+var article = require('../models/article'); //引入article数据模型
+var IdSeqManager = require('../constant/IdSeqManager.js'); //引入序号生成器js
+var category = require('../models/category'); //引入category数据模型
 var ApiResult = require('../util/ApiResult');
-var commonJs = require('../util/common');       //引入公共的js
-var APIUtil = require('../util/APIUtil'); 	 	            //引入API工具类js
-var Utils = require('../util/Utils'); 	 	            //引入工具类js
-var async = require('async');//引入async
+var commonJs = require('../util/common'); //引入公共的js
+var APIUtil = require('../util/APIUtil'); //引入API工具类js
+var Utils = require('../util/Utils'); //引入工具类js
+var async = require('async'); //引入async
 
 /**
  * 定义服务类
@@ -23,28 +23,28 @@ var articleService = {
      * @param platform
      * @param isAll
      */
-    findArticle : function(code, platform, isAll, callback){
+    findArticle: function(code, platform, isAll, callback) {
         var searchObj = {
-            valid:1,
-            platform:commonJs.getSplitMatchReg(platform),
-            status:1,
-            categoryId:code
+            valid: 1,
+            platform: commonJs.getSplitMatchReg(platform),
+            status: 1,
+            categoryId: code
         };
-        if(!isAll){
-            var currDate=new Date();
-            searchObj.publishStartDate = {"$lte":currDate};
-            searchObj.publishEndDate = {"$gte":currDate};
+        if (!isAll) {
+            var currDate = new Date();
+            searchObj.publishStartDate = { "$lte": currDate };
+            searchObj.publishEndDate = { "$gte": currDate };
         }
         article.find(searchObj)
-            .sort({"createDate":-1})
+            .sort({ "createDate": -1 })
             .limit(1)
-            .exec('find', function(err,articles) {
-                if(err || !articles || articles.length == 0){
-                    if(err){
+            .exec('find', function(err, articles) {
+                if (err || !articles || articles.length == 0) {
+                    if (err) {
                         logger.error(err);
                     }
                     callback(null);
-                }else{
+                } else {
                     callback(articles[0]);
                 }
             });
@@ -54,81 +54,82 @@ var articleService = {
      * @param params {{platform, code, isAll, lang, hasContent, authorId, orderByJsonStr, pageNo, pageSize, pageLess, pageKey}}
      * @param callback
      */
-    getArticlePage:function(params,callback){
+    getArticlePage: function(params, callback) {
         var searchObj = {
-            valid:1,
-            platform:commonJs.getSplitMatchReg(params.platform),
-            status:1
+            valid: 1,
+            platform: commonJs.getSplitMatchReg(params.platform),
+            status: 1
         };
-        if(params.code.indexOf(",")!=-1){
-            searchObj.categoryId = {$in:params.code.split(",")};
-        }else{
+        if (params.code.indexOf(",") != -1) {
+            searchObj.categoryId = { $in: params.code.split(",") };
+        } else {
             searchObj.categoryId = params.code;
         }
-        if(!params.isAll){
-            var currDate=new Date();
-            searchObj.publishStartDate = {"$lte":currDate};
-            searchObj.publishEndDate = {"$gte":currDate};
+        if (!params.isAll) {
+            var currDate = new Date();
+            searchObj.publishStartDate = { "$lte": currDate };
+            searchObj.publishEndDate = { "$gte": currDate };
         }
-        if(params.pageKey){
-            if(params.pageLess){
-                searchObj._id = {"$lt" : params.pageKey};
-            }else{
-                searchObj._id = {"$gt" : params.pageKey};
+        if (params.pageKey) {
+            if (params.pageLess) {
+                searchObj._id = { "$lt": params.pageKey };
+            } else {
+                searchObj._id = { "$gt": params.pageKey };
             }
         }
-        var selectField="categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate praise downloads point";
-        if(commonJs.isBlank(params.lang)){
-            if("1"==params.hasContent){
-                selectField+=" detailList";
-            }else{
-                selectField+=" detailList.title detailList.authorInfo detailList.remark detailList.tag detailList.lang";
+        var selectField = "categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate praise downloads point";
+        if (commonJs.isBlank(params.lang)) {
+            if ("1" == params.hasContent) {
+                selectField += " detailList";
+            } else {
+                selectField += " detailList.title detailList.authorInfo detailList.remark detailList.tag detailList.lang";
             }
-        }else{
-            if("1"==params.hasContent){
-                selectField+=" detailList.$";
-            }else{
-                selectField+=" detailList.title detailList.authorInfo detailList.remark detailList.tag detailList.lang";
+        } else {
+            if ("1" == params.hasContent) {
+                selectField += " detailList.$";
+            } else {
+                selectField += " detailList.title detailList.authorInfo detailList.remark detailList.tag detailList.lang";
             }
-            var deList={lang:params.lang};
-            if(commonJs.isValid(params.authorId)){
+            var deList = { lang: params.lang };
+            if (commonJs.isValid(params.authorId)) {
                 deList["authorInfo.userId"] = params.authorId;
             }
-            searchObj.detailList = {$elemMatch:deList};
+            searchObj.detailList = { $elemMatch: deList };
         }
-        var from = (params.pageNo-1) * params.pageSize;
-        var orderByJsonObj={createDate: 'desc' };
-        if(commonJs.isValid(params.orderByJsonStr)){
-            orderByJsonObj=JSON.parse(params.orderByJsonStr);
+        searchObj.systemCategory = params.systemCategory;
+        var from = (params.pageNo - 1) * params.pageSize;
+        var orderByJsonObj = { createDate: 'desc' };
+        if (commonJs.isValid(params.orderByJsonStr)) {
+            orderByJsonObj = JSON.parse(params.orderByJsonStr);
         }
         async.parallel({
-                list: function(callbackTmp){
+                list: function(callbackTmp) {
                     article.find(searchObj).skip(from)
-                            .limit(params.pageSize)
-                            .sort(orderByJsonObj)
-                            .select(selectField)
-                            .exec('find',function (err,articles) {
-                            if(err){
+                        .limit(params.pageSize)
+                        .sort(orderByJsonObj)
+                        .select(selectField)
+                        .exec('find', function(err, articles) {
+                            if (err) {
                                 logger.error(err);
-                                callbackTmp(null,null);
-                            }else{
-                                for(var i in articles) {
+                                callbackTmp(null, null);
+                            } else {
+                                for (var i in articles) {
                                     articles[i] = articles[i].toObject();
                                 }
                                 articles = articleService.formatArticles(articles, params.format);
-                                callbackTmp(null,articles);
+                                callbackTmp(null, articles);
                             }
-                     });
+                        });
                 },
-                totalSize: function(callbackTmp){
-                    article.find(searchObj).count(function(err,rowNum){
-                        callbackTmp(null,rowNum);
+                totalSize: function(callbackTmp) {
+                    article.find(searchObj).count(function(err, rowNum) {
+                        callbackTmp(null, rowNum);
                     });
                 }
             },
-           function(err, results) {
-             callback(ApiResult.page(params.pageNo,params.pageSize,results.totalSize,results.list));
-          }
+            function(err, results) {
+                callback(ApiResult.page(params.pageNo, params.pageSize, results.totalSize, results.list));
+            }
         );
     },
     /**
@@ -136,16 +137,16 @@ var articleService = {
      * @param articles
      * @param type
      */
-    formatArticles : function(articles, type){
-        if(!articles || articles.length == 0){
+    formatArticles: function(articles, type) {
+        if (!articles || articles.length == 0) {
             return articles;
         }
-        if(type == "live"){
+        if (type == "live") {
             var article, detail, author;
             var imgReg = /<img\s+[^>]*src=['"]([^'"]+)['"][^>]*>/,
                 tagRegAll = /<[^>]+>|<\/[^>]+>/g,
-                matches,content,contentImg;
-            for(var i in articles){
+                matches, content, contentImg;
+            for (var i in articles) {
                 article = articles[i];
                 detail = article.detailList && article.detailList[0];
 
@@ -153,7 +154,7 @@ var articleService = {
                 article.publishEndDate = Utils.dateFormat(article.publishEndDate, "yyyy-MM-dd hh:mm:ss");
                 article.createDate = Utils.dateFormat(article.createDate, "yyyy-MM-dd hh:mm:ss");
                 article.praise = article.praise || 0;
-                if(detail){
+                if (detail) {
                     //基本信息
                     author = detail.authorInfo || {};
                     article.title = detail.title || "";
@@ -162,14 +163,14 @@ var articleService = {
                     content = detail.content || "";
                     contentImg = "";
                     matches = imgReg.exec(content);
-                    if(matches){
+                    if (matches) {
                         contentImg = matches[1];
                     }
                     content = content.replace(tagRegAll, "");
                     article.content = content;
                     article.contentImg = contentImg;
                     //作者
-                    if(author){
+                    if (author) {
                         article.authorId = author.userId || "";
                         article.authorAvatar = author.avatar || "";
                         article.authorPosition = author.position || "";
@@ -187,22 +188,23 @@ var articleService = {
      * @param params
      * @param callback
      */
-    getCountByDate:function(params,callback){
-        var currDate=params.dateTime?new Date(params.dateTime):new Date();
-        var startDate=new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate());
+    getCountByDate: function(params, callback) {
+        var currDate = params.dateTime ? new Date(params.dateTime) : new Date();
+        var startDate = new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate());
         article.count({
             status: 1,
             valid: 1,
             categoryId: params.code,
             platform: commonJs.getSplitMatchReg(params.platform),
-            publishStartDate: {"$lte": currDate, "$gt": startDate}
-        }, function(err,rowNum){
-            if(err){
+            publishStartDate: { "$lte": currDate, "$gt": startDate },
+            systemCategory: params.systemCategory
+        }, function(err, rowNum) {
+            if (err) {
                 logger.error("文档数量查询异常！", err);
                 callback(null);
                 return;
             }
-            callback({count:rowNum});
+            callback({ count: rowNum });
         });
     },
     /**
@@ -210,50 +212,52 @@ var articleService = {
      * @param  params  参数
      * @param  callback
      */
-    getListByGroup:function(params,callback){
+    getListByGroup: function(params, callback) {
         //仅筛选最近一个月的文档分组，注意和days的关系。 分组函数的性能调优
         var dateStart = new Date().getTime();
         dateStart = new Date(dateStart - 86400000 * 31);
 
-        var searchObj= {
+        var searchObj = {
             status: 1,
             valid: 1,
             categoryId: params.code,
             platform: commonJs.getSplitMatchReg(params.platform),
-            publishStartDate : {$gte : dateStart}
+            publishStartDate: { $gte: dateStart },
+            systemCategory: params.systemCategory
         };
-        var days=params.days||6;//默认前6天
+        var days = params.days || 6; //默认前6天
         var o = {
             //映射方法
-            map : function () {
-                var month=this.createDate.getMonth()+1,date=this.createDate.getDate();
-                month=month<10?'0'+month:month;
-                date=date<10?'0'+date:date;
-                emit((this.createDate.getFullYear()+"-"+(month)+"-"+date),this);
+            map: function() {
+                var month = this.createDate.getMonth() + 1,
+                    date = this.createDate.getDate();
+                month = month < 10 ? '0' + month : month;
+                date = date < 10 ? '0' + date : date;
+                emit((this.createDate.getFullYear() + "-" + (month) + "-" + date), this);
             },
             //查询条件
-            query : searchObj,
+            query: searchObj,
             //排序
-            sort : {"createDate": -1},
+            sort: { "createDate": -1 },
             //简化
-            reduce : function (k, doc) {
-                return {articles:doc};
+            reduce: function(k, doc) {
+                return { articles: doc };
             },
             //将统计结果输出到articleDataMap集合中，如果存在则replace
-            out : {
+            out: {
                 replace: 'articleDateMap'
             },
             //是否产生更加详细的服务器日志
-            verbose : false
+            verbose: false
         };
-        article.mapReduce(o, function (err, model, stats) {
-            if(err){
+        article.mapReduce(o, function(err, model, stats) {
+            if (err) {
                 logger.error("文档分组异常！", err);
                 callback(null);
                 return;
             }
-            model.find().sort({_id:'desc'}).limit(days).exec(function (err, docs) {
-                if(err){
+            model.find().sort({ _id: 'desc' }).limit(days).exec(function(err, docs) {
+                if (err) {
                     logger.error("文档分组查询异常！", err);
                     callback(null);
                     return;
@@ -261,15 +265,15 @@ var articleService = {
                 var result = [];
                 var format = params.format;
                 docs.forEach(function(row) {
-                    if(row.value.hasOwnProperty("articles") == false){
+                    if (row.value.hasOwnProperty("articles") == false) {
                         result.push({
-                            date : row._id,
-                            articles : articleService.formatArticles([row.value], format)
+                            date: row._id,
+                            articles: articleService.formatArticles([row.value], format)
                         });
-                    }else{
+                    } else {
                         result.push({
-                            date : row._id,
-                            articles : articleService.formatArticles(row.value.articles, format)
+                            date: row._id,
+                            articles: articleService.formatArticles(row.value.articles, format)
                         });
                     }
                 });
@@ -282,19 +286,19 @@ var articleService = {
      * @param id
      * @param callback
      */
-    getArticleInfo:function(id,callback){
-        article.findById(id,"categoryId platform mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate detailList",function(err,row){
+    getArticleInfo: function(id, callback) {
+        article.findById(id, "categoryId platform mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate detailList", function(err, row) {
             callback(row);
         });
     },
-    
+
     /**
      * 添加文档
      * @param articleParam
      * @param callback
      */
-    addArticle: function(articleParam, callback){
-        IdSeqManager.Article.getNextSeqId(function(err, articleId){
+    addArticle: function(articleParam, callback) {
+        IdSeqManager.Article.getNextSeqId(function(err, articleId) {
             var loc_timeNow = new Date();
             var loc_article = new article({
                 _id: articleId,
@@ -310,15 +314,16 @@ var articleService = {
                 mediaUrl: articleParam.mediaUrl,
                 mediaImgUrl: articleParam.mediaImgUrl,
                 linkUrl: articleParam.linkUrl,
-                detailList: articleParam.detailList
+                detailList: articleParam.detailList,
+                systemCategory: articleParam.systemCategory
             });
-            loc_article.save(function(err, result){
-                if(err){
+            loc_article.save(function(err, result) {
+                if (err) {
                     logger.error("保存文档失败！", err);
-                    callback({isOK:false, id:0, msg:err});
+                    callback({ isOK: false, id: 0, msg: err });
                     return;
                 }
-                callback({isOK: true, id: result._id, createDate:loc_timeNow.getTime(),msg:''});
+                callback({ isOK: true, id: result._id, createDate: loc_timeNow.getTime(), msg: '' });
             });
         }, true);
     },
@@ -329,22 +334,22 @@ var articleService = {
      * @param updater
      * @param callback
      */
-    modifyArticle: function(query, field, updater, callback){
-        article.find(query, field, function(err, row){
-            if(err){
-                logger.error("modifyArticle->fail!:"+err);
-                callback({isOK:false, msg:'更新失败'});
+    modifyArticle: function(query, field, updater, callback) {
+        article.find(query, field, function(err, row) {
+            if (err) {
+                logger.error("modifyArticle->fail!:" + err);
+                callback({ isOK: false, msg: '更新失败' });
             } else {
                 if (row) {
-                    article.findOneAndUpdate(query, updater, function(err1, row1){
+                    article.findOneAndUpdate(query, updater, function(err1, row1) {
                         if (err1) {
                             logger.error('modifyArticle=>fail!' + err1);
-                            callback({isOK: false, msg: '更新失败'});
+                            callback({ isOK: false, msg: '更新失败' });
                         }
-                        callback({isOK:true, msg:''});
+                        callback({ isOK: true, msg: '' });
                     });
-                }else {
-                    callback({isOk: false,  msg: '更新失败'});
+                } else {
+                    callback({ isOk: false, msg: '更新失败' });
                 }
             }
         });
@@ -355,42 +360,42 @@ var articleService = {
      * @param type
      * @param callback
      */
-    modifyPraiseOrDownloads: function(_id, type, callback){
-        article.findOne({'_id':_id}, function(err, row){
-            if(err){
-                logger.error("modifyPraiseOrDownloads->fail!:"+err);
-                callback({isOK:false, msg:'更新失败'});
+    modifyPraiseOrDownloads: function(query, type, callback) {
+        article.findOne(query, function(err, row) {
+            if (err) {
+                logger.error("modifyPraiseOrDownloads->fail!:" + err);
+                callback({ isOK: false, msg: '更新失败' });
             } else {
                 if (row) {
-                    if(type=='praise') {
-                        if(commonJs.isBlank(row.praise)){
+                    if (type == 'praise') {
+                        if (commonJs.isBlank(row.praise)) {
                             row.praise = 1;
-                        }else {
+                        } else {
                             row.praise += 1;
                         }
-                    }else if(type=='downloads'){
-                        if(commonJs.isBlank(row.downloads)){
+                    } else if (type == 'downloads') {
+                        if (commonJs.isBlank(row.downloads)) {
                             row.downloads = 1;
-                        }else {
+                        } else {
                             row.downloads += 1;
                         }
                     }
-                    row.save(function(err1, rowTmp){
+                    row.save(function(err1, rowTmp) {
                         if (err1) {
                             logger.error('modifyPraiseOrDownloads=>fail!' + err1);
-                            callback({isOK: false, msg: '更新失败'});
+                            callback({ isOK: false, msg: '更新失败' });
                             return;
                         }
                         var num = 0;
-                        if(type=='praise') {
+                        if (type == 'praise') {
                             num = rowTmp.praise;
-                        }else if(type=='downloads'){
+                        } else if (type == 'downloads') {
                             num = rowTmp.downloads;
                         }
-                        callback({isOK:true, msg:'', num: num});
+                        callback({ isOK: true, msg: '', num: num });
                     });
-                }else {
-                    callback({isOk: false,  msg: '更新失败'});
+                } else {
+                    callback({ isOk: false, msg: '更新失败' });
                 }
             }
         });
@@ -399,4 +404,3 @@ var articleService = {
 
 //导出服务类
 module.exports = articleService;
-

@@ -33,7 +33,13 @@ var studioService = {
      * @param isGetMember   是否客户信息
      * @param dataCallback
      */
-    getIndexLoadData: function(userId, groupType, groupId, isGetRoomList, isGetSyllabus, isGetMember, dataCallback) {
+    getIndexLoadData: function(indexParams, dataCallback) {
+        let userId = indexParams.userId,
+            groupType = indexParams.groupType,
+            groupId = indexParams.groupId,
+            isGetRoomList = indexParams.isGetRoomList,
+            isGetSyllabus = indexParams.isGetSyllabus,
+            isGetMember = indexParams.isGetMember;
         var userInfo = {
             userId: userId,
             groupType: groupType,
@@ -101,7 +107,13 @@ var studioService = {
                     callback(null, userInfo);
                 },
                 pointsGlobal: function(callback) {
-                    chatPointsService.getPointsInfo(userInfo.groupType, userInfo.mobilePhone, true, function(r) {
+                    let pointsParams = {
+                        groupType: userInfo.groupType,
+                        userId: userInfo.mobilePhone,
+                        hasJournal: true,
+                        systemCategory: indexParams.systemCategory
+                    };
+                    chatPointsService.getPointsInfo(pointsParams, function(r) {
                         var point = 0;
                         if (r && r.pointsGlobal) {
                             point = r.pointsGlobal
@@ -345,7 +357,7 @@ var studioService = {
      */
     checkMemberAndSave: function(userInfo, callback) {
         var result = { isOK: false, error: errorMessage.code_10 };
-        member.findOne({ mobilePhone: userInfo.mobilePhone.replace(/^\d+$|^\d+-/ , ''), valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
+        member.findOne({ mobilePhone: userInfo.mobilePhone.replace(/^\d+$|^\d+-/, ''), valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
                 logger.error("checkMemberAndSave fail:" + err);
                 callback(result);

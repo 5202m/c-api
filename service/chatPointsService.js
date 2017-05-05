@@ -15,6 +15,7 @@ var ChatPoints = require('../models/chatPoints.js');
 var ChatPointsConfig = require('../models/chatPointsConfig.js');
 var Constant = require('../constant/constant.js');
 var APIUtil = require('../util/APIUtil');
+var common = require('../util/common');
 var ObjectId = require('mongoose').Types.ObjectId;
 
 var chatPointsService = {
@@ -25,8 +26,12 @@ var chatPointsService = {
      * @param hasJournal
      * @param callback
      */
-    getPointsInfo: function(groupType, userId, hasJournal, callback) {
-        chatPointsService.getChatPoints(groupType, userId, function(err, pointsInfo) {
+    getPointsInfo: function(params, callback) {
+        let groupType = params.groupType,
+            userId = params.userId,
+            hasJournal = params.hasJournal,
+            systemCategory = params.systemCategory;
+        chatPointsService.getChatPoints(params, function(err, pointsInfo) {
             if (err || !pointsInfo) {
                 callback(null);
             } else {
@@ -64,13 +69,17 @@ var chatPointsService = {
      * @param userId
      * @param callback (err, config)
      */
-    getChatPoints: function(groupType, userId, callback) {
+    getChatPoints: function(params, callback) {
+        let groupType = params.groupType,
+            userId = params.userId,
+            systemCategory = params.systemCategory;
+        query = common.wrapSystemCategory({
+            groupType: groupType,
+            userId: userId,
+            isDeleted: 0
+        }, systemCategory);
         APIUtil.DBFindOne(ChatPoints, {
-            query: {
-                groupType: groupType,
-                userId: userId,
-                isDeleted: 0
-            }
+            query: query
         }, function(err, config) {
             if (err) {
                 logger.error("<<getConfig:查询积分配置信息出错，[errMessage:%s]", err);
@@ -85,17 +94,22 @@ var chatPointsService = {
      * @param groupType
      * @param callback (err, config)
      */
-    getConfig: function(item, groupType, clientGroup, callback) {
+    getConfig: function(params, callback) {
+        let item = params.item,
+            groupType = params.groupType,
+            clientGroup = params.clientGroup,
+            systemCategory = params.systemCategory;
+        let query = common.wrapSystemCategory({
+            item: item,
+            groupType: groupType,
+            clientGroup: {
+                $in: [clientGroup]
+            },
+            isDeleted: 0,
+            status: 1
+        }, systemCategory);
         ChatPointsConfig.findOne({
-            query: {
-                item: item,
-                groupType: groupType,
-                clientGroup: {
-                    $in: [clientGroup]
-                },
-                isDeleted: 0,
-                status: 1
-            }
+            query: query
         }, function(err, config) {
             if (err) {
                 logger.error("<<getConfig:查询积分配置信息出错，[errMessage:%s]", err);
@@ -117,16 +131,14 @@ var chatPointsService = {
             return;
         }
         params.opUser = params.opUser || params.userId;
-        chatPointsService.getConfig(params.item, params.groupType,
-            params.clientGroup,
+        chatPointsService.getConfig(params,
             function(err, config) {
                 if (err) {
                     callback(APIUtil.APIResult("code_10", null));
                 } else if (!config) {
                     callback(APIUtil.APIResult("code_3003", null));
                 } else {
-                    chatPointsService.getChatPoints(params.groupType,
-                        params.userId,
+                    chatPointsService.getChatPoints(params,
                         function(err, pointsInfo) {
                             if (err) {
                                 callback(APIUtil.APIResult("code_10", null));
@@ -201,6 +213,7 @@ var chatPointsService = {
                 journal.remark = config.tips;
             }
             pointsInfo.journal.push(journal);
+            common.wrapSystemCategory(pointsInfo, params.systemCategory);
             pointsInfo.save(function(err) {
                 if (err) {
                     //保存信息失败，不影响短信发送，仅打印错误日志。
@@ -324,6 +337,7 @@ var chatPointsService = {
         if (params.item instanceof Array) {
             searchObj = { "groupType": params.groupType, "type": params.type, "item": { $in: params.item }, isDeleted: 0, status: 1 };
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         ChatPointsConfig.find(searchObj, "", function(err, row) {
             if (err) {
                 logger.error("获取积分配置表失败! >>getChatPointsConfig:", err);
