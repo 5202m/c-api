@@ -3,9 +3,8 @@
  * author：alan.wu
  * date:2015/4/3
  */
-var mongoose = require('mongoose'),
-    Schema = mongoose.Schema,
-    chatGroupSchema = new Schema({
+var mongoose = require('./commonMongoose'),
+    chatGroupSchema = mongoose.createSchema({
         _id: { type: String },
         groupType: { type: String, index: true }, //组类别
         name: { type: String }, //名称

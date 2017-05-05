@@ -10,11 +10,10 @@
  *     访客记录
  * </p>
  */
-var mongoose = require('mongoose'),
-    Schema = mongoose.Schema,
-    ObjectId = Schema.ObjectId;
+var mongoose = require('./commonMongoose'),
+    ObjectId = mongoose.Schema.ObjectId;
 
-var chatVisitorSchema = new Schema({
+var chatVisitorSchema = mongoose.createSchema({
     _id: ObjectId,
     clientStoreId: { type: String, index: true }, //客服端id
     groupType: { type: String, index: true }, //房间组别

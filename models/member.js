@@ -2,10 +2,10 @@
  * Created by Administrator on 2015/3/4.
  */
 var uniqueValidator = require('mongoose-unique-validator');
-var mongoose = require('mongoose'),
+var mongoose = require('./commonMongoose'),
     Schema = mongoose.Schema,
     ObjectId = Schema.ObjectId,
-    memberSchema = new Schema({ //会员Schema
+    memberSchema = mongoose.createSchema({ //会员Schema
         _id: ObjectId,
         mobilePhone: { type: String, index: true, unique: true, match: /[0-9]{6,11}$/ }, //手机号码应该全是数字,并且大于6位.
         valid: { type: Number, default: 1 }, //是否删除：0 、删除；1、正常

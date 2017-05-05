@@ -5,7 +5,7 @@ let mongoose = require('./commonMongoose');
 let Schema = mongoose.Schema;
 let ObjectId = Schema.ObjectId;
 
-let chatPraiseSchema = new Schema({ //点赞Schema
+let chatPraiseSchema = mongoose.createSchema({ //点赞Schema
     _id: ObjectId,
     praiseId: { type: String, index: true },
     praiseType: String,

@@ -1,9 +1,8 @@
 /**
  * Created by Administrator on 2015/3/4.
  */
-var mongoose = require('mongoose'),
-    Schema = mongoose.Schema,
-    userSchema = new Schema({ //会员Schema
+var mongoose = require('./commonMongoose'),
+    userSchema = mongoose.createSchema({ //会员Schema
         _id: String,
         userNo: String,
         userName: String,

@@ -14,7 +14,7 @@ let mongoose = require('./commonMongoose');
 let Schema = mongoose.Schema;
 let ObjectId = Schema.ObjectId;
 
-var chatShowTradeSchema = new Schema({
+var chatShowTradeSchema = mongoose.createSchema({
     _id: ObjectId,
     groupType: { type: String, index: true }, //聊天室组别
     groupId: { type: String, index: true },

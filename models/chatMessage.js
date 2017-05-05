@@ -4,8 +4,7 @@
  * date:2015/4/3
  */
 let mongoose = require('./commonMongoose');
-let Schema = mongoose.Schema;
-let chatMessageSchema = new Schema({
+let chatMessageSchema = mongoose.createSchema({
     _id: String,
     userId: { type: String, index: true }, //用户id
     nickname: String, //用户昵称
