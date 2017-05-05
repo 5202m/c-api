@@ -30,6 +30,8 @@ const noticeRoutes = require("./api/noticeAPI.js"); //通知  API路由
 const chatPraiseRoutes = require("./api/chatPraiseAPI.js");
 const visitorRoutes = require("./api/visitorAPI.js");
 const adminRoutes = require("./api/adminAPI.js");
+const tokenService = require("../service/tokenService");
+const errorMessage = require("../util/errorMessage");
 
 indexRouter.get('/', function(req, res) {
     res.render('index');
@@ -67,21 +69,44 @@ exports.init = app => {
         var appsecret = req.query.appsecret || req.body.appsecret;
         var access_secret = req.headers.access_secret || req.cookies.access_secret;
         appsecret = appsecret || access_secret;
-        require("../service/tokenService").verifyToken(token, appsecret, data => {
-            if (data.isOK) {
+
+        let getPlatform = (appId, appSecret, next) => {
+            let params = req.query || req.body;
+            if (params.systemCategory) {
                 next();
+                return;
+            }
+            tokenService.getTokenAccessById(`${appId}_${appSecret}`).then(row => {
+                params.systemCategory = row.platform;
+                logger.debug(`Added systemCategory = ${row.platform} for url: ${url}`);
+                next();
+            }).catch(next);
+        };
+        let handleTokenVerification = data => {
+            if (data.isOK) {
+                getPlatform(data.appId, appsecret, next);
             } else {
                 var ApiResult = require('../util/ApiResult');
                 logger.warn("check token fail->token:", token, " for URL: ", url);
-				logger.debug("verify result: ", data);
+                logger.debug("verify result: ", data);
                 if (req.path.indexOf('.xml') != -1) {
                     res.end(ApiResult.result(data.error, null, ApiResult.dataType.xml));
                 } else {
                     res.json(ApiResult.result(data.error, null));
                 }
             }
-        });
+        };
+        if (token) {
+            tokenService.verifyToken(token, appsecret, handleTokenVerification);
+        } else {
+            if (req.path.indexOf('.xml') != -1) {
+                res.end(ApiResult.result(errorMessage.code_5003, null, ApiResult.dataType.xml));
+            } else {
+                res.json(ApiResult.result(errorMessage.code_5003, null));
+            }
+        }
     });
+    // tokenService.resyncTokenAccess();
 
     apiRoutes.use('/token', tokenRoutes);
     apiRoutes.use('/article', articleRoutes);
