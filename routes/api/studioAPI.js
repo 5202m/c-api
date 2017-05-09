@@ -456,7 +456,7 @@ router.post("/checkMemberAndSave", (req, res) => {
         req.body,
         (data) => {
             if (data) {
-                data.userInfo = userInfo;
+                data.userInfo = req.body["userInfo"];
             }
             res.json(APIUtil.APIResultFromData(data));
         }

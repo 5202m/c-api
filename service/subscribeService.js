@@ -598,7 +598,12 @@ var subscribeService = {
                             logger.error("保存订阅数据失败! >>saveSubscribe:", err);
                             callback({ isOK: false, msg: '订阅失败' });
                         } else {
-                            subscribeService.saveSubscribe4UTM(params.groupType, params.userId, params.type, !!params.analyst, callback);
+                            subscribeService.saveSubscribe4UTM({
+                                groupType: params.groupType,
+                                userId: params.userId,
+                                subscribeType: params.type,
+                                isAdd: !!params.analyst
+                            }, callback);
                         }
                     });
                 } else {
@@ -611,7 +616,12 @@ var subscribeService = {
                     logger.error("保存订阅数据失败! >>saveSubscribe:", err);
                     callback({ isOK: false, msg: '订阅失败' });
                 } else {
-                    subscribeService.saveSubscribe4UTM(params.groupType, params.userId, params.type, !!params.analyst, callback);
+                    subscribeService.saveSubscribe4UTM({
+                        groupType: params.groupType,
+                        userId: params.userId,
+                        subscribeType: params.type,
+                        isAdd: !!params.analyst
+                    }, callback);
                 }
             });
         }
@@ -663,7 +673,12 @@ var subscribeService = {
                                     logger.error('modifySubscribe=>fail!' + err1);
                                     callback({ isOK: false, msg: '修改订阅失败' });
                                 } else {
-                                    subscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
+                                    subscribeService.saveSubscribe4UTM({
+                                        groupType: params.groupType,
+                                        userId: params.userId,
+                                        subscribeType: row.type,
+                                        isAdd: !!params.analyst
+                                    }, callback);
                                 }
                             });
                         } else if (json.result != 0) {
@@ -676,7 +691,12 @@ var subscribeService = {
                             logger.error('modifySubscribe=>fail!' + err1);
                             callback({ isOK: false, msg: '修改订阅失败' });
                         } else {
-                            subscribeService.saveSubscribe4UTM(params.groupType, params.userId, row.type, !!params.analyst, callback);
+                            subscribeService.saveSubscribe4UTM({
+                                groupType: params.groupType,
+                                userId: params.userId,
+                                subscribeType: row.type,
+                                isAdd: !!params.analyst
+                            }, callback);
                         }
                     });
                 }

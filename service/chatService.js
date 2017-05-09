@@ -780,7 +780,7 @@ var chatService = {
      */
     checkChatPraise: function(params, callback) {
         let clientId = params.clientId,
-            praiseId = params.praise,
+            praiseId = params.praiseId,
             fromPlatform = params.fromPlatform;
         var cacheClient = require('../cache/cacheClient');
         var key = 'chatPraise_' + fromPlatform + '_' + clientId + '_' + praiseId;

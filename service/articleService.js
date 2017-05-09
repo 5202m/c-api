@@ -287,10 +287,8 @@ var articleService = {
      * @param callback
      */
     getArticleInfo: function(params, callback) {
-        let articleId = params.articleId;
-        let searchObj = { _id: articleId };
-        common.wrapSystemCategory(searchObj, params.systemCategory);
-        article.find(searchObj, "categoryId platform mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate detailList", function(err, row) {
+        let articleId = params.id;
+        article.findById(articleId, "categoryId platform mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate detailList", function(err, row) {
             callback(row);
         });
     },

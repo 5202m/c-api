@@ -112,7 +112,7 @@ var smsService = {
             cntFlag: 1,
             sendTime: loc_currDate,
             validUntil: null,
-            useTime: null
+            useTime: null,
         };
         if (smsPara.validTime > 0) {
             loc_smsInfo.validUntil = new Date(loc_currDate.getTime() + smsPara.validTime);
@@ -128,6 +128,7 @@ var smsService = {
                 loc_smsInfo.status = 2;
             }
             //保存短信发送记录信息
+            common.wrapSystemCategory(loc_smsInfo, smsPara.systemCategory);
             smsService.saveSmsInfo(loc_smsInfo, function() {
                 callback(loc_result);
             });

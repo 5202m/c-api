@@ -267,7 +267,7 @@ router.get('/getArticleInfo', function(req, res) {
     if (common.isBlank(id)) {
         res.json(APIUtil.APIResult("code_1000", null));
     } else {
-        articleService.getArticleInfo(id, function(article) {
+        articleService.getArticleInfo(req.query, function(article) {
             res.json(APIUtil.APIResult(null, article));
         });
     }
