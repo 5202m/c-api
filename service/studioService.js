@@ -881,7 +881,12 @@ var studioService = {
     getShowTeacher: function(params, dataCallback) {
         async.parallel({
                 userInfo: function(callback) {
-                    studioService.getUserInfoByUserNo(params, function(ret) {
+                    let userParams = {
+                        userNo: params.authorId,
+                        groupType: params.groupType || ""
+                    };
+                    common.wrapSystemCategory(userParams, params.systemCategory);
+                    studioService.getUserInfoByUserNo(userParams, function(ret) {
                         callback(null, ret);
                     });
                 },

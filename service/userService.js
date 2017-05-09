@@ -792,9 +792,9 @@ var userService = {
             if (count > 0) {
                 callback({ isOK: false, msg: "该昵称已被占用，请使用其他昵称！" });
             } else {
-                let udpateQuery = { valid: 1, 'mobilePhone': mobilePhone, 'loginPlatform.chatUserGroup._id': groupType };
+                let updateQuery = { valid: 1, 'mobilePhone': mobilePhone, 'loginPlatform.chatUserGroup._id': groupType };
                 common.wrapSystemCategory(updateQuery, params.systemCategory);
-                member.update(udpateQuery, { $set: { "loginPlatform.chatUserGroup.$.nickname": nickname } }, function(err, row) {
+                member.update(updateQuery, { $set: { "loginPlatform.chatUserGroup.$.nickname": nickname } }, function(err, row) {
                     if (err) {
                         logger.error("modifyNickname->update fail!" + err);
                         callback({ isOK: false, msg: "修改失败，请联系客服！" });
