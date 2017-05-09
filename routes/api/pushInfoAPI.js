@@ -20,7 +20,7 @@
  * @apiSuccess {Number} errcode  错误码.
  */
 //pushInfoAPI
-var logger =require("../../resources/logConf").getLogger("pushInfoAPI");
+var logger = require("../../resources/logConf").getLogger("pushInfoAPI");
 var express = require('express');
 var router = express.Router();
 var pushInfoService = require('../../service/pushInfoService');
@@ -61,16 +61,13 @@ router.get("/getPushInfo", (req, res) => {
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
-    if(!isSatify){
+    if (!isSatify) {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    
+
     pushInfoService.getPushInfo(
-        req.query["groupType"],
-        req.query["roomId"], 
-        req.query["clientGroup"],
-        req.query["position"],    
+        req.query,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -112,19 +109,15 @@ router.get("/checkPushInfo", (req, res) => {
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
     });
-    if(!isSatify){
-	console.log(req.query);
-    	logger.warn("[checkPushInfo] Parameters missed! Expecting parameters: ", requires);
+    if (!isSatify) {
+        console.log(req.query);
+        logger.warn("[checkPushInfo] Parameters missed! Expecting parameters: ", requires);
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    
+
     pushInfoService.checkPushInfo(
-        req.query["groupType"],
-        req.query["roomId"], 
-        req.query["clientGroup"] || "",
-        req.query["position"],
-        req.query["filterTime"],   
+        req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }

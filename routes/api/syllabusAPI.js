@@ -66,8 +66,7 @@ router.get("/getSyllabus", (req, res) => {
         return;
     }
     syllabusService.getSyllabus(
-        req.query["groupType"],
-        req.query["groupId"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -122,7 +121,8 @@ router.get("/getCourseInfo", (req, res) => {
             day: req.query["day"],
             startTime: startTime,
             endTime: endTime,
-            authorId: req.query["authorId"]
+            authorId: req.query["authorId"],
+            systemCategory: req.query["systemCategory"]
         },
         (data) => {
             res.json(APIUtil.APIResult(null, data));
@@ -165,9 +165,7 @@ router.get("/getSyllabusHis", (req, res) => {
         return;
     }
     syllabusService.getSyllabusHis(
-        req.query["groupType"],
-        req.query["groupId"],
-        req.query["date"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }

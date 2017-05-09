@@ -25,7 +25,7 @@ var messageService = {
             selectRows = 30;
             searchObj["toUser.talkStyle"] = 1;
             if (userInfo.userType == constant.roleUserType.member) {
-                visitorService.getUserArrByUserId(userInfo.userType, userInfo.clientStoreId, groupType, groupId, userInfo.userId, function(userArr) {
+                visitorService.getUserArrByUserId(userInfo, function(userArr) {
                     searchObj.$or = [{ "userId": userInfo.toUser.userId, "toUser.userId": { $in: userArr } },
                         { "userId": { $in: userArr }, "toUser.userId": userInfo.toUser.userId }
                     ];
@@ -76,6 +76,7 @@ var messageService = {
                 }
                 searchObj["toUser.talkStyle"] = 0;
             }
+            common.wrapSystemCategory(searchObj, userInfo.systemCategory);
             this.findMessageList(userInfo, searchObj, selectSQL, selectRows, function(result) {
                 callback(result);
             });
@@ -88,17 +89,21 @@ var messageService = {
      * @param selectRows
      */
     findMessageList: function(userInfo, searchObj, selectSQL, selectRows, callback) {
-        chatMessage.db().find(searchObj).select(selectSQL).limit(selectRows).sort({ 'publishTime': 'desc' }).exec(function(err, currList) {
-            var diffLength = selectRows - (currList?currList.length:0);
-            if (diffLength > 0) { //往上一年查询
-                var year = new Date().getFullYear();
-                chatMessage.db(year <= 2015 ? 2015 : year - 1).find(searchObj).select(selectSQL).limit(diffLength).sort({ 'publishTime': 'desc' }).exec(function(err, oldList) {
-                    callback(currList.concat(oldList));
-                });
-            } else {
-                callback(currList);
-            }
-        });
+        chatMessage.db()
+            .find(searchObj)
+            .select(selectSQL)
+            .limit(selectRows).sort({ 'publishTime': 'desc' })
+            .exec(function(err, currList) {
+                var diffLength = selectRows - (currList ? currList.length : 0);
+                if (diffLength > 0) { //往上一年查询
+                    var year = new Date().getFullYear();
+                    chatMessage.db(year <= 2015 ? 2015 : year - 1).find(searchObj).select(selectSQL).limit(diffLength).sort({ 'publishTime': 'desc' }).exec(function(err, oldList) {
+                        callback(currList.concat(oldList));
+                    });
+                } else {
+                    callback(currList);
+                }
+            });
     },
     /**
      * 是否存在符合条件的记录
@@ -227,7 +232,7 @@ var messageService = {
         var userInfo = data.fromUser;
         var content = data.content;
         var Model = chatMessage.db();
-        var chatMessageModel = new Model({
+        var chatData = {
             _id: null,
             userId: userInfo.userId,
             avatar: userInfo.avatar || '',
@@ -254,8 +259,10 @@ var messageService = {
             createUser: userInfo.userId,
             createIp: userInfo.createIp, //新增记录的Ip
             createDate: new Date(), //创建日期
-            valid: 1
-        });
+            valid: 1,
+        };
+        common.wrapSystemCategory(chatData, data.systemCategory);
+        var chatMessageModel = new Model(chatData);
         chatMessageModel.save(function(err, chatMessage, numAffected) {
             if (err) {
                 logger.error("saveMsg Failure!! >>chatMessageModel.save:", err);
@@ -273,7 +280,9 @@ var messageService = {
      * @param callback
      */
     deleteMsg: function(data, callback) {
-        chatMessage.db().update({ 'publishTime': { '$in': data.publishTimeArr } }, { $set: { status: 0, valid: 0 } }, { multi: true }, function(err, row) {
+        let queryObj = { 'publishTime': { '$in': data.publishTimeArr } };
+        common.wrapSystemCategory(queryObj, data.systemCategory);
+        chatMessage.db().update(queryObj, { $set: { status: 0, valid: 0 } }, { multi: true }, function(err, row) {
             if (!err && row) {
                 callback({ isOK: true, msg: 'Delete chatMessage success!' });
             } else {
@@ -299,6 +308,7 @@ var messageService = {
             "toUser.talkStyle": 1,
             publishTime: { "$gte": publishTime + '_' }
         };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
         var o = {
             //映射方法
             map: function() {

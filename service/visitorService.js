@@ -39,7 +39,8 @@ var visitorService = {
             accountNo: model.accountNo, //账号
             userAgent: model.userAgent, //用户客户端信息
             updateDate: new Date(), //更新时间
-            valid: 1
+            valid: 1,
+            systemCategory: model.systemCategory
         };
         //保存
         new chatVisitor(insertModel).save(function(err) {
@@ -56,7 +57,10 @@ var visitorService = {
      * @param type
      * @param model
      */
-    saveVisitorRecord: function(type, model) {
+    saveVisitorRecord: function(params) {
+        let type = params.type;
+        let model = params.dasData;
+        model = typeof model === 'string' ? JSON.parse(model) : model;
         try {
             if (!model || common.isBlank(model.clientStoreId)) {
                 return;
@@ -72,6 +76,7 @@ var visitorService = {
             if (model.roomId) {
                 searchObj.roomId = model.roomId;
             }
+            common.wrapSystemCategory(searchObj, params.systemCategory);
             chatVisitor.findOne(searchObj).sort({ 'onlineDate': 'desc' }).exec(function(err, data) {
                 if (err) {
                     logger.error('saveVisitorRecord-query fail', err);
@@ -79,6 +84,7 @@ var visitorService = {
                     if (!data) {
                         if (type == 'online' || type == 'login') {
                             visitorService.modifyDataByType(type, model, true); //按类型调整要保存的数据结构
+                            common.wrapSystemCategory(model, params.systemCategory);
                             visitorService.createVisitorRecord(model, function(createResult) {
                                 if (!createResult.isOK) {
                                     logger.error('saveVisitorRecord-create fail');
@@ -188,9 +194,19 @@ var visitorService = {
      * 通过昵称查询访客名，访客userId
      * @param nickname
      */
-    getVistiorByName: function(groupType, roomId, nickname, callback) {
+    getVistiorByName: function(params, callback) {
+        let groupType = params.groupType,
+            roomId = params.roomId,
+            nickname = params.nickname;
         var deferred = new common.Deferred();
-        chatVisitor.find({ groupType: groupType, roomId: roomId, valid: 1, nickname: eval('/.*?' + nickname + '.*/g') })
+        let searchObj = {
+            groupType: groupType,
+            roomId: roomId,
+            valid: 1,
+            nickname: eval('/.*?' + nickname + '.*/g')
+        };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        chatVisitor.find(searchObj)
             .select("clientGroup nickname userId visitorId clientStoreId onlineStatus userAgent")
             .sort({ 'onlineStatus': 'desc' })
             .limit(50)
@@ -210,8 +226,13 @@ var visitorService = {
      * @param groupId
      * @param clientStoreId
      */
-    getByClientStoreId: function(groupType, groupId, clientStoreId, callback) {
-        chatVisitor.findOne({ groupType: groupType, roomId: groupId, valid: 1, clientStoreId: clientStoreId })
+    getByClientStoreId: function(userInfo, callback) {
+        let groupType = userInfo.groupType,
+            groupId = userInfo.groupId,
+            clientStoreId = userInfo.clientStoreId;
+        let searchObj = { groupType: groupType, roomId: groupId, valid: 1, clientStoreId: clientStoreId };
+        common.wrapSystemCategory(searchObj, userInfo.systemCategory);
+        chatVisitor.findOne(searchObj)
             .select("nickname visitorId clientStoreId offlineDate")
             .exec(function(err, data) {
                 if (err || !data) {
@@ -230,7 +251,12 @@ var visitorService = {
      * @param groupId
      * @param userId
      */
-    getUserArrByUserId: function(userType, clientStoreId, groupType, groupId, userId, callback) {
+    getUserArrByUserId: function(userInfo, callback) {
+        let userType = userInfo.userType,
+            clientStoreId = userInfo.clientGroup,
+            groupType = userInfo.groupType,
+            groupId = userInfo.groupId,
+            userId = userInfo.userId;
         var searchObj = { groupType: groupType, roomId: groupId, valid: 1 };
         if (common.isValid(clientStoreId)) {
             searchObj.clientStoreId = clientStoreId;
@@ -240,6 +266,7 @@ var visitorService = {
         } else {
             searchObj.userId = userId;
         }
+        common.wrapSystemCategory(searchObj, userInfo.systemCategory);
         chatVisitor.findOne(searchObj).select("userId visitorId").sort({ 'updateDate': 'desc' }).exec(function(err, data) {
             var userArr = [];
             userArr.push(userId);

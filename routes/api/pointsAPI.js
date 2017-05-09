@@ -150,7 +150,7 @@ router.post('/add', function(req, res) {
             params.val = 0;
         }
     }
-
+    common.wrapSystemCategory(params, req.body.systemCategory);
     //添加积分
     ChatPointsService.add(params, function(apiResult) {
         if (apiResult) {

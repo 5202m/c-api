@@ -142,8 +142,10 @@ router.get("/getUserList", (req, res) => {
         return;
     }
 
-    userService.getUserList(
-        req.query["userNOs"],
+    userService.getUserList({
+            userNO: req.query.userNOs,
+            systemCategory: req.systemCategory
+        },
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -184,7 +186,7 @@ router.get("/batchOfflineStatus", (req, res) => {
     }
 
     userService.batchOfflineStatus(
-        req.query["roomId"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -249,7 +251,8 @@ router.post("/verifyRule", (req, res) => {
     };
     let params = {
         isWh: req.body["isWh"],
-        speakNum: req.body["speakNum"]
+        speakNum: req.body["speakNum"],
+        systemCategory: req.body["systemCategory"]
     };
 
     userService.verifyRule(
@@ -296,7 +299,7 @@ router.get("/getMemberList", (req, res) => {
     }
 
     userService.getMemberList(
-        req.query["id"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -552,9 +555,7 @@ router.post("/updateChatUserGroupStatus", (req, res) => {
         return;
     }
     userService.updateChatUserGroupStatus(
-        req.body["userInfo"],
-        req.body["chatStatus"],
-        req.body["sendMsgCount"],
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -730,9 +731,7 @@ router.get("/checkRoomStatus", (req, res) => {
     }
 
     userService.checkRoomStatus(
-        req.query["userId"],
-        req.query["groupId"],
-        req.query["currCount"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -783,9 +782,7 @@ router.post("/modifyNickname", (req, res) => {
     }
 
     userService.modifyNickname(
-        req.body["mobilePhone"],
-        req.body["groupType"],
-        req.body["nickname"],
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -1009,7 +1006,7 @@ router.post("/modifyUserName", (req, res) => {
     }
 
     userService.modifyUserName(
-        req.body["userInfo"], req.body["params"],
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -1142,7 +1139,7 @@ router.post("/modifyPwd", (req, res) => {
     }
 
     userService.modifyPwd(
-        req.body["userInfo"], req.body["params"],
+        req.body,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -1187,7 +1184,7 @@ router.get("/getClientGroupByMId", (req, res) => {
         return;
     }
     userService.getClientGroupByMId(
-        req.query["mobileArr"].split(","), req.query["groupType"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }

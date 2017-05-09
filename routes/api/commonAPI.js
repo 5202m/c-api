@@ -269,7 +269,15 @@ router.get("/getCourse", function(req, res) {
         return;
     }
     //查询课程安排
-    SyllabusService.getCourse(loc_params.groupType, loc_params.groupId, new Date(), loc_params.flag, loc_params.strategy, function(apiResult) {
+    let courseParams = {
+        groupType: loc_params.groupType,
+        groupId: loc_params.groupId,
+        today: new Date(),
+        flag: loc_params.flag,
+        strategy: loc_params.strategy
+    };
+    common.wrapSystemCategory(courseParams, req.query.systemCategory);
+    SyllabusService.getCourse(courseParams, function(apiResult) {
         res.json(apiResult);
     });
 });

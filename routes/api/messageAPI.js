@@ -72,6 +72,7 @@ router.get("/loadMsg", (req, res) => {
         userInfo[name] = req.query[name];
     });
     userInfo.toUser = req.query.toUser || {};
+    common.wrapSystemCategory(userInfo, req.query.systemCategory);
     messageService.loadMsg(
         userInfo,
         req.query["lastPublishTime"],
@@ -101,11 +102,11 @@ router.get("/loadMsg", (req, res) => {
  *     data: {
  *          "messageData":{
  *              "fromUser":{
-     *              "userId":"dxunppxunppps",
-      *             "nickname":"KK",
-      *             "groupId":"studio_teach",
-      *             "groupType":"studio"
-  *             }
+ *              "userId":"dxunppxunppps",
+ *             "nickname":"KK",
+ *             "groupId":"studio_teach",
+ *             "groupType":"studio"
+ *             }
  *          },
  *       "approvalUserArr": ""
  *     }
@@ -138,7 +139,7 @@ router.post("/saveMsg", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-
+    common.wrapSystemCategory(msgData, req.body.systemCategory);
     messageService.saveMsg(
         msgData,
         req.body["approvalUserArr"],

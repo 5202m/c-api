@@ -68,32 +68,32 @@ var APIUtil = require('../../util/APIUtil.js');
  */
 router.post('/send', function(req, res) {
     var loc_smsParam = {
-        type : req.body["type"],               //类型 "AUTH_CODE"、"NORMAL"，当短信内容为空时type为"AUTH_CODE"。默认值为"NORMAL"
-        useType : req.body["useType"],         //应用点（参考后台数据字典）
-        mobilePhone : req.body["mobilePhone"], //手机号、必输
-        deviceKey : req.body["deviceKey"],     //设备key值，用于检查发送次数。如果是web页面使用IP，手机客户端使用MAC地址，不传则仅使用手机号作为key值
-        content : req.body["content"]          //短信内容，如果内容为空，则默认发送六位数字验证码
+        type: req.body["type"], //类型 "AUTH_CODE"、"NORMAL"，当短信内容为空时type为"AUTH_CODE"。默认值为"NORMAL"
+        useType: req.body["useType"], //应用点（参考后台数据字典）
+        mobilePhone: req.body["mobilePhone"], //手机号、必输
+        deviceKey: req.body["deviceKey"], //设备key值，用于检查发送次数。如果是web页面使用IP，手机客户端使用MAC地址，不传则仅使用手机号作为key值
+        content: req.body["content"] //短信内容，如果内容为空，则默认发送六位数字验证码
     };
 
-    if(common.isBlank(loc_smsParam.mobilePhone) || !common.isMobilePhone(loc_smsParam.mobilePhone) || common.isBlank(loc_smsParam.useType)){
+    if (common.isBlank(loc_smsParam.mobilePhone) || !common.isMobilePhone(loc_smsParam.mobilePhone) || common.isBlank(loc_smsParam.useType)) {
         res.json(APIUtil.APIResult("code_1000", null, null));
         return;
     }
     //内容为空，发送默认六位数验证码
-    if(common.isBlank(loc_smsParam.content)){
+    if (common.isBlank(loc_smsParam.content)) {
         loc_smsParam.type = "AUTH_CODE";
         loc_smsParam.content = common.randomNumber(6);
     }
     //类型为空，默认值为NORMAL
-    if(common.isBlank(loc_smsParam.type)){
+    if (common.isBlank(loc_smsParam.type)) {
         loc_smsParam.type = "NORMAL";
     }
-    if(common.isBlank(loc_smsParam.deviceKey)){
+    if (common.isBlank(loc_smsParam.deviceKey)) {
         loc_smsParam.deviceKey = "";
     }
-
+    common.wrapSystemCategory(loc_smsParam, req.body.systemCategory);
     //发送短信
-    SmsService.send(loc_smsParam, true, function(apiResult){
+    SmsService.send(loc_smsParam, true, function(apiResult) {
         res.json(apiResult);
     });
 });
@@ -134,13 +134,13 @@ router.post('/checkAuth', function(req, res) {
     var loc_mobilePhone = req.body["mobilePhone"];
     var loc_authCode = req.body["authCode"];
     var loc_useType = req.body["useType"];
-    if(common.isBlank(loc_mobilePhone) || common.isBlank(loc_authCode) || common.isBlank(loc_useType)){
+    if (common.isBlank(loc_mobilePhone) || common.isBlank(loc_authCode) || common.isBlank(loc_useType)) {
         res.json(APIUtil.APIResult("code_1000", null, null));
         return;
     }
 
     //重发短信
-    SmsService.checkAuth(loc_mobilePhone, loc_authCode, loc_useType, function(apiResult){
+    SmsService.checkAuth(req.body, function(apiResult) {
         res.json(apiResult);
     });
 });
@@ -175,13 +175,13 @@ router.post('/checkAuth', function(req, res) {
  */
 router.post('/resend', function(req, res) {
     var loc_smsId = req.body["smsId"];
-    if(common.isBlank(loc_smsId)){
+    if (common.isBlank(loc_smsId)) {
         res.json(APIUtil.APIResult("code_1000", null, null));
         return;
     }
 
     //重发短信
-    SmsService.resend(loc_smsId, function(apiResult){
+    SmsService.resend(req.body, function(apiResult) {
         res.json(apiResult);
     });
 });

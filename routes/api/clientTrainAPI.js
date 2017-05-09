@@ -68,11 +68,7 @@ router.post("/saveTrain", (req, res) => { //groupId,userId,nickname
     }
     let service = common.getCompanyOnlyService(req.body.companyId);
     service = service || clientTrainService;
-    service.saveTrain(
-            req.body["groupId"],
-            req.body["userId"],
-            req.body["nickname"],
-            req.body["isAuth"])
+    service.saveTrain(req.body)
         .then(data => {
             res.json(APIUtil.APIResultFromData(data));
         }).catch(e => {
@@ -127,11 +123,13 @@ router.post("/addClientTrain", (req, res) => {
 
     let service = common.getCompanyOnlyService(req.body.companyId);
     service = service || clientTrainService;
-    service.addClientTrain({
-            groupId: req.body["groupId"],
-            nickname: req.body["nickname"],
-            noApprove: req.body['noApprove']
-        }, {
+    let trainParams = {
+        groupId: req.body["groupId"],
+        nickname: req.body["nickname"],
+        noApprove: req.body['noApprove']
+    };
+    common.wrapSystemCategory(trainParams, req.body.systemCategory);
+    service.addClientTrain(trainParams, {
             userId: req.body["userId"],
             clientGroup: req.body["clientGroup"]
         })
@@ -179,9 +177,8 @@ router.get("/getTrainAndClientNum", (req, res) => {
     }
 
     clientTrainService.getTrainAndClientNum(
-        req.query["groupType"],
-        req.query["teachId"],
-        (data) => {
+        req.query,
+        data => {
             res.json(APIUtil.APIResultFromData(data));
         }
     );
@@ -224,11 +221,13 @@ router.get("/getTrainList", (req, res) => {
 
     let service = common.getCompanyOnlyService(req.query.companyId);
     service = service || clientTrainService;
-    service.getTrainList(
-            req.query["groupType"],
-            req.query["teachId"],
-            req.query["isAll"] || false,
-            req.query['userId'])
+    let params = {
+        groupType: req.query["groupType"],
+        teachId: req.query["teachId"],
+        isAll: req.query["isAll"] ? req.query["isAll"] : false,
+        userId: req.query['userId']
+    };
+    service.getTrainList(params)
         .then(data => {
             res.json(APIUtil.APIResultFromData(data));
         }).catch(e => {
@@ -283,13 +282,8 @@ router.post("/addSignin", (req, res) => {
         return;
     }
 
-    clientTrainService.addSignin({
-            mobilePhone: req.body["mobilePhone"],
-            groupType: req.body["groupType"],
-            avatar: req.body["avatar"],
-            clientGroup: req.body["clientGroup"]
-        },
-        req.body["clientip"],
+    clientTrainService.addSignin(
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -334,10 +328,12 @@ router.get("/getSignin", (req, res) => {
 
     let service = common.getCompanyOnlyService(req.query.companyId);
     service = service || clientTrainService;
-    service.getSignin({
+    let params = {
         mobilePhone: req.query["mobilePhone"],
         groupType: req.query["groupType"]
-    }).then(data => {
+    };
+    common.wrapSystemCategory(params, req.query.systemCategory);
+    service.getSignin(params).then(data => {
         res.json(APIUtil.APIResultFromData(data));
     }).catch(errData => {
         res.json(APIUtil.APIResultFromData(errData));
@@ -387,11 +383,7 @@ router.post('/checkTodaySignin', (req, res) => {
         return;
     }
 
-    clientTrainService.checkTodaySignin({
-            mobilePhone: req.body["mobilePhone"],
-            groupType: req.body["groupType"]
-        },
-        req.body["clientip"],
+    clientTrainService.checkTodaySignin(req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }

@@ -9,7 +9,11 @@ let Deferred = common.Deferred;
 let async = require('async');
 
 module.exports = {
-    saveTrain: function(groupId, userId, nickname, isAuth, callback) {
+    saveTrain: function(params, callback) {
+        let groupId = params.groupId,
+            userId = params.userId,
+            nickname = params.nickname,
+            isAuth = params.isAuth;
         let deferred = new Deferred();
         var setObj = {
             $push: {
@@ -21,7 +25,9 @@ module.exports = {
                 }
             }
         };
-        chatGroup.findOneAndUpdate({ _id: groupId }, setObj, function(err, row) {
+        let query = { _id: groupId };
+        common.wrapSystemCategory(query, params.systemCategory);
+        chatGroup.findOneAndUpdate(query, setObj, function(err, row) {
             if (err) {
                 logger.error("保存培训报名数据失败! >>saveTrain:", err);
                 deferred.reject(false);
@@ -70,7 +76,9 @@ module.exports = {
     addClientTrain: function(params, userInfo) {
         let deferred = new Deferred();
         let _this = this;
-        chatGroup.findOne({ _id: params.groupId, valid: 1, status: { $in: [1, 2] } }, "openDate clientGroup traninClient", function(err, row) {
+        let groupQuery = { _id: params.groupId, valid: 1, status: { $in: [1, 2] } };
+        common.wrapSystemCategory(groupQuery, params.systemCategory);
+        chatGroup.findOne(groupQuery, "openDate clientGroup traninClient", function(err, row) {
             var result = null;
             if (err) {
                 logger.error("查询培训报名数据失败! >>addClientTrain:", err);
@@ -104,7 +112,7 @@ module.exports = {
                 }
             }
             if (!result) {
-                _this.saveTrain(params.groupId, userInfo.userId, params.nickname, params.noApprove).then(function(isOK) {
+                _this.saveTrain(params).then(function(isOK) {
                     var result = null;
                     if (!isOK) {
                         result = errorMessage.code_4018;
@@ -121,7 +129,11 @@ module.exports = {
         });
         return deferred.promise;
     },
-    getTrainList: function(groupType, teachId, isAll, userId) {
+    getTrainList: function(params) {
+        let groupType = params.groupType,
+            teachId = params.teachId,
+            isAll = params.isAll,
+            userId = params.userId;
         let deferred = new Deferred();
         var searchObj = { "groupType": groupType, roomType: 'train', valid: 1 };
         var limit = 50,
@@ -133,6 +145,7 @@ module.exports = {
             searchObj["defaultAnalyst.userNo"] = teachId;
             limit = 2;
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatGroup.find(searchObj).select(searchFields).limit(limit).sort({ 'createDate': 'desc' }).exec(function(err, rooms) {
             if (err) {
                 logger.error("获取房间列表失败! >>getChatGroupList:", err);
@@ -169,10 +182,12 @@ module.exports = {
         today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         async.parallel({
                 signinInfo: function(callback) {
-                    signin.findOne({
+                    let signinQuery = {
                         userId: userInfo.mobilePhone,
                         groupType: userInfo.groupType
-                    }, function(err, row) {
+                    };
+                    common.wrapSystemCategory(signinQuery, userInfo.systemCategory);
+                    signin.findOne(signinQuery, function(err, row) {
                         if (err) {
                             logger.error("查询客户签到数据失败!:", err);
                         }
@@ -186,17 +201,22 @@ module.exports = {
                     });
                 },
                 signinUser: function(callback) { //当天最近10条签到用户
-                    signin.find({
+                    let signinQuery = {
                         "userId": { $ne: userInfo.mobilePhone },
                         signinTime: {
                             '$gte': today
                         }
-                    }).sort({ "signinTime": -1 }).limit(10).exec("find", function(err, data) {
-                        if (err) {
-                            logger.error("查询最近签到客户数据失败!:", err);
-                        }
-                        callback(null, data);
-                    });
+                    };
+                    common.wrapSystemCategory(signinQuery, userInfo.systemCategory);
+                    signin.find(signinQuery)
+                        .sort({ "signinTime": -1 })
+                        .limit(10)
+                        .exec("find", function(err, data) {
+                            if (err) {
+                                logger.error("查询最近签到客户数据失败!:", err);
+                            }
+                            callback(null, data);
+                        });
                 }
             },
             function(error, result) {
@@ -227,6 +247,7 @@ module.exports = {
         } else if (groupId) {
             searchObj._id = groupId;
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatGroup.findOne(searchObj, function(err, room) {
             if (err) {
                 logger.warn("checkGroupAuth->not auth:" + err);

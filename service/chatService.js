@@ -76,6 +76,7 @@ var chatService = {
      */
     join: function(data) {
         var userAgent = data.userAgent;
+        var systemCategory = data.systemCategory;
         var fromPlatform = data.fromPlatform;
         var userInfo = data.userInfo,
             lastPublishTime = data.lastPublishTime,
@@ -127,7 +128,10 @@ var chatService = {
                     vrRow.userId = userInfo.userId;
                     vrRow.loginStatus = 1;
                 }
-                visitorService.saveVisitorRecord('online', vrRow);
+                visitorService.saveVisitorRecord({
+                    type: 'online',
+                    dasData: vrRow
+                });
             }
             //加载私聊离线信息提示
             if (allowWhisper && offlineDate && common.isValid(fUserTypeStr)) {
@@ -139,7 +143,15 @@ var chatService = {
             }
             //允许私聊,推送私聊信息
             if (allowWhisper) {
-                pushInfoService.checkPushInfo(userInfo.groupType, userInfo.groupId, userInfo.clientGroup, constant.pushInfoPosition.whBox, true, function(pushInfos) {
+
+                pushInfoService.checkPushInfo({
+                    groupType: userInfo.groupType,
+                    roomId: userInfo.groupId,
+                    clientGroup: userInfo.clientGroup,
+                    position: constant.pushInfoPosition.whBox,
+                    systemCategory: systemCategory,
+                    filterTime: true
+                }, function(pushInfos) {
                     if (pushInfos && pushInfos.length > 0) {
                         var pushInfo = null;
                         var infos = [];
@@ -158,7 +170,14 @@ var chatService = {
                 });
             }
             //公聊框推送
-            pushInfoService.checkPushInfo(userInfo.groupType, userInfo.groupId, userInfo.clientGroup, constant.pushInfoPosition.talkBox, false, function(pushInfos) {
+            pushInfoService.checkPushInfo({
+                groupType: userInfo.groupType,
+                roomId: userInfo.groupId,
+                clientGroup: userInfo.clientGroup,
+                position: constant.pushInfoPosition.talkBox,
+                systemCategory: systemCategory,
+                filterTime: false
+            }, function(pushInfos) {
                 if (pushInfos && pushInfos.length > 0) {
                     var infos = [];
                     for (var i = 0, lenI = pushInfos.length; i < lenI; i++) {
@@ -169,7 +188,14 @@ var chatService = {
                 }
             });
             //视频框推送
-            pushInfoService.checkPushInfo(userInfo.groupType, userInfo.groupId, userInfo.clientGroup, constant.pushInfoPosition.videoBox, true, function(pushInfos) {
+            pushInfoService.checkPushInfo({
+                groupType: userInfo.groupType,
+                roomId: userInfo.groupId,
+                clientGroup: userInfo.clientGroup,
+                systemCategory: systemCategory,
+                position: constant.pushInfoPosition.videoBox,
+                filterTime: true
+            }, function(pushInfos) {
                 if (pushInfos && pushInfos.length > 0) {
                     var infos = [];
                     for (var i = 0, lenI = pushInfos.length; i < lenI; i++) {
@@ -179,6 +205,7 @@ var chatService = {
                     noticeMessage.videoPushInfo(userInfo.groupType, { socketId: userInfo.socketId, uuid: chatService.getUserUUId(userInfo) }, infos);
                 }
             });
+            common.wrapSystemCategory(userInfo, systemCategory);
             //公聊记录
             messageService.loadMsg(userInfo, lastPublishTime, false, function(msgData) {
                 var uuid = chatService.getUserUUId(userInfo);
@@ -197,7 +224,11 @@ var chatService = {
             userService.removeOnlineUser(userInfo, true, function() {
                 //直播间记录离线数据
                 logger.debug("disconnect", userInfo);
-                visitorService.saveVisitorRecord('offline', { roomId: userInfo.groupId, groupType: userInfo.groupType, clientStoreId: userInfo.clientStoreId });
+                let dasData = { roomId: userInfo.groupId, groupType: userInfo.groupType, clientStoreId: userInfo.clientStoreId };
+                visitorService.saveVisitorRecord({
+                    type: 'offline',
+                    dasData: dasData
+                });
             });
             return { clientStoreId: userInfo.clientStoreId, nickname: userInfo.nickname };
         }
@@ -268,7 +299,9 @@ var chatService = {
      * @param analystIds
      * @param callback
      */
-    getAnalystInfo: function(platform, analystIds, callback) {
+    getAnalystInfo: function(params, callback) {
+        let platform = params.platform,
+            analystIds = params.analystIds;
         var ids = analystIds.split(/\s*[,，]\s*/);
         if (!ids || ids.length == 0) {
             callback(null);
@@ -276,16 +309,20 @@ var chatService = {
         }
         async.parallel({
             userInfo: function(callbackTmp) {
-                BoUser.find({
+                let userQuery = {
                     userNo: { "$in": ids }
-                }, callbackTmp);
+                };
+                common.wrapSystemCategory(userQuery, params.systemCategory);
+                BoUser.find(userQuery, callbackTmp);
             },
             praise: function(callbackTmp) {
-                ChatPraise.find({
+                let praiseQuery = {
                     fromPlatform: platform,
                     praiseType: "user",
                     praiseId: { $in: ids }
-                }, callbackTmp);
+                };
+                common.wrapSystemCategory(praiseQuery, params.systemCategory);
+                ChatPraise.find(praiseQuery, callbackTmp);
             }
         }, function(err, results) {
             var userMap = {},
@@ -335,12 +372,16 @@ var chatService = {
     /**
      * 分析师点赞
      */
-    praiseAnalyst: function(platform, analystId, callback) {
-        ChatPraise.findOne({
+    praiseAnalyst: function(params, callback) {
+        let platform = params.platform,
+            analystId = params.analystId;
+        let analystQuery = {
             fromPlatform: platform,
             praiseType: "user",
             praiseId: analystId
-        }, function(err, row) {
+        };
+        common.wrapSystemCategory(analystQuery, params.systemCategory);
+        ChatPraise.findOne(analystQuery, function(err, row) {
             if (err) {
                 logger.error("praiseAnalyst->find fail!:" + err);
                 callback({ isOK: false, msg: '更新失败', num: 0 });
@@ -391,6 +432,7 @@ var chatService = {
         if (params.onlyHis) {
             queryObj.profit = { $nin: [null, ""] };
         }
+        common.wrapSystemCategory(queryObj, params.systemCategory);
         ChatShowTrade.find(queryObj)
             .limit(params.num)
             .sort({ showDate: -1 })
@@ -454,7 +496,9 @@ var chatService = {
         //如果是私聊游客或水军发言直接保存数据
         var isWhVisitor = (isWh && constant.clientGroup.visitor == userInfo.clientGroup);
         var isAllowPass = isWhVisitor || userInfo.userType == constant.roleUserType.navy || (common.isStudio(userInfo.groupType) && constant.clientGroup.visitor == userInfo.clientGroup);
-        userService.checkUserLogin(userInfo, isAllowPass, function(row) {
+        let params = { userInfo: userInfo, isAllowPass: isAllowPass };
+        common.wrapSystemCategory(params, data.systemCategory);
+        userService.checkUserLogin(params, function(row) {
             if (row) {
                 var userSaveInfo = {};
                 if (!isAllowPass) {
@@ -501,79 +545,84 @@ var chatService = {
                 //                    speakNum=socket.userInfo && socket.userInfo.sendMsgCount;
                 //                }
                 //验证规则
-                userService.verifyRule(userInfo, { isWh: isWh, speakNum: speakNum }, data.content).then(resultVal => {
-                    if (!resultVal.isOK) { //匹配规则，则按规则逻辑提示
-                        logger.info('acceptMsg=>resultVal:', JSON.stringify(resultVal));
-                        logger.info('verifyRule unmatched: ', JSON.stringify(data.content));
-                        //通知自己的客户端
-                        chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), { fromUser: userInfo, uiId: data.uiId, value: resultVal, rule: true });
-                    } else {
-                        data.content.status = 1; //设为通过
-                        //私聊权限逻辑判断
-                        if (isWh && (!common.containSplitStr(resultVal.talkStyle, toUser.talkStyle) || (constant.roleUserType.member < parseInt(userInfo.userType) && !common.containSplitStr(resultVal.whisperRoles, userInfo.userType)) ||
-                                (constant.roleUserType.member >= parseInt(userInfo.userType) && !common.containSplitStr(resultVal.whisperRoles, toUser.userType)))) {
-                            //通知自己的客户端
-                            chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), { fromUser: userInfo, uiId: data.uiId, value: { tip: '你或对方没有私聊权限' }, rule: true });
-                            return false;
-                        }
-                        //发送给自己
-                        var myMsg = { uiId: data.uiId, fromUser: userInfo, serverSuccess: true, content: { msgType: data.content.msgType, needMax: data.content.needMax } };
-                        if (resultVal.tip) {
-                            myMsg.rule = true;
-                            myMsg.value = resultVal;
-                        }
-                        chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), myMsg);
-                        var imgMaxValue = data.content.maxValue;
-                        //发送给除自己之外的用户
-                        if (isWh) { //私聊
-                            data.content.maxValue = "";
-                            var newToUser = {
-                                userId: userInfo.toUser.userId,
-                                groupId: userInfo.groupId,
-                                groupType: userInfo.groupType
-                            }
-                            chatMessage.sendMsg(userInfo.groupType, userInfo.toUser.socketId, chatService.getUserUUId(newToUser), data);
-                            var key = chatService.getRedisKey(userInfo.groupType, userInfo.groupId, userInfo.toUser.userId);
-                            var cacheClient = require("../cache/cacheClient");
-                            //获取最后一次登录的socket
-                            cacheClient.get(key, function(error, result) {
-                                var socketId = userInfo.toUser.userId;
-                                if (!error && result) {
-                                    socketId = result;
-                                }
-                                baseMessage.checkUserIsOnline(userInfo.groupType, userInfo.groupId, socketId)
-                                    .then(function(online) {
-                                        saveMsg(online);
-                                    }, function(error) {
-                                        saveMsg(false);
-                                        logger.error("获取用户在线信息失败.", error);
-                                    });
 
-                                function saveMsg(online) {
-                                    data.content.msgStatus = online ? 1 : 0; //1:0;判断信息是否离线或在线
-                                    data.content.maxValue = imgMaxValue;
-                                    messageService.saveMsg({ fromUser: userSaveInfo, content: data.content })
-                                        .then(data => { logger.info(data); })
-                                        .catch(e => { logger.error("saveMsg 失败.", e); });
-                                }
-                            });
+                userService.verifyRule(
+                        userInfo,
+                        common.wrapSystemCategory({ isWh: isWh, speakNum: speakNum }, params.systemCategory),
+                        data.content)
+                    .then(resultVal => {
+                        if (!resultVal.isOK) { //匹配规则，则按规则逻辑提示
+                            logger.info('acceptMsg=>resultVal:', JSON.stringify(resultVal));
+                            logger.info('verifyRule unmatched: ', JSON.stringify(data.content));
+                            //通知自己的客户端
+                            chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), { fromUser: userInfo, uiId: data.uiId, value: resultVal, rule: true });
                         } else {
-                            messageService.saveMsg({ fromUser: userSaveInfo, content: data.content })
-                                .then(data => { logger.info(data) })
-                                .catch(e => { logger.error("saveMsg 失败.", e); });
-                            data.content.maxValue = "";
-                            chatMessage.sendMsgByRoom(userInfo.groupType, groupId, { fromUser: userInfo, content: data.content })
+                            data.content.status = 1; //设为通过
+                            //私聊权限逻辑判断
+                            if (isWh && (!common.containSplitStr(resultVal.talkStyle, toUser.talkStyle) || (constant.roleUserType.member < parseInt(userInfo.userType) && !common.containSplitStr(resultVal.whisperRoles, userInfo.userType)) ||
+                                    (constant.roleUserType.member >= parseInt(userInfo.userType) && !common.containSplitStr(resultVal.whisperRoles, toUser.userType)))) {
+                                //通知自己的客户端
+                                chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), { fromUser: userInfo, uiId: data.uiId, value: { tip: '你或对方没有私聊权限' }, rule: true });
+                                return false;
+                            }
+                            //发送给自己
+                            var myMsg = { uiId: data.uiId, fromUser: userInfo, serverSuccess: true, content: { msgType: data.content.msgType, needMax: data.content.needMax } };
+                            if (resultVal.tip) {
+                                myMsg.rule = true;
+                                myMsg.value = resultVal;
+                            }
+                            chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), myMsg);
+                            var imgMaxValue = data.content.maxValue;
+                            //发送给除自己之外的用户
+                            if (isWh) { //私聊
+                                data.content.maxValue = "";
+                                var newToUser = {
+                                    userId: userInfo.toUser.userId,
+                                    groupId: userInfo.groupId,
+                                    groupType: userInfo.groupType
+                                }
+                                chatMessage.sendMsg(userInfo.groupType, userInfo.toUser.socketId, chatService.getUserUUId(newToUser), data);
+                                var key = chatService.getRedisKey(userInfo.groupType, userInfo.groupId, userInfo.toUser.userId);
+                                var cacheClient = require("../cache/cacheClient");
+                                //获取最后一次登录的socket
+                                cacheClient.get(key, function(error, result) {
+                                    var socketId = userInfo.toUser.userId;
+                                    if (!error && result) {
+                                        socketId = result;
+                                    }
+                                    baseMessage.checkUserIsOnline(userInfo.groupType, userInfo.groupId, socketId)
+                                        .then(function(online) {
+                                            saveMsg(online);
+                                        }, function(error) {
+                                            saveMsg(false);
+                                            logger.error("获取用户在线信息失败.", error);
+                                        });
+
+                                    function saveMsg(online) {
+                                        data.content.msgStatus = online ? 1 : 0; //1:0;判断信息是否离线或在线
+                                        data.content.maxValue = imgMaxValue;
+                                        messageService.saveMsg({ fromUser: userSaveInfo, content: data.content })
+                                            .then(data => { logger.info(data); })
+                                            .catch(e => { logger.error("saveMsg 失败.", e); });
+                                    }
+                                });
+                            } else {
+                                messageService.saveMsg({ fromUser: userSaveInfo, content: data.content })
+                                    .then(data => { logger.info(data) })
+                                    .catch(e => { logger.error("saveMsg 失败.", e); });
+                                data.content.maxValue = "";
+                                chatMessage.sendMsgByRoom(userInfo.groupType, groupId, { fromUser: userInfo, content: data.content })
+                            }
                         }
-                    }
-                }).catch(e => {
-                    logger.error("acceptMsg! >>verifyRule:", e);
-                    chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), {
-                        fromUser: userInfo,
-                        uiId: data.uiId,
-                        value: { tip: e.tip },
-                        rule: true
+                    }).catch(e => {
+                        logger.error("acceptMsg! >>verifyRule:", e);
+                        chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), {
+                            fromUser: userInfo,
+                            uiId: data.uiId,
+                            value: { tip: e.tip },
+                            rule: true
+                        });
                     });
-                });
             } else {
                 //通知自己的客户端
                 chatMessage.sendMsg(userInfo.groupType, userInfo.socketId, chatService.getUserUUId(userInfo), { isVisitor: true, uiId: data.uiId });
@@ -729,7 +778,10 @@ var chatService = {
      * 检查客户是否已经点赞
      * 已点赞返回false，否则返回true
      */
-    checkChatPraise: function(clientId, praiseId, fromPlatform, callback) {
+    checkChatPraise: function(params, callback) {
+        let clientId = params.clientId,
+            praiseId = params.praise,
+            fromPlatform = params.fromPlatform;
         var cacheClient = require('../cache/cacheClient');
         var key = 'chatPraise_' + fromPlatform + '_' + clientId + '_' + praiseId;
         cacheClient.hgetall(key, function(err, result) {
@@ -778,6 +830,7 @@ var chatService = {
         if (common.isValid(params.orderByJsonStr)) {
             orderByJsonObj = JSON.parse(params.orderByJsonStr);
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         async.parallel({
                 list: function(callbackTmp) {
                     chatMessageModel.find(searchObj).skip(from)

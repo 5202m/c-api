@@ -84,6 +84,7 @@ router.get(/^\/getMessageList(\.(json|xml))?$/, function(req, res) {
             res.json(ApiResult.result(errorMessage.code_1000));
         }
     } else {
+        common.wrapSystemCategory(params, req.query.systemCategory);
         chatService.getMessagePage(params, function(page) {
             if (req.path.indexOf('.xml') != -1) {
                 res.end(ApiResult.result(null, page, ApiResult.dataType.xml));
@@ -151,6 +152,7 @@ router.get("/getMemberInfo", function(req, res) {
     if (common.isBlank(params.groupType) || (common.isBlank(params.mobilePhone) && common.isBlank(params.userId))) {
         res.json(ApiResult.result(errorMessage.code_1000, null));
     } else {
+        common.wrapSystemCategory(params, req.query.systemCategory);
         userService.getMemberInfo(params, function(err, member) {
             res.json(member);
         });
@@ -187,12 +189,15 @@ router.get("/getMemberInfo", function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.get("/getAnalysts", function(req, res) {
-    var platform = req.query["platform"];
-    var analystIds = req.query["analystIds"];
+    let params = {
+        platform: req.query["platform"],
+        analystIds: req.query["analystIds"]
+    }
     if (common.isBlank(platform) || common.isBlank(analystIds)) {
         res.json(ApiResult.result(errorMessage.code_1000, null));
     } else {
-        chatService.getAnalystInfo(platform, analystIds, function(analysts) {
+        common.wrapSystemCategory(params, req.query.systemCategory);
+        chatService.getAnalystInfo(params, function(analysts) {
             res.json(analysts);
         });
     }
@@ -223,12 +228,15 @@ router.get("/getAnalysts", function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.post("/praiseAnalyst", function(req, res) {
-    var platform = req.body["platform"] || req.query["platform"];
-    var analystId = req.body["analystId"] || req.query["analystId"];
+    let params = {
+        platform: req.body["platform"] || req.query["platform"],
+        analystId: req.body["analystId"] || req.query["analystId"]
+    };
     if (common.isBlank(analystId) || common.isBlank(platform)) {
         res.json(ApiResult.result(errorMessage.code_1000, null));
     } else {
-        chatService.praiseAnalyst(platform, analystId, function(result) {
+        common.wrapSystemCategory(params, req.body.systemCategory);
+        chatService.praiseAnalyst(params, function(result) {
             res.json(result);
         });
     }
@@ -279,6 +287,7 @@ router.get("/getShowTrade", function(req, res) {
             params.num = 2;
         }
     }
+    common.wrapSystemCategory(params, req.query.systemCategory);
     chatService.getShowTrade(params, function(result) {
         res.json(result);
     });
@@ -352,7 +361,7 @@ router.post("/checkChatPraise", function(req, res) {
     if (common.isBlank(clientId) || common.isBlank(praiseId) || common.isBlank(fromPlatform)) {
         res.json(ApiResult.result(null, true));
     } else {
-        chatService.checkChatPraise(clientId, praiseId, fromPlatform, function(isOK) {
+        chatService.checkChatPraise(req.body, function(isOK) {
             res.json(ApiResult.result(null, isOK));
         });
     }

@@ -106,9 +106,7 @@ router.post("/saveVisitorRecord", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    let type = req.body.type;
-    let dasData = JSON.parse(req.body.dasData);
-    visitorService.saveVisitorRecord(type, dasData)
+    visitorService.saveVisitorRecord(req.body)
         .then(result => {
             res.json(APIUtil.APIResult(null, { isOK: true }));
         })
@@ -159,7 +157,7 @@ router.get("/getVistiorByName", (req, res) => {
     let groupType = req.query.groupType;
     let roomId = req.query.roomId;
     let nickname = req.query.nickname;
-    visitorService.getVistiorByName(groupType, roomId, nickname)
+    visitorService.getVistiorByName(req.query)
         .then(data => {
             res.json(APIUtil.APIResult(null, data));
         })

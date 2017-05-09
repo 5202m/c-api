@@ -45,8 +45,11 @@ var userService = {
      * 通过用户id提取信息
      * @param ids
      */
-    getUserList: function(userNOs, callback) {
-        boUser.find({ userNo: { $in: userNOs.split(",") } }, "userNo userName position avatar status valid", function(err, rows) {
+    getUserList: function(params, callback) {
+        let userNo = params.userNo;
+        let searchObj = { userNo: { $in: userNOs.split(",") } };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        boUser.find(searchObj, "userNo userName position avatar status valid", function(err, rows) {
             if (err) {
                 logger.error(err);
                 callback(null);
@@ -59,9 +62,25 @@ var userService = {
      * 批量下线房间用户在线状态
      * @param roomId
      */
-    batchOfflineStatus: function(roomId, callback) {
+    batchOfflineStatus: function(params, callback) {
+        let roomId = params.roomId;
         var groupType = common.getRoomType(roomId);
-        member.find({ valid: 1, 'loginPlatform.chatUserGroup': { $elemMatch: { _id: groupType, "rooms": { $elemMatch: { '_id': roomId, onlineStatus: 1 } } } } }, function(err, rowList) {
+        let searchObj = {
+            valid: 1,
+            'loginPlatform.chatUserGroup': {
+                $elemMatch: {
+                    _id: groupType,
+                    "rooms": {
+                        $elemMatch: {
+                            '_id': roomId,
+                            onlineStatus: 1
+                        }
+                    }
+                }
+            }
+        };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        member.find(searchObj, function(err, rowList) {
             if (err || !rowList) {
                 logger.warn('batchOfflineStatus->fail or no offlineStatus row', err);
                 callback('batchOfflineStatus->fail or no offlineStatus row');
@@ -170,7 +189,9 @@ var userService = {
         }
         contentVal = common.encodeHtml(contentVal);
         //预定义规则
-        chatGroup.findOne({ _id: groupId, valid: 1, status: { $in: [1, 2] } }, function(err, row) {
+        let chatGroupQuery = { _id: groupId, valid: 1, status: { $in: [1, 2] } };
+        common.wrapSystemCategory(chatGroupQuery, params.systemCategory);
+        chatGroup.findOne(chatGroupQuery, function(err, row) {
             if (err || !row) {
                 deferred.reject({ isOK: false, tip: '系统异常，房间不存在！', leaveRoom: true });
                 return deferred.promise;
@@ -300,7 +321,8 @@ var userService = {
     /**
      * 提取会员信息
      */
-    getMemberList: function(id, callback) {
+    getMemberList: function(params, callback) {
+        let id = params.id;
         member.findById(id, function(err, members) {
             if (err != null) {
                 callback({ isOK: false, msg: "getMemberList fail!" });
@@ -325,7 +347,14 @@ var userService = {
      */
     checkSystemUserInfo: function(userInfo, callback) {
         var result = { isOK: false };
-        var newUserInfo = { groupType: userInfo.groupType, groupId: userInfo.groupId, accountNo: userInfo.accountNo, userId: userInfo.userId, mobilePhone: userInfo.mobilePhone };
+        var newUserInfo = {
+            groupType: userInfo.groupType,
+            groupId: userInfo.groupId,
+            accountNo: userInfo.accountNo,
+            userId: userInfo.userId,
+            mobilePhone: userInfo.mobilePhone,
+            systemCategory: userInfo.systemCategory
+        };
         if (constant.fromPlatform.pm_mis == userInfo.fromPlatform) {
             newUserInfo.accountNo = userInfo.userId;
             newUserInfo.userId = ''; //不需要填值
@@ -342,7 +371,9 @@ var userService = {
      * @param callback
      */
     createUser: function(userInfo, callback) {
-        member.findOne({ 'mobilePhone': userInfo.mobilePhone, valid: 1 }, "loginPlatform.chatUserGroup", function(err, row) {
+        let queryObj = { 'mobilePhone': userInfo.mobilePhone, valid: 1 };
+        common.wrapSystemCategory(queryObj, userInfo.systemCategory);
+        member.findOne(queryObj, "loginPlatform.chatUserGroup", function(err, row) {
             if (!err && row) {
                 var hasRow = false;
                 if (row.loginPlatform) {
@@ -377,6 +408,7 @@ var userService = {
             createIp: userInfo.ip, //新增记录的Ip
             updateIp: userInfo.ip, //新增记录的Ip
             createDate: new Date(), //创建日期
+            systemCategory: userInfo.systemCategory,
             loginPlatform: {
                 chatUserGroup: [{
                     _id: userInfo.groupType, //组的大类别，区分是微信组、直播间
@@ -437,7 +469,20 @@ var userService = {
      * @param callback
      */
     joinNewRoom: function(userInfo, callback) {
-        var searchObj = { 'mobilePhone': userInfo.mobilePhone, valid: 1, 'loginPlatform.chatUserGroup': { $elemMatch: { _id: userInfo.groupType, userId: userInfo.userId, "rooms._id": { $ne: userInfo.groupId } } } };
+        var searchObj = {
+            'mobilePhone': userInfo.mobilePhone,
+            valid: 1,
+            'loginPlatform.chatUserGroup': {
+                $elemMatch: {
+                    _id: userInfo.groupType,
+                    userId: userInfo.userId,
+                    "rooms._id": {
+                        $ne: userInfo.groupId
+                    }
+                }
+            }
+        };
+
         var setValObj = {
             '$push': {
                 'loginPlatform.chatUserGroup.$.rooms': {
@@ -448,7 +493,17 @@ var userService = {
             }
         };
         if (common.isBlank(userInfo.mobilePhone)) { //如果不存在手机号码，先提取手机号码
-            member.findOne({ valid: 1, 'loginPlatform.chatUserGroup': { $elemMatch: { _id: userInfo.groupType, userId: userInfo.userId } } }, function(err, row) {
+            let memberSearchObj = {
+                valid: 1,
+                'loginPlatform.chatUserGroup': {
+                    $elemMatch: {
+                        _id: userInfo.groupType,
+                        userId: userInfo.userId
+                    }
+                }
+            };
+            common.wrapSystemCategory(memberSearchObj, userInfo.systemCategory);
+            member.findOne(memberSearchObj, function(err, row) {
                 if (row) {
                     searchObj.mobilePhone = row.mobilePhone;
                     var mainRow = row.loginPlatform.chatUserGroup.id(userInfo.groupType);
@@ -465,6 +520,7 @@ var userService = {
                 }
             });
         } else {
+            common.wrapSystemCategory(searchObj, userInfo.systemCategory);
             member.findOneAndUpdate(searchObj, setValObj, function(err, row) {
                 if (err) {
                     logger.error('joinNewGroup=>fail!' + err);
@@ -503,13 +559,21 @@ var userService = {
                     onlineDate: new Date()
                 }]
             };
-            member.findOneAndUpdate({ valid: 1, 'mobilePhone': userInfo.mobilePhone, 'loginPlatform.chatUserGroup._id': { $ne: userInfo.groupType } }, { '$push': { 'loginPlatform.chatUserGroup': jsonStr } }, function(err, row) {
-                var isSuccess = !err && row;
-                if (isSuccess) {
-                    logger.info('createChatUserGroupInfo=>create ChatUserGroupInfo success!');
-                }
-                callback(isSuccess);
-            });
+            let queryObj = { valid: 1, 'mobilePhone': userInfo.mobilePhone, 'loginPlatform.chatUserGroup._id': { $ne: userInfo.groupType } };
+            common.wrapSystemCategory(queryObj, userInfo.systemCategory);
+            member.findOneAndUpdate(
+                queryObj, {
+                    '$push': {
+                        'loginPlatform.chatUserGroup': jsonStr
+                    }
+                },
+                function(err, row) {
+                    var isSuccess = !err && row;
+                    if (isSuccess) {
+                        logger.info('createChatUserGroupInfo=>create ChatUserGroupInfo success!');
+                    }
+                    callback(isSuccess);
+                });
         }
     },
 
@@ -533,12 +597,14 @@ var userService = {
      */
     updateMemberInfo: function(userInfo, callback) {
         if (common.hasPrefix(constant.clientGroup.visitor, userInfo.userId)) { //游客则提取离线日期
-            visitorService.getByClientStoreId(userInfo.groupType, userInfo.groupId, userInfo.clientStoreId, function(offlineDate) {
+            visitorService.getByClientStoreId(userInfo, function(offlineDate) {
                 callback(0, null, offlineDate);
             });
         } else {
+            let searchObj = this.getMemberRoomSearch(userInfo);
+            common.wrapSystemCategory(searchObj, userInfo.systemCategory);
             //存在则更新上线状态及上线时间
-            member.findOne(this.getMemberRoomSearch(userInfo), function(err, row) {
+            member.findOne(searchObj, function(err, row) {
                 if (!err && row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                     var group = row.loginPlatform.chatUserGroup.id(userInfo.groupType);
                     if (group) {
@@ -564,8 +630,13 @@ var userService = {
     /**
      *下线更新会员状态及发送记录条数
      */
-    updateChatUserGroupStatus: function(userInfo, chatStatus, sendMsgCount, callback) {
-        member.findOne(this.getMemberRoomSearch(userInfo), function(err, row) {
+    updateChatUserGroupStatus: function(params, callback) {
+        let userInfo = params.userInfo,
+            chatStatus = params.chatStatus,
+            sendMsgCount = params.sendMsgCount;
+        let searchObj = this.getMemberRoomSearch(userInfo);
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        member.findOne(searchObj, function(err, row) {
             if (row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                 var group = row.loginPlatform.chatUserGroup.id(userInfo.groupType);
                 if (group) {
@@ -592,7 +663,9 @@ var userService = {
      * @param userInfo
      * @param isAllowPass 是否允许通过
      */
-    checkUserLogin: function(userInfo, isAllowPass, callback) {
+    checkUserLogin: function(params, callback) {
+        let userInfo = params.userInfo,
+            isAllowPass = params.isAllowPass;
         if (isAllowPass) {
             callback(true);
             return;
@@ -603,7 +676,9 @@ var userService = {
         } else {
             searchObj = { _id: userInfo.groupType, userId: userInfo.userId };
         }
-        member.findOne({ 'loginPlatform.chatUserGroup': { $elemMatch: searchObj } }, "mobilePhone loginPlatform.chatUserGroup.$", function(err, row) {
+        let queryObj = { 'loginPlatform.chatUserGroup': { $elemMatch: searchObj } };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        member.findOne(queryObj, "mobilePhone loginPlatform.chatUserGroup.$", function(err, row) {
             if (!err && row) {
                 callback(row);
             } else {
@@ -655,8 +730,13 @@ var userService = {
      * @param groupId
      * @returns {boolean}
      */
-    checkRoomStatus: function(userId, groupId, currCount, callback) {
-        chatGroup.findOne({ _id: groupId, valid: 1, status: { $in: [1, 2] } }, "status openDate maxCount valid roomType traninClient", function(err, row) {
+    checkRoomStatus: function(params, callback) {
+        let userId = params.userId,
+            groupId = params.groupId,
+            currCount = params.currCount;
+        let searchObj = { _id: groupId, valid: 1, status: { $in: [1, 2] } };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        chatGroup.findOne(searchObj, "status openDate maxCount valid roomType traninClient", function(err, row) {
             if (!row || err) {
                 callback(false);
                 return;
@@ -690,12 +770,31 @@ var userService = {
      * @param groupType
      * @param callback
      */
-    modifyNickname: function(mobilePhone, groupType, nickname, callback) {
-        member.find({ mobilePhone: { $ne: mobilePhone }, valid: 1, "loginPlatform.chatUserGroup": { $elemMatch: { _id: groupType, nickname: nickname, userType: 0 } } }).count(function(err, count) {
+    modifyNickname: function(params, callback) {
+        let mobilePhone = params.mobilePhone,
+            groupType = params.groupType,
+            nickname = params.nickname;
+        let searchObj = {
+            mobilePhone: {
+                $ne: mobilePhone
+            },
+            valid: 1,
+            "loginPlatform.chatUserGroup": {
+                $elemMatch: {
+                    _id: groupType,
+                    nickname: nickname,
+                    userType: 0
+                }
+            }
+        };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        member.find(searchObj).count(function(err, count) {
             if (count > 0) {
                 callback({ isOK: false, msg: "该昵称已被占用，请使用其他昵称！" });
             } else {
-                member.update({ valid: 1, 'mobilePhone': mobilePhone, 'loginPlatform.chatUserGroup._id': groupType }, { $set: { "loginPlatform.chatUserGroup.$.nickname": nickname } }, function(err, row) {
+                let udpateQuery = { valid: 1, 'mobilePhone': mobilePhone, 'loginPlatform.chatUserGroup._id': groupType };
+                common.wrapSystemCategory(updateQuery, params.systemCategory);
+                member.update(udpateQuery, { $set: { "loginPlatform.chatUserGroup.$.nickname": nickname } }, function(err, row) {
                     if (err) {
                         logger.error("modifyNickname->update fail!" + err);
                         callback({ isOK: false, msg: "修改失败，请联系客服！" });
@@ -713,14 +812,32 @@ var userService = {
      * @param callback
      */
     modifyAvatar: function(params, callback) {
-        member.update({ valid: 1, 'mobilePhone': params.mobilePhone, 'loginPlatform.chatUserGroup._id': params.groupType }, { $set: { "loginPlatform.chatUserGroup.$.avatar": params.avatar } }, function(err, row) {
+        let queryObj = {
+            valid: 1,
+            'mobilePhone': params.mobilePhone,
+            'loginPlatform.chatUserGroup._id': params.groupType
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        member.update(queryObj, { $set: { "loginPlatform.chatUserGroup.$.avatar": params.avatar } }, function(err, row) {
             if (err) {
                 logger.error("modifyAvatar->update fail!" + err);
                 callback({ isOK: false, msg: "修改失败，请联系客服！" });
             } else {
                 callback({ isOK: true });
                 if (common.isValid(params.item)) {
-                    var pointsParams = { clientGroup: params.clientGroup, change: 'avatar', groupType: params.groupType, userId: params.mobilePhone, item: params.item, val: 0, isGlobal: false, remark: '', opUser: params.userId, opIp: params.ip };
+                    var pointsParams = {
+                        clientGroup: params.clientGroup,
+                        change: 'avatar',
+                        groupType: params.groupType,
+                        userId: params.mobilePhone,
+                        item: params.item,
+                        val: 0,
+                        isGlobal: false,
+                        remark: '',
+                        opUser: params.userId,
+                        opIp: params.ip
+                    };
+                    common.wrapSystemCategory(pointsParams, params.systemCategory);
                     userService.pointsChange(pointsParams, function(result) {});
                 }
             }
@@ -738,6 +855,7 @@ var userService = {
                 if (common.isValid(params.hasQRCode)) {
                     searchObj.wechatCodeImg = { $nin: [null, ''] };
                 }
+                common.wrapSystemCategory(searchObj, params.systemCategory);
                 boUser.find(searchObj, "userNo userName wechatCodeImg avatar", function(err, row) {
                     if (err) {
                         logger.error("getTeacherList->get fail!" + err);
@@ -773,25 +891,61 @@ var userService = {
      * @param groupType
      * @param callback
      */
-    modifyUserName: function(userInfo, params, callback) {
-        member.find({ mobilePhone: { $ne: userInfo.mobilePhone }, valid: 1, "loginPlatform.chatUserGroup": { $elemMatch: { _id: userInfo.groupType, userName: params.userName, userType: 0 } } }).count(function(err, count) {
+    modifyUserName: function(parameters, callback) {
+        let userInfo = parameters.userInfo,
+            params = parameters.params;
+        let searchObj = {
+            mobilePhone: {
+                $ne: userInfo.mobilePhone
+            },
+            valid: 1,
+            "loginPlatform.chatUserGroup": {
+                $elemMatch: {
+                    _id: userInfo.groupType,
+                    userName: params.userName,
+                    userType: 0
+                }
+            }
+        };
+        common.wrapSystemCategory(searchObj, parameters.systemCategory);
+        member.find(searchObj).count(function(err, count) {
             if (count > 0) {
                 callback({ isOK: false, msg: "该用户名已被占用，请使用其他用户名！" });
             } else {
-                member.update({ valid: 1, 'mobilePhone': userInfo.mobilePhone, 'loginPlatform.chatUserGroup._id': userInfo.groupType }, { $set: { "loginPlatform.chatUserGroup.$.userName": params.userName } }, function(err, row) {
-                    if (err) {
-                        logger.error("modifyUserName->update fail!" + err);
-                        callback({ isOK: false, msg: "修改失败，请联系客服！" });
-                    } else {
-                        callback({ isOK: true });
-                        if (common.isValid(params.item)) {
-                            var pointsParams = { clientGroup: userInfo.clientGroup, change: 'username', groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: params.item, val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: params.ip };
-                            userService.pointsChange(pointsParams, function(result) {
+                let updateQuery = {
+                    valid: 1,
+                    'mobilePhone': userInfo.mobilePhone,
+                    'loginPlatform.chatUserGroup._id': userInfo.groupType
+                };
+                common.wrapSystemCategory(updateQuery, parameters.systemCategory);
+                member.update(
+                    updateQuery, { $set: { "loginPlatform.chatUserGroup.$.userName": params.userName } },
+                    function(err, row) {
+                        if (err) {
+                            logger.error("modifyUserName->update fail!" + err);
+                            callback({ isOK: false, msg: "修改失败，请联系客服！" });
+                        } else {
+                            callback({ isOK: true });
+                            if (common.isValid(params.item)) {
+                                var pointsParams = {
+                                    clientGroup: userInfo.clientGroup,
+                                    change: 'username',
+                                    groupType: userInfo.groupType,
+                                    userId: userInfo.mobilePhone,
+                                    item: params.item,
+                                    val: 0,
+                                    isGlobal: false,
+                                    remark: '',
+                                    opUser: userInfo.userId,
+                                    opIp: params.ip
+                                };
+                                common.wrapSystemCategory(pointsParams, parameters.systemCategory);
+                                userService.pointsChange(pointsParams, function(result) {
 
-                            });
+                                });
+                            }
                         }
-                    }
-                });
+                    });
             }
         });
     },
@@ -802,17 +956,45 @@ var userService = {
      * @param callback
      */
     modifyEmail: function(params, callback) {
-        member.find({ valid: 1, "loginPlatform.chatUserGroup": { $elemMatch: { _id: params.groupType, email: params.email, userType: 0 } } }).count(function(err, count) {
+        let emailSearchObj = {
+            valid: 1,
+            "loginPlatform.chatUserGroup": {
+                $elemMatch: {
+                    _id: params.groupType,
+                    email: params.email,
+                    userType: 0
+                }
+            }
+        };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        member.find(emailSearchObj).count(function(err, count) {
             if (count > 0) {
                 callback({ isOK: false, msg: "该邮箱地址已绑定到其他账户，请使用其他邮箱！" });
             } else {
-                member.findOne({ valid: 1, "loginPlatform.chatUserGroup": { $elemMatch: { _id: params.groupType, userId: params.userId, userType: 0 } } }, 'mobilePhone loginPlatform.chatUserGroup.$', function(err, row) {
+                let userSearchObj = {
+                    valid: 1,
+                    "loginPlatform.chatUserGroup": {
+                        $elemMatch: {
+                            _id: params.groupType,
+                            userId: params.userId,
+                            userType: 0
+                        }
+                    }
+                };
+                common.wrapSystemCategory(userSearchObj, params.systemCategory);
+                member.findOne(userSearchObj, 'mobilePhone loginPlatform.chatUserGroup.$', function(err, row) {
                     if (err) {
                         logger.error("modifyEmail->update fail!" + err);
                         callback({ isOK: false, msg: "修改失败，请联系客服！" });
                     } else {
                         var clientGroup = row.loginPlatform.chatUserGroup[0].clientGroup;
-                        member.update({ valid: 1, 'mobilePhone': row.mobilePhone, 'loginPlatform.chatUserGroup._id': params.groupType }, { $set: { "loginPlatform.chatUserGroup.$.email": params.email } }, function(err, row1) {
+                        let updateQuery = {
+                            valid: 1,
+                            'mobilePhone': row.mobilePhone,
+                            'loginPlatform.chatUserGroup._id': params.groupType
+                        };
+                        common.wrapSystemCategory(updateQuery, params.systemCategory);
+                        member.update(updateQuery, { $set: { "loginPlatform.chatUserGroup.$.email": params.email } }, function(err, row1) {
                             if (err) {
                                 logger.error("modifyEmail->update fail!" + err);
                                 callback({ isOK: false, msg: "修改失败，请联系客服！" });
@@ -820,9 +1002,7 @@ var userService = {
                                 callback({ isOK: true });
                                 if (common.isValid(params.item)) {
                                     var pointsParams = { clientGroup: clientGroup, change: 'email', groupType: params.groupType, userId: row.mobilePhone, item: params.item, val: 0, isGlobal: false, remark: '', opUser: params.userId, opIp: params.ip };
-                                    userService.pointsChange(pointsParams, function(result) {
-
-                                    });
+                                    userService.pointsChange(pointsParams, function(result) {});
                                 }
                             }
                         });
@@ -837,8 +1017,12 @@ var userService = {
      * @param groupType
      * @param callback
      */
-    modifyPwd: function(userInfo, params, callback) {
-        member.findOne({ valid: 1, 'mobilePhone': userInfo.mobilePhone, 'loginPlatform.chatUserGroup._id': userInfo.groupType }, function(err, row) {
+    modifyPwd: function(parameters, callback) {
+        let userInfo = parameters.userInfo,
+            params = parameters.params;
+        let searchObj = { valid: 1, 'mobilePhone': userInfo.mobilePhone, 'loginPlatform.chatUserGroup._id': userInfo.groupType };
+        common.wrapSystemCategory(searchObj, parameters.systemCategory);
+        member.findOne(searchObj, function(err, row) {
             if (err && !row) {
                 logger.error("modifyPwd->update fail!" + err);
                 callback({ isOK: false, msg: "修改失败，请联系客服！" });
@@ -868,9 +1052,8 @@ var userService = {
                                     opUser: userInfo.userId,
                                     opIp: params.ip
                                 };
-                                userService.pointsChange(pointsParams, function(result) {
-
-                                });
+                                common.wrapSystemCategory(pointsParams, parameters.systemCategory);
+                                userService.pointsChange(pointsParams, function(result) {});
                             }
                         }
                     });
@@ -888,7 +1071,19 @@ var userService = {
      */
     pointsChange: function(params, callback) {
         var isChange = false;
-        member.findOne({ mobilePhone: { $ne: params.mobilePhone }, valid: 1, "loginPlatform.chatUserGroup": { $elemMatch: { _id: params.groupType } } }, "loginPlatform.chatUserGroup.$", function(err, result) {
+        let queryObj = {
+            mobilePhone: {
+                $ne: params.mobilePhone
+            },
+            valid: 1,
+            "loginPlatform.chatUserGroup": {
+                $elemMatch: {
+                    _id: params.groupType
+                }
+            }
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        member.findOne(queryObj, "loginPlatform.chatUserGroup.$", function(err, result) {
             if (!err && result) {
                 if (params.change == 'username' && common.isBlank(result.userName)) {
                     isChange = true;
@@ -900,7 +1095,18 @@ var userService = {
                     isChange = true;
                 }
                 if (isChange) {
-                    var pointsParam = { clientGroup: params.clientGroup, groupType: params.groupType, userId: params.userId, item: params.item, val: params.val, isGlobal: false, remark: params.remark, opUser: params.opUser, opIp: params.ip };
+                    var pointsParam = {
+                        clientGroup: params.clientGroup,
+                        groupType: params.groupType,
+                        userId: params.userId,
+                        item: params.item,
+                        val: params.val,
+                        isGlobal: false,
+                        remark: params.remark,
+                        opUser: params.opUser,
+                        opIp: params.ip
+                    };
+                    common.wrapSystemCategory(pointsParam, params.systemCategory);
                     chatPointsService.add(pointsParam, function(err, res) {
                         callback(res);
                     });
@@ -914,8 +1120,22 @@ var userService = {
      * @param groupType
      * @param callback
      */
-    getClientGroupByMId: function(mobileArr, groupType, callback) {
-        member.find({ mobilePhone: { $in: mobileArr }, valid: 1, "loginPlatform.chatUserGroup": { $elemMatch: { _id: groupType } } },
+    getClientGroupByMId: function(params, callback) { //["mobileArr"].split(","), req.query["groupType"]
+        let mobileArr = params.mobileArr.split(","),
+            groupType = params.groupType;
+        let searchObj = {
+            mobilePhone: {
+                $in: mobileArr
+            },
+            valid: 1,
+            "loginPlatform.chatUserGroup": {
+                $elemMatch: {
+                    _id: groupType
+                }
+            }
+        };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        member.find(searchObj,
             "mobilePhone loginPlatform.chatUserGroup.$",
             function(err, result) {
                 if (err) {
@@ -950,6 +1170,7 @@ var userService = {
             searchObj["mobilePhone"] = params.mobilePhone;
             searchObj["loginPlatform.chatUserGroup._id"] = params.groupType;
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         member.findOne(searchObj, {
             "mobilePhone": 1,
             "loginPlatform.chatUserGroup.$": 1
@@ -997,7 +1218,7 @@ var userService = {
      * @param callback
      */
     getAnalystList: function(systemCategory, callback) {
-        boUser.find({ valid: 1, status: 0, /*systemCategory: systemCategory,*/ 'role.roleNo': common.getPrefixReg("analyst") }, "userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag introduction", function(err, rows) {
+        boUser.find({ valid: 1, status: 0, systemCategory: systemCategory, 'role.roleNo': common.getPrefixReg("analyst") }, "userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag introduction", function(err, rows) {
             callback(rows);
         });
     }

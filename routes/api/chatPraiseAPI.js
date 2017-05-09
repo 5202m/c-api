@@ -75,12 +75,12 @@ var ApiResult = require('../../util/APIUtil.js').APIResult;
 router.get("/getPraiseNum", function(req, res) {
     var praiseId = req.query["praiseId"],
         type = req.query["type"],
-        platfrom = req.query["platfrom"];
+        platform = req.query["platfrom"] || req.query["platform"];
     if (common.isBlank(type) ||
-        common.isBlank(platfrom)) {
+        common.isBlank(platform)) {
         res.json(ApiResult(errorMessage.code_1000, null));
     } else {
-        chatPraiseService.getPraiseNum(praiseId, type, platfrom, function(data) {
+        chatPraiseService.getPraiseNum(req.query, function(data) {
             res.json(ApiResult(null, data));
         });
     }
@@ -122,7 +122,7 @@ router.get("/setPraise", function(req, res) {
         common.isBlank(fromPlatform)) {
         res.json(ApiResult(errorMessage.code_1000, null));
     } else {
-        chatPraiseService.setPraise(praiseId, type, fromPlatform, function(data) {
+        chatPraiseService.setPraise(rq.query, function(data) {
             res.json(ApiResult(null, data));
         });
     }

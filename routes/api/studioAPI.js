@@ -80,7 +80,7 @@ router.get("/getIndexLoadData", (req, res) => {
         isGetSyllabus: isGetSyllabus === "true",
         isGetMember: isGetMember === "true"
     };
-
+    common.wrapSystemCategory(params, req.query.systemCategory);
     studioService.getIndexLoadData(
         params,
         (data) => {
@@ -122,7 +122,7 @@ router.get("/getRoomList", (req, res) => {
     }
 
     studioService.getRoomList(
-        req.query["groupType"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -162,7 +162,7 @@ router.get("/getClientGroupList", (req, res) => {
     }
 
     studioService.getClientGroupList(
-        req.query["groupType"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -214,10 +214,7 @@ router.post("/resetPwd", (req, res) => {
         return;
     }
     studioService.resetPwd(
-        req.body["groupType"],
-        req.body["mobilePhone"],
-        req.body["newPwd"],
-        req.body["oldPwd"] || "",
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -255,7 +252,7 @@ router.get("/getStudioByGroupId", (req, res) => {
     }
 
     studioService.getStudioByGroupId(
-        req.query["groupId"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -300,12 +297,7 @@ router.get("/checkGroupAuth", (req, res) => {
     }
     let service = common.getCompanyOnlyService(req.query.companyId);
     service = service || studioService;
-    service.checkGroupAuth({
-        roomType: req.query["roomType"],
-        groupId: req.query["groupId"],
-        clientGroup: req.query["clientGroup"],
-        userId: req.query["userId"]
-    }).then((data, err) => {
+    service.checkGroupAuth(req.query).then((data, err) => {
         res.json(APIUtil.APIResult(err, data));
     }).catch((data, err) => {
         res.json(APIUtil.APIResult(err, data));
@@ -347,8 +339,7 @@ router.get("/getDefaultRoom", (req, res) => {
         return;
     }
     studioService.getDefaultRoom(
-        req.query["groupType"],
-        req.query["clientGroup"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -408,8 +399,7 @@ router.post("/studioRegister", (req, res) => {
         return;
     }
     studioService.studioRegister(
-        req.body["userInfo"],
-        req.body["clientGroup"],
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -462,9 +452,8 @@ router.post("/checkMemberAndSave", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    let userInfo = req.body["userInfo"];
     studioService.checkMemberAndSave(
-        userInfo,
+        req.body,
         (data) => {
             if (data) {
                 data.userInfo = userInfo;
@@ -606,8 +595,7 @@ router.post("/login", (req, res) => {
         return;
     }
     studioService.login(
-        req.body["userInfo"],
-        req.body["type"],
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -658,10 +646,7 @@ router.post("/updateClientGroup", (req, res) => {
         return;
     }
     studioService.updateClientGroup(
-        req.body["groupType"],
-        req.body["mobilePhone"],
-        req.body["newClientGroup"],
-        req.body["accountNo"],
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -720,8 +705,7 @@ router.post("/setUserGroupThemeStyle", (req, res) => {
         return;
     }
     studioService.setUserGroupThemeStyle(
-        req.body["userInfo"],
-        req.body["defTemplate"],
+        req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -758,7 +742,7 @@ router.get("/getTrainRoomList", (req, res) => {
     }
 
     studioService.getTrainRoomList(
-        req.query["groupType"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -800,8 +784,7 @@ router.get("/getUserInfoByUserNo", (req, res) => {
         return;
     }
     studioService.getUserInfoByUserNo(
-        req.query["groupType"],
-        req.query["userNo"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }
@@ -843,11 +826,7 @@ router.get("/getShowTeacher", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    studioService.getShowTeacher({
-            groupType: req.query["groupType"],
-            groupId: req.query["groupId"],
-            authorId: req.query["authorId"] || ""
-        },
+    studioService.getShowTeacher(req.query,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }

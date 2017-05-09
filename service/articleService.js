@@ -8,7 +8,7 @@ var article = require('../models/article'); //引入article数据模型
 var IdSeqManager = require('../constant/IdSeqManager.js'); //引入序号生成器js
 var category = require('../models/category'); //引入category数据模型
 var ApiResult = require('../util/ApiResult');
-var commonJs = require('../util/common'); //引入公共的js
+var common = require('../util/common'); //引入公共的js
 var APIUtil = require('../util/APIUtil'); //引入API工具类js
 var Utils = require('../util/Utils'); //引入工具类js
 var async = require('async'); //引入async
@@ -26,7 +26,7 @@ var articleService = {
     findArticle: function(code, platform, isAll, callback) {
         var searchObj = {
             valid: 1,
-            platform: commonJs.getSplitMatchReg(platform),
+            platform: common.getSplitMatchReg(platform),
             status: 1,
             categoryId: code
         };
@@ -57,7 +57,7 @@ var articleService = {
     getArticlePage: function(params, callback) {
         var searchObj = {
             valid: 1,
-            platform: commonJs.getSplitMatchReg(params.platform),
+            platform: common.getSplitMatchReg(params.platform),
             status: 1
         };
         if (params.code.indexOf(",") != -1) {
@@ -78,7 +78,7 @@ var articleService = {
             }
         }
         var selectField = "categoryId platform sequence mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate praise downloads point";
-        if (commonJs.isBlank(params.lang)) {
+        if (common.isBlank(params.lang)) {
             if ("1" == params.hasContent) {
                 selectField += " detailList";
             } else {
@@ -91,7 +91,7 @@ var articleService = {
                 selectField += " detailList.title detailList.authorInfo detailList.remark detailList.tag detailList.lang";
             }
             var deList = { lang: params.lang };
-            if (commonJs.isValid(params.authorId)) {
+            if (common.isValid(params.authorId)) {
                 deList["authorInfo.userId"] = params.authorId;
             }
             searchObj.detailList = { $elemMatch: deList };
@@ -99,7 +99,7 @@ var articleService = {
         searchObj.systemCategory = params.systemCategory;
         var from = (params.pageNo - 1) * params.pageSize;
         var orderByJsonObj = { createDate: 'desc' };
-        if (commonJs.isValid(params.orderByJsonStr)) {
+        if (common.isValid(params.orderByJsonStr)) {
             orderByJsonObj = JSON.parse(params.orderByJsonStr);
         }
         async.parallel({
@@ -195,7 +195,7 @@ var articleService = {
             status: 1,
             valid: 1,
             categoryId: params.code,
-            platform: commonJs.getSplitMatchReg(params.platform),
+            platform: common.getSplitMatchReg(params.platform),
             publishStartDate: { "$lte": currDate, "$gt": startDate },
             systemCategory: params.systemCategory
         }, function(err, rowNum) {
@@ -221,7 +221,7 @@ var articleService = {
             status: 1,
             valid: 1,
             categoryId: params.code,
-            platform: commonJs.getSplitMatchReg(params.platform),
+            platform: common.getSplitMatchReg(params.platform),
             publishStartDate: { $gte: dateStart },
             systemCategory: params.systemCategory
         };
@@ -286,8 +286,11 @@ var articleService = {
      * @param id
      * @param callback
      */
-    getArticleInfo: function(id, callback) {
-        article.findById(id, "categoryId platform mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate detailList", function(err, row) {
+    getArticleInfo: function(params, callback) {
+        let articleId = params.articleId;
+        let searchObj = { _id: articleId };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        article.find(searchObj, "categoryId platform mediaUrl mediaImgUrl linkUrl createDate publishStartDate publishEndDate detailList", function(err, row) {
             callback(row);
         });
     },
@@ -368,13 +371,13 @@ var articleService = {
             } else {
                 if (row) {
                     if (type == 'praise') {
-                        if (commonJs.isBlank(row.praise)) {
+                        if (common.isBlank(row.praise)) {
                             row.praise = 1;
                         } else {
                             row.praise += 1;
                         }
                     } else if (type == 'downloads') {
-                        if (commonJs.isBlank(row.downloads)) {
+                        if (common.isBlank(row.downloads)) {
                             row.downloads = 1;
                         } else {
                             row.downloads += 1;

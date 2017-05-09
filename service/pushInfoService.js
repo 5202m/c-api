@@ -12,7 +12,11 @@ var pushInfoService = {
     /**
      * 提取信息推送列表
      */
-    getPushInfo: function(groupType, roomId, clientGroup, position, callback) {
+    getPushInfo: function(params, callback) {
+        let groupType = params.groupType,
+            roomId = params.roomId,
+            clientGroup = params.clientGroup,
+            position = params.position;
         var rIds = [];
         rIds.push(roomId);
         var searchObj = { position: position, valid: 1, status: 1, groupType: groupType, roomIds: { $in: rIds } };
@@ -21,6 +25,7 @@ var pushInfoService = {
             cgArr.push(clientGroup);
             searchObj.clientGroup = { $in: cgArr };
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatPushInfo.findOne(searchObj).sort({ 'createDate': 'desc' }).exec(function(err, row) {
             if (err) {
                 logger.error("getPushInfo fail:" + err);
@@ -31,14 +36,19 @@ var pushInfoService = {
     },
     /**
      * 检查推送是否符合条件
-     * @param groupType
-     * @param roomId
-     * @param clientGroup
-     * @param position
-     * @param filterTime
-     * @param callback
+     * @param params.groupType
+     * @param params.roomId
+     * @param params.clientGroup
+     * @param params.position
+     * @param params.filterTime
+     * @param params.callback
      */
-    checkPushInfo: function(groupType, roomId, clientGroup, position, filterTime, callback) {
+    checkPushInfo: function(params, callback) {
+        let groupType = params.groupType,
+            roomId = params.roomId,
+            clientGroup = params.clientGroup || "",
+            position = params.position,
+            filterTime = params.filterTime;
         var rIds = [];
         rIds.push(roomId);
         var searchObj = { position: position, valid: 1, status: 1, groupType: groupType, roomIds: { $in: rIds } };
@@ -47,6 +57,7 @@ var pushInfoService = {
             cgArr.push(clientGroup);
             searchObj.clientGroup = { $in: cgArr };
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatPushInfo.find(searchObj).sort({ 'createDate': 'desc' }).exec(function(err, rowList) {
             if (err) {
                 logger.warn("getPushInfo fail:" + err);

@@ -65,7 +65,7 @@ router.post('/notice', function(req, res) {
 
     switch (loc_param.type) {
         case "ARTICLE":
-            SubscribeService.noticeArticle(loc_param.dataId, function(isOK) {
+            SubscribeService.noticeArticle(req.body, function(isOK) {
                 res.json(APIUtil.APIResult(null, isOK));
             });
             break;
@@ -112,7 +112,7 @@ router.get('/getSubscribeList', function(req, res) {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    SubscribeService.getSubscribeList(params, (data) => {
+    SubscribeService.getSubscribeList(req.query, (data) => {
         res.json(APIUtil.APIResultFromData(data));
     });
 });
@@ -176,7 +176,8 @@ router.post('/saveSubscribe', function(req, res) {
         endDate: req.body["endDate"],
         point: req.body["point"],
         userName: req.body["userName"],
-        Ip: req.body["orip"]
+        Ip: req.body["orip"],
+        systemCategory: req.body["systemCategory"]
     };
     var requires = ["groupType", "type", "userId", "analyst", "noticeType"];
     var isNotSatify = requires.every((name) => {
@@ -250,7 +251,8 @@ router.post('/modifySubscribe', function(req, res) {
         analyst: req.body["analyst"],
         point: req.body["point"],
         noticeCycle: req.body["noticeCycle"],
-        id: req.body["id"]
+        id: req.body["id"],
+        systemCategory: req.body["systemCategory"]
     };
     var requires = ["groupType", "id", "userId", "analyst", "noticeType"];
     var isNotSatify = requires.every((name) => {
@@ -313,7 +315,7 @@ router.post('/saveSubscribe4UTM', function(req, res) {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    SubscribeService.saveSubscribe4UTM(params.groupType, params.userId, params.subscribeType, params.isAdd, (data) => {
+    SubscribeService.saveSubscribe4UTM(req.body, (data) => {
         res.json(APIUtil.APIResult(null, data));
     });
 
@@ -351,7 +353,7 @@ router.get('/getSubscribeTypeList', function(req, res) {
     if (common.isBlank(params.groupType)) {
         res.json(APIUtil.APIResult("code_1000", null));
     }
-    SubscribeService.getSubscribeTypeList(params, (data) => {
+    SubscribeService.getSubscribeTypeList(req.query, (data) => {
         res.json(APIUtil.APIResult(null, data));
     });
 

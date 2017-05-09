@@ -17,13 +17,17 @@ var showTradeService = {
      * @param userNo 如果有多个分析师，只取第一个
      * @param callback
      */
-    getShowTrade: function(groupType, userNo, callback) {
+    getShowTrade: function(params, callback) {
+        let groupType = params.groupType,
+            userNo = params.userNo,
+            systemCategory = params.systemCategory;
         userNo = userNo.replace(/,.*$/g, "");
         chatShowTrade.find({
             "boUser.userNo": userNo,
             "groupType": groupType,
             "valid": 1,
-            "tradeType": 1
+            "tradeType": 1,
+            "systemCategory": systemCategory
         }).sort({ "showDate": -1 }).exec("find", function(err, data) {
             if (err) {
                 logger.error("查询晒单数据失败!>>getShowTrade:", err);
@@ -44,7 +48,12 @@ var showTradeService = {
                 }
                 if (result.analyst) {
                     result.analyst.praiseNum = 0;
-                    chatPraiseService.getPraiseNum(result.analyst.userNo, constant.chatPraiseType.user, groupType, function(rows) {
+                    chatPraiseService.getPraiseNum({
+                        userId: result.analyst.userNo,
+                        type: constant.chatPraiseType.user,
+                        platfrom: groupType,
+                        systemCategory: systemCategory
+                    }, function(rows) {
                         if (rows && rows.length > 0) {
                             result.analyst.praiseNum = rows[0].praiseNum;
                         }
@@ -75,6 +84,7 @@ var showTradeService = {
             callback(null);
             return;
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatShowTrade.find(searchObj)
             .sort(orderByJsonObj)
             //.skip(from)
@@ -134,6 +144,7 @@ var showTradeService = {
             status: 0, //状态：0 待审核， 1 审核通过， -1 审核不通过
             praise: 0 //点赞数
         };
+        common.wrapSystemCategory(insertModel, params.systemCategory);
         new chatShowTrade(insertModel).save(function(err, trade, updateNumber) {
             if (err) {
                 logger.error("保存晒单数据失败! >>addShowTrade:", err);
@@ -150,6 +161,7 @@ var showTradeService = {
      */
     setShowTradePraise: function(params, callback) {
         var searchObj = { _id: params.praiseId };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatShowTrade.findOne(searchObj, function(err, row) {
             if (err) {
                 logger.error("查询数据失败! >>setShowTradePraise:", err);
@@ -177,8 +189,10 @@ var showTradeService = {
      * @param tradeIds
      * @param callback
      */
-    getShowTradeByIds: function(tradeIds, callback) {
+    getShowTradeByIds: function(params, callback) {
+        let tradeIds = params["tradeIds"].split(",");
         var searchObj = { _id: { $in: tradeIds } };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatShowTrade.find(searchObj, function(err, rows) {
             if (err) {
                 logger.error('查询数据失败！>>getShowTradeByIds:', err);
@@ -203,37 +217,41 @@ var showTradeService = {
             content = params.content,
             refId = params.refId;
         let defferred = new common.Deferred();
-        chatShowTrade.findOne({
+        let queryObj = {
             _id: id
-        }, function(err, row) {
-            if (err || !row) {
-                logger.error("查询数据失败! >>addComments:", err);
-                defferred.reject({ isOK: false, msg: '评论失败' });
-            } else {
-                if (!row.comments) {
-                    row.comments = [];
-                }
-                var comment = {
-                    _id: new ObjectId(),
-                    userId: userInfo.mobilePhone || "",
-                    userName: userInfo.nickname || "",
-                    avatar: userInfo.avatar || "",
-                    content: content || "",
-                    dateTime: new Date(),
-                    refId: refId || "",
-                    valid: 1
-                };
-                row.comments.push(comment);
-                row.save(function(err) {
-                    if (err) {
-                        logger.error("保存数据失败! >>addComments:", err);
-                        defferred.reject({ isOK: false, msg: '评论失败' });
-                    } else {
-                        defferred.resolve({ isOK: true });
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        chatShowTrade.findOne(
+            queryObj,
+            function(err, row) {
+                if (err || !row) {
+                    logger.error("查询数据失败! >>addComments:", err);
+                    defferred.reject({ isOK: false, msg: '评论失败' });
+                } else {
+                    if (!row.comments) {
+                        row.comments = [];
                     }
-                });
-            }
-        });
+                    var comment = {
+                        _id: new ObjectId(),
+                        userId: userInfo.mobilePhone || "",
+                        userName: userInfo.nickname || "",
+                        avatar: userInfo.avatar || "",
+                        content: content || "",
+                        dateTime: new Date(),
+                        refId: refId || "",
+                        valid: 1
+                    };
+                    row.comments.push(comment);
+                    row.save(function(err) {
+                        if (err) {
+                            logger.error("保存数据失败! >>addComments:", err);
+                            defferred.reject({ isOK: false, msg: '评论失败' });
+                        } else {
+                            defferred.resolve({ isOK: true });
+                        }
+                    });
+                }
+            });
         return defferred.promise;
     }
 };

@@ -66,8 +66,7 @@ router.get("/getShowTrade", (req, res) => {
     }
 
     showTradeService.getShowTrade(
-        req.query["groupType"],
-        req.query["userNo"],
+        req.query,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
@@ -299,7 +298,7 @@ router.get("/getShowTradeByIds", (req, res) => {
         return;
     }
     showTradeService.getShowTradeByIds(
-        req.query["tradeIds"].split(","),
+        req.query,
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }

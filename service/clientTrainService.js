@@ -14,14 +14,16 @@ let Deferred = common.Deferred;
 var clientTrainService = {
     /**
      * 保存培训班
-     * @param groupId
-     * @param userId
-     * @param nickname
      */
-    saveTrain: function(groupId, userId, nickname) {
+    saveTrain: function(params) {
+        let groupId = params.groupId,
+            userId = params.userId,
+            nickname = params.nickname;
         let deferred = new Deferred();
         var setObj = { $push: { "traninClient": { "clientId": userId, "nickname": nickname } } };
-        chatGroup.findOneAndUpdate({ _id: groupId }, setObj, function(err, row) {
+        let query = { _id: groupId };
+        common.wrapSystemCategory(query, params.systemCategory);
+        chatGroup.findOneAndUpdate(query, setObj, function(err, row) {
             if (err) {
                 logger.error("保存培训报名数据失败! >>saveTrain:", err);
                 deferred.reject({ isOK: false, msg: '培训报名失败' });
@@ -37,7 +39,9 @@ var clientTrainService = {
      */
     addClientTrain: function(params, userInfo) {
         let deferred = new Deferred();
-        chatGroup.findOne({ _id: params.groupId, valid: 1, status: { $in: [1, 2] } }, "openDate clientGroup traninClient", function(err, row) {
+        let groupQuery = { _id: params.groupId, valid: 1, status: { $in: [1, 2] } };
+        common.wrapSystemCategory(groupQuery, params.systemCategory);
+        chatGroup.findOne(groupQuery, "openDate clientGroup traninClient", function(err, row) {
             if (err) {
                 logger.error("查询培训报名数据失败! >>addClientTrain:", err);
                 deferred.reject({ isOK: false, msg: '查询培训报名数据失败！' });
@@ -132,13 +136,13 @@ var clientTrainService = {
                                 retInfo = errorMessage.code_3008;
                                 deferred.resolve(retInfo);
                             } else {
-                                clientTrainService.saveTrain(params.groupId, userInfo.userId, params.nickname).then(function(saveRet) {
+                                clientTrainService.saveTrain(params).then(function(saveRet) {
                                     deferred.resolve(saveRet);
                                 });
                             }
                         }
                     } else {
-                        clientTrainService.saveTrain(params.groupId, userInfo.userId, params.nickname).then(function(saveRet) {
+                        clientTrainService.saveTrain(params).then(function(saveRet) {
                             deferred.resolve(saveRet);
                         });
                     }
@@ -155,15 +159,31 @@ var clientTrainService = {
      * @param teachId
      * @param dataCallback
      */
-    getTrainAndClientNum: function(groupType, teachId, dataCallback) {
+    getTrainAndClientNum: function(params, dataCallback) {
+        let groupType = params.groupType,
+            teachId = params.teachId;
+
         async.parallel({
                 trainNum: function(callback) {
-                    chatGroup.find({ "groupType": groupType, roomType: 'train', "defaultAnalyst.userNo": teachId, status: 0 }).count(function(err, num) {
+                    let groupQuery = {
+                        "groupType": groupType,
+                        roomType: 'train',
+                        "defaultAnalyst.userNo": teachId,
+                        status: 0
+                    };
+                    common.wrapSystemCategory(groupQuery, params.systemCategory);
+                    chatGroup.find(groupQuery).count(function(err, num) {
                         callback(null, num);
                     });
                 },
                 clientNum: function(callback) {
-                    chatGroup.find({ "groupType": groupType, roomType: 'train', "defaultAnalyst.userNo": teachId }, function(err, rooms) {
+                    let groupQuery = {
+                        "groupType": groupType,
+                        roomType: 'train',
+                        "defaultAnalyst.userNo": teachId
+                    };
+                    common.wrapSystemCategory(groupQuery, params.systemCategory);
+                    chatGroup.find(groupQuery, function(err, rooms) {
                         var num = 0;
                         if (rooms && rooms.length > 0) {
                             rooms.forEach(function(item) {
@@ -186,22 +206,28 @@ var clientTrainService = {
      * @param isAll
      * @param callback
      */
-    getTrainList: function(groupType, teachId, isAll, userId) {
+    getTrainList: function(params) {
+        let groupType = params.groupType,
+            teachId = params.teachId,
+            isAll = params.isAll,
+            userId = params.userId;
         let deferred = new Deferred();
-        var searchObj={"groupType":groupType,roomType:'train',valid:1};
-        var limit=50,searchFields="_id status defaultAnalyst point openDate clientGroup name traninClient trainConfig label remark";
-        if(!isAll){
-            searchObj.status={$in:[1,2]};
+        var searchObj = { "groupType": groupType, roomType: 'train', valid: 1 };
+        var limit = 50,
+            searchFields = "_id status defaultAnalyst point openDate clientGroup name traninClient trainConfig label remark";
+        if (!isAll) {
+            searchObj.status = { $in: [1, 2] };
         }
-        if(teachId){
-            searchObj["defaultAnalyst.userNo"]=teachId;
-            limit=2;
+        if (teachId) {
+            searchObj["defaultAnalyst.userNo"] = teachId;
+            limit = 2;
         }
-        chatGroup.find(searchObj).select(searchFields).limit(limit).sort({'createDate':'desc'}).exec(function(err,rooms){
-            if(err){
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        chatGroup.find(searchObj).select(searchFields).limit(limit).sort({ 'createDate': 'desc' }).exec(function(err, rooms) {
+            if (err) {
                 logger.error("获取房间列表失败! >>getChatGroupList:", err);
                 callback(null);
-            }else{
+            } else {
                 var tmList = [];
                 var row = null,
                     currDate = common.formatterDate(new Date(), '-');
@@ -238,8 +264,10 @@ var clientTrainService = {
      * @param clientip
      * @param callback
      */
-    addSignin: function(userInfo, clientip, callback) {
+    addSignin: function(userInfo, callback) {
+        let clientip = userInfo.clientip;
         var searchObj = { userId: userInfo.mobilePhone, groupType: userInfo.groupType };
+        common.wrapSystemCategory(searchObj, userInfo.systemCategory);
         signin.findOne(searchObj, function(err, signinInfo) {
             if (err) {
                 logger.error("查询签到数据失败!:", err);
@@ -306,10 +334,11 @@ var clientTrainService = {
             } else if (lastSignDate.getMonth() != today.getMonth()) { //跨月
                 callback(null, false, false); //月初
             } else {
-                chatSyllabusHis.count({
+                let countObj = common.wrapSystemCategory({
                     groupType: signInfo.groupType,
                     date: { $gt: lastSignDate, $lt: today }
-                }, function(err, cnt) {
+                }, signInfo.systemCategory);
+                chatSyllabusHis.count(countObj, function(err, cnt) {
                     if (err) {
                         logger.error("验证签到连续性，查询课程历史信息出错! >>isSerial:", err);
                         //从未签到
@@ -338,6 +367,7 @@ var clientTrainService = {
             opIp: clientip,
             remark: "每日签到"
         };
+        common.wrapSystemCategory(signParam, userInfo.systemCategory);
         chatPointsService.add(signParam, function(error, result) {
             if (days == 3) {
                 signParam.item = 'daily_sign3';
@@ -369,10 +399,12 @@ var clientTrainService = {
         today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         async.parallel({
                 signinInfo: function(callback) {
-                    signin.findOne({
+                    let signinQuery = {
                         userId: userInfo.mobilePhone,
                         groupType: userInfo.groupType
-                    }, function(err, row) {
+                    };
+                    common.wrapSystemCategory(signinQuery, userInfo.systemCategory);
+                    signin.findOne(signinQuery, function(err, row) {
                         if (err) {
                             logger.error("查询客户签到数据失败!:", err);
                         }
@@ -388,17 +420,22 @@ var clientTrainService = {
                     });
                 },
                 signinUser: function(callback) { //当天最近10条签到用户
-                    signin.find({
+                    let signinQuery = {
                         "userId": { $ne: userInfo.mobilePhone },
                         signinTime: {
                             '$gte': today
                         }
-                    }).sort({ "signinTime": -1 }).limit(10).exec("find", function(err, data) {
-                        if (err) {
-                            logger.error("查询最近签到客户数据失败!:", err);
-                        }
-                        callback(null, data);
-                    });
+                    };
+                    common.wrapSystemCategory(signinQuery, userInfo.systemCategory);
+                    signin.find(signinQuery)
+                        .sort({ "signinTime": -1 })
+                        .limit(10)
+                        .exec("find", function(err, data) {
+                            if (err) {
+                                logger.error("查询最近签到客户数据失败!:", err);
+                            }
+                            callback(null, data);
+                        });
                 }
             },
             function(error, result) {
@@ -409,8 +446,10 @@ var clientTrainService = {
     /**
      * 查询客户当天是否签到
      */
-    checkTodaySignin: function(userInfo, clientip, callback) {
+    checkTodaySignin: function(userInfo, callback) {
+        let clientip = userInfo.clientip;
         var searchObj = { userId: userInfo.mobilePhone, groupType: userInfo.groupType };
+        common.wrapSystemCategory(searchObj, userInfo.systemCategory);
         signin.findOne(searchObj, function(err, signinInfo) {
             if (err) {
                 logger.error("查询签到数据失败!:", err);

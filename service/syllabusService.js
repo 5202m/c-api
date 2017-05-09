@@ -9,7 +9,7 @@ var constant = require('../constant/constant');
 var logger = require('../resources/logConf').getLogger('syllabusService'); //引入log4js
 var APIUtil = require('../util/APIUtil'); //引入API工具类js
 var Utils = require('../util/Utils'); //引入工具类js
-var Common = common = require('../util/common'); //引入公共工具类js
+var common = require('../util/common'); //引入公共工具类js
 var ApiResult = require('../util/ApiResult');
 var errorMessage = require('../util/errorMessage.js');
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -29,8 +29,9 @@ var syllabusService = {
      * @param today
      * @param callback
      */
-    getSyllabus: function(groupType, groupId, callback) {
-        groupId = groupId || "";
+    getSyllabus: function(params, callback) {
+        let groupType = params.groupType,
+            groupId = params.groupId || "";
         var loc_dateNow = new Date();
         var searchObj = {
             groupType: groupType,
@@ -43,6 +44,7 @@ var syllabusService = {
             groupIdArr = groupId.split(",");
             searchObj.groupId = { $in: groupIdArr };
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatSyllabus.find(searchObj, "groupType groupId courseType studioLink courses updateDate", function(err, row) {
             if (err) {
                 logger.error("查询聊天室课程安排失败!", err);
@@ -61,7 +63,7 @@ var syllabusService = {
         var result = { remark: '', authors: [] };
         Async.parallel({
                 courseRemark: function(callback) {
-                    syllabusService.getSyllabus(params.groupType, params.groupId, function(rows) {
+                    syllabusService.getSyllabus(params, function(rows) {
                         var remark = '';
                         if (rows) {
                             var courses = rows.courses;
@@ -88,12 +90,20 @@ var syllabusService = {
                     });
                 },
                 courseAuthors: function(callback) {
-                    userService.getUserList(params.authorId, function(rows) {
+                    userService.getUserList({
+                        userNo: params.authorId,
+                        systemCategory: params.systemCategory
+                    }, function(rows) {
                         callback(null, rows);
                     });
                 },
                 getPraise: function(callback) {
-                    chatPraiseService.getPraiseNum(params.authorId, constant.chatPraiseType.user, params.groupType, function(rows) {
+                    chatPraiseService.getPraiseNum({
+                        userId: params.authorId,
+                        type: constant.chatPraiseType.user,
+                        platform: params.groupType,
+                        systemCategory: params.systemCategory
+                    }, function(rows) {
                         callback(null, rows);
                     });
                 }
@@ -132,16 +142,22 @@ var syllabusService = {
      * @param strategy
      * @param callback
      */
-    getCourse: function(groupType, groupId, today, flag, strategy, callback) {
-        groupId = groupId || "";
+    getCourse: function(params, callback) {
+        let groupType = params.groupType,
+            groupId = params.groupId || "",
+            today = params.today,
+            flag = params.flag,
+            strategy = params.strategy;
+        let queryObj = {
+            groupType: groupType,
+            groupId: groupId,
+            isDeleted: 0,
+            //publishStart : {$lte : today},
+            publishEnd: { $gt: today }
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
         APIUtil.DBFind(chatSyllabus, {
-            query: {
-                groupType: groupType,
-                groupId: groupId,
-                isDeleted: 0,
-                //publishStart : {$lte : today},
-                publishEnd: { $gt: today }
-            },
+            query: queryObj,
             sortAsc: ["publishStart"]
         }, function(err, rows) {
             if (err) {
@@ -376,7 +392,7 @@ var syllabusService = {
     isValidCourse: function(course) {
         return course &&
             course.status != 0 &&
-            !Common.isBlank(course.lecturerId) &&
+            !common.isBlank(course.lecturerId) &&
             course.courseType != 2;
     },
     /**
@@ -879,8 +895,10 @@ var syllabusService = {
      * @param date
      * @param callback
      */
-    getSyllabusHis: function(groupType, groupId, date, callback) {
-        groupId = groupId || "";
+    getSyllabusHis: function(params, callback) {
+        let groupType = params.groupType,
+            groupId = params.groupId || "",
+            date = params.date;
         var timezoneOffset = new Date().getTimezoneOffset() * 60000;
         date = date === "null" ? null : date;
         date = date === "false" ? null : date;
@@ -892,11 +910,13 @@ var syllabusService = {
             date = new Date(date);
             date = new Date(date - (date % 86400000) + timezoneOffset);
         }
-        chatSyllabusHis.find({
+        let searchObj = {
             groupType: groupType,
             groupId: groupId,
             date: date
-        }).sort({ startTime: 1 }).exec("find", function(err, rows) {
+        };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        chatSyllabusHis.find(searchObj).sort({ startTime: 1 }).exec("find", function(err, rows) {
             if (err) {
                 logger.error("查询聊天室课程安排历史记录失败!", err);
                 callback(null);

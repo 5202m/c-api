@@ -48,7 +48,11 @@ var studioService = {
         async.parallel({
                 studioList: function(callback) {
                     if (isGetRoomList) {
-                        studioService.getRoomList(userInfo.groupType, function(rows) {
+                        let roomListParams = {
+                            groupType: userInfo.groupType
+                        };
+                        common.wrapSystemCategory(roomListParams, indexParams.systemCategory);
+                        studioService.getRoomList(roomListParams, function(rows) {
                             callback(null, rows);
                         });
                     } else {
@@ -57,7 +61,12 @@ var studioService = {
                 },
                 syllabusResult: function(callback) {
                     if (isGetSyllabus) {
-                        syllabusService.getSyllabus(userInfo.groupType, groupId, function(data) {
+                        let syllabusParam = {
+                            groupType: userInfo.groupType,
+                            groupId: userInfo.groupId
+                        }
+                        common.wrapSystemCategory(syllabusParam, indexParams.systemCategory);
+                        syllabusService.getSyllabus(syllabusParam, function(data) {
                             callback(null, data);
                         });
                     } else {
@@ -66,7 +75,7 @@ var studioService = {
                 },
                 memberInfo: function(callback) {
                     if (isGetMember && userInfo.userId) {
-                        member.findOne({
+                        let queryObj = {
                             valid: 1,
                             'loginPlatform.chatUserGroup': {
                                 $elemMatch: {
@@ -74,7 +83,9 @@ var studioService = {
                                     userId: userInfo.userId
                                 }
                             }
-                        }, function(err, row) {
+                        };
+                        common.wrapSystemCategory(queryObj, indexParams.systemCategory);
+                        member.findOne(queryObj, function(err, row) {
                             if (!err && row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                                 var group = row.loginPlatform.chatUserGroup.id(userInfo.groupType);
                                 if (group) {
@@ -113,6 +124,7 @@ var studioService = {
                         hasJournal: true,
                         systemCategory: indexParams.systemCategory
                     };
+                    common.wrapSystemCategory(pointsParams, indexParams.systemCategory);
                     chatPointsService.getPointsInfo(pointsParams, function(r) {
                         var point = 0;
                         if (r && r.pointsGlobal) {
@@ -130,14 +142,17 @@ var studioService = {
      * 提取房间列表
      * @param callback
      */
-    getRoomList: function(groupType, callback) {
-        chatGroup.find({
-                valid: 1,
-                status: {
-                    $in: [1, 2]
-                },
-                groupType: groupType
-            })
+    getRoomList: function(params, callback) {
+        let groupType = params.groupType;
+        let queryObj = {
+            valid: 1,
+            status: {
+                $in: [1, 2]
+            },
+            groupType: groupType
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        chatGroup.find(queryObj)
             .select({
                 traninClient: 1,
                 status: 1,
@@ -170,8 +185,11 @@ var studioService = {
      * 提取客户组列表
      * @param callback
      */
-    getClientGroupList: function(groupType, callback) {
-        chatClientGroup.find({ valid: 1, groupType: groupType }).sort({ 'sequence': 'asc' }).exec(function(err, rows) {
+    getClientGroupList: function(params, callback) {
+        let groupType = params.groupType;
+        let queryObj = { valid: 1, groupType: groupType };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        chatClientGroup.find(queryObj).sort({ 'sequence': 'asc' }).exec(function(err, rows) {
             if (err) {
                 logger.error("getClientGroupList fail:" + err);
             }
@@ -181,13 +199,18 @@ var studioService = {
     /**
      * 重置密码
      */
-    resetPwd: function(groupType, mobilePhone, newPwd, oldPwd, callback) {
+    resetPwd: function(params, callback) {
+        let groupType = params.groupType,
+            mobilePhone = params.mobilePhone,
+            newPwd = params.newPwd,
+            oldPwd = params.oldPwd || "";
         var searchObj = null;
         if (common.isValid(oldPwd)) {
             searchObj = { valid: 1, 'mobilePhone': mobilePhone, 'loginPlatform.chatUserGroup': { $elemMatch: { _id: groupType, pwd: common.getMD5(constant.pwdKey + oldPwd) } } };
         } else {
             searchObj = { valid: 1, 'mobilePhone': mobilePhone, 'loginPlatform.chatUserGroup._id': groupType };
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         member.findOneAndUpdate(searchObj, { '$set': { 'loginPlatform.chatUserGroup.$.pwd': common.getMD5(constant.pwdKey + newPwd) } }, function(err, row) {
             if (err || !row) {
                 logger.error("resetPwd fail:" + err);
@@ -201,8 +224,13 @@ var studioService = {
     /**
      * 提取直播间
      */
-    getStudioByGroupId: function(groupId, callback) {
-        chatGroup.findById(groupId).select({ clientGroup: 1, name: 1, talkStyle: 1, whisperRoles: 1, point: 1, traninClient: 1 }).exec(function(err, row) {
+    getStudioByGroupId: function(params, callback) {
+        let groupId = params.groupId;
+        let queryobj = {
+            _id: groupId
+        };
+        common.wrapSystemCategory(queryobj, params.systemCategory);
+        chatGroup.find(queryobj).select({ clientGroup: 1, name: 1, talkStyle: 1, whisperRoles: 1, point: 1, traninClient: 1 }).exec(function(err, row) {
             if (err) {
                 logger.error("getStudioList fail:" + err);
             }
@@ -236,6 +264,7 @@ var studioService = {
         if (common.isBlank(clientGroup) && searchObj.clientGroup) {
             delete searchObj.clientGroup;
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         chatGroup.findOne(searchObj, function(err, group) {
             if (err) {
                 logger.warn("checkGroupAuth->not auth:" + err);
@@ -250,8 +279,12 @@ var studioService = {
      * 通过客户组提取默认房间
      * @param clientGroup
      */
-    getDefaultRoom: function(groupType, clientGroup, callback) {
-        chatClientGroup.findOne({ groupType: groupType, clientGroupId: clientGroup }, function(err, row) {
+    getDefaultRoom: function(params, callback) {
+        let groupType = params.groupType,
+            clientGroup = params.clientGroup;
+        let queryObj = { groupType: groupType, clientGroupId: clientGroup };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        chatClientGroup.findOne(queryObj, function(err, row) {
             if (err) {
                 logger.error("getDefaultRoom fail: ", "groupType=" + groupType, "clientGroup=" + clientGroup, err);
             }
@@ -267,7 +300,11 @@ var studioService = {
      * 直播间注册
      * @param callback
      */
-    studioRegister: function(userInfo, clientGroup, callback) {
+    studioRegister: function(params, callback) {
+        let userInfo = params.userInfo,
+            clientGroup = params.clientGroup;
+        userInfo = typeof userInfo === "string" ? JSON.parse(userInfo) : userInfo;
+        common.wrapSystemCategory(userInfo, params.systemCategory);
         var result = { isOK: false, error: errorMessage.code_10 };
         if (userInfo.nickname) {
             //判断昵称唯一
@@ -292,7 +329,9 @@ var studioService = {
      */
     studioRegisterSave: function(userInfo, clientGroup, callback) {
         var result = { isOK: false, error: errorMessage.code_10 };
-        member.findOne({ mobilePhone: userInfo.mobilePhone, valid: 1 }, "loginPlatform.chatUserGroup", function(err, row) {
+        let queryObj = { mobilePhone: userInfo.mobilePhone, valid: 1 };
+        common.wrapSystemCategory(queryObj, userInfo.systemCategory);
+        member.findOne(queryObj, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
                 logger.error("studioRegister fail:" + err);
                 callback(result);
@@ -355,14 +394,20 @@ var studioService = {
      * @param userInfo
      * @param callback
      */
-    checkMemberAndSave: function(userInfo, callback) {
+    checkMemberAndSave: function(params, callback) {
+        let userInfo = params.userInfo;
+        userInfo = typeof userInfo === "string" ? JSON.parse(userInfo) : userInfo;
+
         var result = { isOK: false, error: errorMessage.code_10 };
         var mobilePhone = /^\d/.test(userInfo.mobilePhone) ? common.getValidPhoneNumber(userInfo.mobilePhone) : userInfo.mobilePhone;
-        member.findOne({ mobilePhone: mobilePhone, valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
+        let queryObj = { mobilePhone: mobilePhone, valid: 1, 'loginPlatform.chatUserGroup.userType': 0 };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        member.findOne(queryObj, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
                 logger.error("checkMemberAndSave fail:" + err);
                 callback(result);
             } else {
+                common.wrapSystemCategory(userInfo, params.systemCategory);
                 if (row && row.loginPlatform && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                     var userGroupArr = row.loginPlatform.chatUserGroup;
                     var currRow = userGroupArr.id(userInfo.groupType);
@@ -392,13 +437,13 @@ var studioService = {
                         delete result.error;
                         callback(result);
                     } else {
-                        userInfo.item = 'register_reg';//使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
+                        userInfo.item = 'register_reg'; //使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
                         studioService.setClientInfo(row, userInfo, function(resultTmp) {
                             callback(resultTmp);
                         });
                     }
                 } else {
-                    userInfo.item = 'register_reg';//使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
+                    userInfo.item = 'register_reg'; //使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
                     studioService.setClientInfo(row, userInfo, function(resultTmp) {
                         callback(resultTmp);
                     });
@@ -412,7 +457,7 @@ var studioService = {
      * @param callback (err, boolean)，true-唯一，false-不唯一
      */
     checkNickName: function(userInfo, callback) {
-        member.findOne({
+        let queryObj = {
             mobilePhone: { $ne: userInfo.mobilePhone },
             valid: 1,
             "loginPlatform.chatUserGroup": {
@@ -422,19 +467,24 @@ var studioService = {
                     userType: 0
                 }
             }
-        }, "loginPlatform.chatUserGroup", function(err, sameNicknameRow) {
-            if (err) {
-                logger.error("checkNickName fail:" + err);
-                callback(err, false);
-                return;
-            }
-            //存在记录，昵称重复
-            if (sameNicknameRow) {
-                callback(null, false);
-            } else {
-                callback(null, true);
-            }
-        });
+        };
+        common.wrapSystemCategory(queryObj, userInfo.systemCategory);
+        member.findOne(
+            queryObj,
+            "loginPlatform.chatUserGroup",
+            function(err, sameNicknameRow) {
+                if (err) {
+                    logger.error("checkNickName fail:" + err);
+                    callback(err, false);
+                    return;
+                }
+                //存在记录，昵称重复
+                if (sameNicknameRow) {
+                    callback(null, false);
+                } else {
+                    callback(null, true);
+                }
+            });
     },
     /**
      * 通过手机号码提取用户id
@@ -458,7 +508,7 @@ var studioService = {
      */
     setClientInfo: function(memberRow, userInfo, callback) {
         var result = { isOK: false, error: errorMessage.code_10, defGroupId: '' };
-        studioService.getDefaultRoom(userInfo.groupType, userInfo.clientGroup, function(defId) {
+        studioService.getDefaultRoom(userInfo, function(defId) {
             if (common.isBlank(defId)) {
                 logger.error("setClientInfo fail: ", "caused by getDefaultRoom fail!", "userInfo=" + JSON.stringify(userInfo));
                 callback(result);
@@ -547,7 +597,9 @@ var studioService = {
      *          4-手机号码+密码登录
      * @param callback
      */
-    login: function(userInfo, type, callback) {
+    login: function(params, callback) {
+        let userInfo = params.userInfo,
+            type = params.type;
         var result = { isOK: false, error: '' },
             searchObj = null;
         switch (type) {
@@ -596,6 +648,7 @@ var studioService = {
                 callback(result);
                 return;
         }
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         member.findOne(searchObj, 'mobilePhone loginPlatform.chatUserGroup.$', function(err, row) {
             if (row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                 result.isOK = true;
@@ -623,63 +676,25 @@ var studioService = {
         });
     },
     /**
-     * 通过手机号码检测客户组
-     * @param mobilePhone
-     * @param clientGroup
-     * @param callback
-     */
-    upgradeClientGroup: function(groupType, mobilePhone, clientGroup, callback) {
-        var apiService = require('../service/' + common.getTempPlatformKey(groupType) + 'ApiService'); //引入ApiService
-        if (clientGroup === constant.clientGroup.active || clientGroup === constant.clientGroup.notActive) {
-            //升级到真实
-            apiService.checkAClient({ mobilePhone: mobilePhone, isCheckByMobile: true }, function(result) {
-                console.log("checkAClient->flagResult:" + JSON.stringify(result));
-                if (result.flag == 2 || result.flag == 3) {
-                    var clientGroupTmp = result.flag == 2 ? constant.clientGroup.notActive : constant.clientGroup.active;
-                    studioService.updateClientGroup(groupType, mobilePhone, clientGroupTmp, result.accountNo, function(isOk) {
-                        if (isOk) {
-                            callback(true, clientGroupTmp);
-                        } else {
-                            callback(false, null);
-                        }
-                    });
-                } else {
-                    callback(false, null);
-                }
-            });
-        } else if (clientGroup === constant.clientGroup.simulate) {
-            //升级到模拟
-            apiService.checkSmClient(mobilePhone, function(hasRow) {
-                if (hasRow) {
-                    studioService.updateClientGroup(groupType, mobilePhone, constant.clientGroup.simulate, null, function(isOk) {
-                        if (isOk) {
-                            callback(true, constant.clientGroup.simulate);
-                        } else {
-                            callback(false, null);
-                        }
-                    });
-                } else {
-                    callback(false, null);
-                }
-            });
-        } else {
-            callback(false, null);
-        }
-    },
-    /**
      * 更新客户组别
      * @param mobilePhone
      * @param newClientGroup
      * @param accountNo
      * @param callback
      */
-    updateClientGroup: function(groupType, mobilePhone, newClientGroup, accountNo, callback) {
-        member.findOneAndUpdate({
+    updateClientGroup: function(params, callback) {
+        let groupType = params.groupType,
+            mobilePhone = params.mobilePhone,
+            newClientGroup = params.newClientGroup,
+            accountNo = params.accountNo;
+        let queryObj = {
             mobilePhone: mobilePhone,
             "loginPlatform.chatUserGroup._id": groupType,
             valid: 1,
             status: 1
-        }, {
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        member.findOneAndUpdate(queryObj, {
             $set: {
                 "loginPlatform.chatUserGroup.$.clientGroup": newClientGroup,
                 "loginPlatform.chatUserGroup.$.accountNo": accountNo
@@ -771,9 +786,13 @@ var studioService = {
      * @param params
      * @param callback
      */
-    setUserGroupThemeStyle: function(userInfo, defTemplate, callback) {
+    setUserGroupThemeStyle: function(params, callback) {
+        let userInfo = params.userInfo,
+            defTemplate = params.defTemplate;
+
         var searchObj = { "status": 1, "valid": 1, "mobilePhone": userInfo.mobilePhone, "loginPlatform.chatUserGroup._id": userInfo.groupType };
         var setObj = { "loginPlatform.chatUserGroup.$.defTemplate": defTemplate };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         member.findOneAndUpdate(searchObj, setObj, function(err, row) {
             var isSuccess = !err && row;
             if (isSuccess) {
@@ -788,8 +807,30 @@ var studioService = {
      * 提取培训班列表
      * @param callback
      */
-    getTrainRoomList: function(groupType, callback) {
-        chatGroup.find({ valid: 1, status: { $in: [1, 2] }, groupType: groupType, "defaultAnalyst._id": { $ne: null } }).select({ clientGroup: 1, remark: 1, name: 1, level: 1, groupType: 1, talkStyle: 1, whisperRoles: 1, chatRules: 1, openDate: 1, defTemplate: 1, defaultAnalyst: 1, openDate: 1, students: 1 }).sort({ 'sequence': 'asc' }).exec(function(err, rows) {
+    getTrainRoomList: function(params, callback) {
+        let groupType = params.groupType;
+        let queryObj = {
+            valid: 1,
+            status: { $in: [1, 2] },
+            groupType: groupType,
+            "defaultAnalyst._id": { $ne: null }
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        chatGroup.find(queryObj).select({
+            clientGroup: 1,
+            remark: 1,
+            name: 1,
+            level: 1,
+            groupType: 1,
+            talkStyle: 1,
+            whisperRoles: 1,
+            chatRules: 1,
+            openDate: 1,
+            defTemplate: 1,
+            defaultAnalyst: 1,
+            openDate: 1,
+            students: 1
+        }).sort({ 'sequence': 'asc' }).exec(function(err, rows) {
             if (err) {
                 logger.error("getStudioList fail:" + err);
             }
@@ -800,15 +841,25 @@ var studioService = {
      * 通过用户userNo提取信息
      * @param userNo
      */
-    getUserInfoByUserNo: function(groupType, userNo, callback) {
-        boUser.findOne({ userNo: userNo }, "userNo userName position avatar introduction introductionImg winRate earningsM wechatCodeImg wechatCode tag", function(err, rows) {
+    getUserInfoByUserNo: function(params, callback) {
+        let groupType = params.groupType,
+            userNo = params.userNo;
+        let queryObj = { userNo: userNo };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        boUser.findOne(queryObj, "userNo userName position avatar introduction introductionImg winRate earningsM wechatCodeImg wechatCode tag", function(err, rows) {
             if (err) {
                 logger.error("查询直播老师数据失败!:", err);
                 callback(null);
             } else {
                 if (rows) {
                     var result = rows.toObject();
-                    chatPraiseService.getPraiseNum(result.userNo, constant.chatPraiseType.user, groupType, function(data) {
+                    let praiseParam = {
+                        userId: result.userNo,
+                        type: constant.chatPraiseType.user,
+                        platform: groupType
+                    };
+                    common.wrapSystemCategory(praiseParam, params.systemCategory)
+                    chatPraiseService.getPraiseNum(praiseParam, function(data) {
                         if (data && data.length > 0) {
                             result.praiseNum = data[0].praiseNum;
                         } else {
@@ -830,29 +881,38 @@ var studioService = {
     getShowTeacher: function(params, dataCallback) {
         async.parallel({
                 userInfo: function(callback) {
-                    studioService.getUserInfoByUserNo(params.groupType, params.authorId, function(ret) {
+                    studioService.getUserInfoByUserNo(params, function(ret) {
                         callback(null, ret);
                     });
                 },
                 teacherList: function(callback) {
-                    userService.getTeacherList({ groupId: params.groupId }, function(rowList) {
+                    userService.getTeacherList(params, function(rowList) {
                         callback(null, rowList);
                     });
                 },
                 trainList: function(callback) {
-                    clientTrainService.getTrainList(params.groupType, params.authorId, true).then(rooms => {
+                    clientTrainService.getTrainList(common.wrapSystemCategory({
+                        groupType: params.groupType,
+                        authorId: params.authorId,
+                        isAll: true
+                    }, params.systemCategory)).then(rooms => {
                         callback(null, rooms);
                     }).catch(e => {
                         callback(null, null);
                     });
                 },
                 trAndClNum: function(callback) {
-                    clientTrainService.getTrainAndClientNum(params.groupType, params.authorId, function(numObj) {
+                    clientTrainService.getTrainAndClientNum(params, function(numObj) {
                         callback(null, numObj);
                     });
                 },
                 tradeList: function(callback) {
-                    showTradeService.getShowTradeList({ pageSize: 4, tradeType: 1, groupType: params.groupType, userNo: params.authorId }, function(list) {
+                    showTradeService.getShowTradeList(common.wrapSystemCategory({
+                        pageSize: 4,
+                        tradeType: 1,
+                        groupType: params.groupType,
+                        userNo: params.authorId
+                    }, params.systemCategory), function(list) {
                         callback(null, list);
                     });
                 }
