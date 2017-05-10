@@ -43,7 +43,8 @@ var studioService = {
         var userInfo = {
             userId: userId,
             groupType: groupType,
-            isLogin: isGetMember
+            isLogin: isGetMember,
+            groupId: groupId
         };
         async.parallel({
                 studioList: function(callback) {
