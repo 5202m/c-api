@@ -281,7 +281,8 @@ var clientTrainService = {
                         signinTime: null,
                         historySignTime: [],
                         signinDays: 0,
-                        serialSigDays: 0
+                        serialSigDays: 0,
+                        systemCategory: userInfo.systemCategory
                     });
                 }
                 var today = new Date();
