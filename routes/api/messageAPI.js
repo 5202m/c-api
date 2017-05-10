@@ -439,7 +439,8 @@ router.post("/join", (req, res) => {
         allowWhisper: data.allowWhisper,
         fUserTypeStr: data.fUserTypeStr,
         fromPlatform: data.fromPlatform,
-        ip: req.connection.remoteAddress
+        ip: req.connection.remoteAddress,
+        systemCategory: data.systemCategory
     });
     res.json({ code: 200 });
 });

@@ -104,6 +104,7 @@ var chatService = {
         //更新在线状态
         userInfo.onlineStatus = 1;
         userInfo.onlineDate = new Date();
+        common.wrapSystemCategory(userInfo, systemCategory);
         userService.updateMemberInfo(userInfo, function(sendMsgCount, dbMobile, offlineDate) {
             updateCacheClient(userInfo);
             initSocketForUser(userInfo);
