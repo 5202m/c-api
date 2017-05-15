@@ -7,7 +7,6 @@ var visitorService = require('../service/visitorService');
 var pushInfoService = require('../service/pushInfoService');
 var config = require('../resources/config'); //资源文件
 var async = require('async'); //引入async
-var redis = require('redis');
 var ChatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数据模型
 var BoUser = require('../models/boUser'); //引入boUser数据模型
 var ChatPraise = require('../models/chatPraise'); //引入chatPraise数据模型
@@ -437,6 +436,22 @@ var chatService = {
                 callback(0);
                 logger.error("获取在线人数失败", e);
             });
+    },
+    getRoomOnlineList: function(params) {
+        let deferred = new common.Deferred();
+        let redisKey = `socket_list_by_/${params.groupType}##${params.groupId}`;
+        cacheClient.hvals(redisKey, (err, result) => {
+            if (err) {
+                deferred.reject(err);
+            } else {
+                let data = [];
+                result.forEach(dataStr => {
+                    data.push(JSON.parse(dataStr));
+                });
+                deferred.resolve(data);
+            }
+        });
+        return deferred.promise;
     },
     /**
      * 接收信息数据

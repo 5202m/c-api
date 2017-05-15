@@ -317,6 +317,21 @@ router.get("/getRoomOnlineTotalNum", function(req, res) {
         res.json(ApiResult.result(null, data));
     });
 });
+router.get("/getRoomOnlineList", function(req, res) {
+    let params = {
+        groupId: req.query["groupId"],
+        groupType: req.query["groupType"]
+    };
+    if (!(params.groupId && params.groupType)) {
+        res.json(ApiResult.result(errorMessage.code_1000, null));
+        return;
+    }
+    chatService.getRoomOnlineList(params).then(function(data) {
+        res.json(ApiResult.result(null, data));
+    }).catch(e => {
+        res.json(ApiResult.result(e, null));
+    });
+});
 /**
  * @api {post} /chat/checkChatPraise 检查客户是否已经点赞
  * @apiName checkChatPraise
