@@ -317,6 +317,30 @@ router.get("/getRoomOnlineTotalNum", function(req, res) {
         res.json(ApiResult.result(null, data));
     });
 });
+/**
+ * @api {get} /chat/getRoomOnlineList 获取房间在线人数列表
+ * @apiName getRoomOnlineList
+ * @apiGroup chat
+ *
+ * @apiParam {String} groupId 分组ID
+ * @apiParam {String} groupType 分组类型
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/getRoomOnlineList
+ * @apiExample Example usage:
+ *  /api/chat/getRoomOnlineList?groupId=studio_teach&groupType=studio
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": 0
+ * }
+ *
+ * @apiUse ParametersMissedError
+ */
 router.get("/getRoomOnlineList", function(req, res) {
     let params = {
         groupId: req.query["groupId"],
