@@ -568,7 +568,7 @@ router.post("/submitPushInfo", function(req, res) {
 });
 /**
  * @api {post} /chat/removePushInfo 删除推送消息
- * @apiName submitPushInfo
+ * @apiName removePushInfo
  * @apiGroup chat
  *
  * @apiParam {String} ids 消息ID列表，用逗号分隔
@@ -578,7 +578,7 @@ router.post("/submitPushInfo", function(req, res) {
  * @apiUse CommonResultDescription
  * @apiSuccess {Number} data  返回的数据
  *
- * @apiSampleRequest /api/chat/submitPushInfo
+ * @apiSampleRequest /api/chat/removePushInfo
  * @apiParamExample {json} Request-Example:
  *     {infoStr: '{"roomIds": "fxstudio_50"}',
  *      isValid: true}
