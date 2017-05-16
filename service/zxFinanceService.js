@@ -969,7 +969,7 @@ var zxFinanceService = {
                         nameHas =  name.indexOf('ADP') > -1 || name.indexOf('CPI') > -1
                             || name.indexOf('PPI') > -1 || name.indexOf('PCE') > -1
                             || name.indexOf('GDP') > -1 || name.indexOf('LMCI') > -1
-                            || name.indexOf('非农') > -1 || name.indexOf('议息') > -1 || name.indexOf('亿美元') > -1;
+                            || name.indexOf('非农') > -1 || name.indexOf('议息') > -1;
                         isPush = dataDb && dataDb.date == currDateStr && dataDb.value != dataApi.value && dataDb.country == '美国' && nameHas;
                         dataDb = zxFinanceService.refreshData(dataDb, dataApi);
                         //数据更新的直接用现有数据更新描述，不需要查询配置信息，因为配置更新的时候会更新所有数据
@@ -1049,7 +1049,7 @@ var zxFinanceService = {
                         let nameHas = name.indexOf('ADP') > -1 || name.indexOf('CPI') > -1
                             || name.indexOf('PPI') > -1 || name.indexOf('PCE') > -1
                             || name.indexOf('GDP') > -1 || name.indexOf('LMCI') > -1
-                            || name.indexOf('非农') > -1 || name.indexOf('议息') > -1 || name.indexOf('亿美元') > -1;
+                            || name.indexOf('非农') > -1 || name.indexOf('议息') > -1;
                         let isPush = newDataTmp.date == currDateStr && Common.isValid(newDataTmp.value) && newDataTmp.country == '美国' && nameHas;
                         if(isPush){
                             zxFinanceService.pushFinanceData(newDataTmp);
@@ -1250,7 +1250,7 @@ var zxFinanceService = {
                             callback({isOK: false, msg: '点评失败'});
                             return;
                         }
-                        noticeService.send('financeData', {'review' : rowTmp.comments, 'finance' : row});
+                        noticeService.send('financeData', {'review' : comment, 'finance' : row});
                         callback({isOK:true, msg:''});
                     });
                 }
