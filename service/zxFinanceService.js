@@ -22,6 +22,7 @@ var Utils = require('../util/Utils');
 var Common = require('../util/common');
 var CacheClient=require('../cache/cacheClient');
 var noticeService = require('./noticeService');
+var ObjectId = require('mongoose').Types.ObjectId;
 
 var zxFinanceService = {
     /**
@@ -1237,15 +1238,15 @@ var zxFinanceService = {
     saveFinanceDataReview : function(params, callback){
         ZxFinanceData.findOne({name:params.name,basicIndexId:params.basicIndexId,date:params.date},function(err, row){
             if(err){
-                logger.error("saveFinanceDataReview->fail!:"+err);
+                Logger.error("saveFinanceDataReview->fail!:"+err);
                 callback({isOK:false, msg:'点评失败'});
             } else {
                 if(row){
-                    let comment = {userId : params.userId, userName : params.userName, avatar : params.avatar, comment : params.comment, valid : 1, createUser : params.userId, createIp : params.ip};
+                    let comment = {_id : new ObjectId(), userId : params.userId, userName : params.userName, avatar : params.avatar, comment : params.comment, valid : 1, createUser : params.userId, createIp : params.ip};
                     row.comments.push(comment);
                     row.save(function(err1, rowTmp){
                         if (err1) {
-                            logger.error('saveFinanceDataReview=>fail!' + err1);
+                            Logger.error('saveFinanceDataReview=>fail!' + err1);
                             callback({isOK: false, msg: '点评失败'});
                             return;
                         }

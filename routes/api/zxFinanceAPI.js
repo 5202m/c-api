@@ -350,7 +350,7 @@ router.post('/saveFinanceDataReview', function(req, res){
         avatar : req.body['avatar'],
         comment : req.body['comment'],
         createUser : req.body['userId'],
-        createIp : req.body['ip']
+        ip : req.body['ip']
     };
     ZxFinanceService.saveFinanceDataReview(params, (data) => {console.log(data);
         res.json(ApiResult.result(null, data));
