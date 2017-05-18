@@ -164,12 +164,14 @@ router.get('/getArticleCount', (req, res) => {
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *          "result": 0,
- *          "errcode": "0",
- *          "errmsg": "",
- *          "data": {
- *          	"count": 0
- *          }
+ *          result: 0,
+ *          msg: "OK",
+ *          pageNo: 1,
+ *          pageSize: 30,
+ *          totalRecords: 158,
+ *          data:[
+ *              {}
+ *          ]
  *      }
  *
  * @apiSampleRequest /api/article/getArticleList.json

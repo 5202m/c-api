@@ -25,6 +25,7 @@ var router = express.Router();
 var showTradeService = require('../../service/showTradeService');
 var common = require('../../util/common');
 let APIUtil = require('../../util/APIUtil.js');
+let ApiResult = require('../../util/ApiResult'); //引起聊天室工具类js
 /**
  * @api {get} /showTrade/getShowTrade 获取指定用户晒单数据
  * @apiName getShowTrade
@@ -81,56 +82,34 @@ router.get("/getShowTrade", (req, res) => {
  *
  * @apiParam {String} groupType 成员类型，必需. 取直播间groupType值
  * @apiParam {String} pageSize 条数，必需
+ * @apiParam {Number} pageNo 页码
+ * @apiParam {String} userNo 指定用户的晒单，查所有可不传
+ * @apiParam {Number} tradeType 晒单类型 1：分析师晒单，2：客户晒单 查所有可不传
+ * @apiParam {Number} status 状态：0 待审核， 1 审核通过， -1 审核不通过 查所有可不传
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
  *
  * @apiSampleRequest /api/showTrade/getShowTradeList
  * @apiExample Example usage:
- *  /api/showTrade/getShowTradeList?groupType=studio&pageSize=100
+ *  /api/showTrade/getShowTradeList?groupType=studio&pageSize=100&pageNo=1
  * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
+ *     HTTP/1.1 200 OK //pageNo不为空时返回的数据结果
+ *     {
+ *       result: 0,
+ *       msg: "OK",
+ *       pageNo: "1",
+ *       pageSize: "100",
+ *       totalRecords: 100,
+ *       data:[{}]
+ *      }
+ *     HTTP/1.1 200 OK //pageNo为空时返回的数据结果
  *     { result: 0,
  *       errcode: '0',
  *       errmsg: '',
  *       data:
- *        { tradeList:
- *          [
- *              {"_id":"58b690a812bef5f790df34b1",
- *              "groupType":"studio",
- *              "groupId":"studio_teach",
- *              "showDate":"2017-03-01T09:13:12.431Z",
- *              "tradeImg":"http://192.168.35.91:8090/upload/pic/trade/chat/front/201703/20170301171309_83117539.png",
- *              "profit":"",
- *              "remark":"",
- *              "valid":1,
- *              "updateDate":"2017-03-01T09:13:12.431Z",
- *              "createUser":"小爷",
- *              "createIp":"172.30.110.1",
- *              "createDate":"2017-03-01T09:13:12.431Z",
- *              "title":"3",
- *              "tradeType":2,
- *              "status":1,
- *              "praise":0,
- *              "__v":1,
- *              "comments":[
- *                  {"valid":1,
- *                  "refId":"",
- *                  "dateTime":"2017-03-14T03:01:46.243Z",
- *                  "content":"你要加油哦",
- *                  "avatar":"",
- *                  "userName":"",
- *                  "userId":"",
- *                  "_id":"58c75d1a3fdb25178c65ecc9"}
- *                  ],
- *               "user":{"avatar":"http://192.168.35.91:8090/upload/pic/header/chat/front/201610/20161028100804_03820765.png",
- *                  "telephone":"15622728581",
- *                  "userName":"小爷",
- *                  "userNo":"fxcviisincnxv",
- *                  "_id":null
- *                  }
- *               }
- *          ]
+ *        {
+ *          tradeList: [{}]
  *        }
  *      }
  *
@@ -150,7 +129,11 @@ router.get("/getShowTradeList", (req, res) => {
     showTradeService.getShowTradeList(
         req.query,
         (data) => {
-            res.json(APIUtil.APIResultFromData(data));
+            if(req.query['pageNo']){
+                res.json(ApiResult.result(null, data));
+            }else{
+                res.json(APIUtil.APIResultFromData(data));
+            }
         }
     );
 });
