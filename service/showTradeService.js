@@ -111,7 +111,7 @@ var showTradeService = {
             },
             function(err, results) {
                 if(params.pageNo) {
-                    callback(ApiResult.page(params.pageNo, params.pageSize, results.totalSize, results.list.tradeList));
+                    callback(ApiResult.page(params.pageNo, params.pageSize, results.totalSize, results.list ? results.list.tradeList : []));
                 }else{
                     callback(results.list);
                 }
