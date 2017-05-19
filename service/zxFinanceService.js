@@ -22,6 +22,7 @@ var Utils = require('../util/Utils');
 var Common = require('../util/common');
 var CacheClient=require('../cache/cacheClient');
 var noticeService = require('./noticeService');
+var ObjectId = require('mongoose').Types.ObjectId;
 
 var zxFinanceService = {
     /**
@@ -948,6 +949,8 @@ var zxFinanceService = {
                         && dataDb.basicIndexId == dataApi.basicIndexId;
                 };
                 var i, lenI, dataApi, dataDbIndex, dataDb,isPush=false;
+                //ADP、非农、CPI、PPI、PCE、GDP、议息、LMCI
+                let name = '', nameHas = false;
                 var newDatas = [];
                 var currDate = new Date(), currDateStr = Common.formatterDate(currDate,'-');
                 for(i = 0, lenI = !results.api ? 0 : results.api.length; i < lenI; i++){
@@ -962,7 +965,12 @@ var zxFinanceService = {
                     }else{
                         dataDb = results.db[dataDbIndex];
                         results.db[dataDbIndex] = null; //标记已经处理
-                        isPush = dataDb && dataDb.date == currDateStr && dataDb.value != dataApi.value;
+                        name = dataDb.name.toUpperCase();
+                        nameHas =  name.indexOf('ADP') > -1 || name.indexOf('CPI') > -1
+                            || name.indexOf('PPI') > -1 || name.indexOf('PCE') > -1
+                            || name.indexOf('GDP') > -1 || name.indexOf('LMCI') > -1
+                            || name.indexOf('非农') > -1 || name.indexOf('议息') > -1;
+                        isPush = dataDb && dataDb.date == currDateStr && dataDb.value != dataApi.value && dataDb.country == '美国' && nameHas;
                         dataDb = zxFinanceService.refreshData(dataDb, dataApi);
                         //数据更新的直接用现有数据更新描述，不需要查询配置信息，因为配置更新的时候会更新所有数据
                         dataDb.description = zxFinanceService.getDescription(dataDb);
@@ -1036,7 +1044,14 @@ var zxFinanceService = {
                             newConfigs.push(configTmp);
                             configs[configTmp._id] = configTmp;
                         }
-                        if(newDataTmp.date == currDateStr && Common.isValid(newDataTmp.value)){
+                        //ADP、非农、CPI、PPI、PCE、GDP、议息、LMCI
+                        let name = newDataTmp.name.toUpperCase();
+                        let nameHas = name.indexOf('ADP') > -1 || name.indexOf('CPI') > -1
+                            || name.indexOf('PPI') > -1 || name.indexOf('PCE') > -1
+                            || name.indexOf('GDP') > -1 || name.indexOf('LMCI') > -1
+                            || name.indexOf('非农') > -1 || name.indexOf('议息') > -1;
+                        let isPush = newDataTmp.date == currDateStr && Common.isValid(newDataTmp.value) && newDataTmp.country == '美国' && nameHas;
+                        if(isPush){
                             zxFinanceService.pushFinanceData(newDataTmp);
                         }
                     }
@@ -1214,6 +1229,33 @@ var zxFinanceService = {
             //TODO 推送给Android
             noticeService.pushToApps("andrapp", pushObj, function(isOk, resultObj){});
         }
+    },
+    /**
+     * 保存点评数据
+     * @param params
+     * @param callback
+     */
+    saveFinanceDataReview : function(params, callback){
+        ZxFinanceData.findOne({name:params.name,basicIndexId:params.basicIndexId,date:params.date},function(err, row){
+            if(err){
+                Logger.error("saveFinanceDataReview->fail!:"+err);
+                callback({isOK:false, msg:'点评失败'});
+            } else {
+                if(row){
+                    let comment = {_id : new ObjectId(), userId : params.userId, userName : params.userName, avatar : params.avatar, comment : params.comment, valid : 1, createUser : params.userId, createIp : params.ip};
+                    row.comments.push(comment);
+                    row.save(function(err1, rowTmp){
+                        if (err1) {
+                            Logger.error('saveFinanceDataReview=>fail!' + err1);
+                            callback({isOK: false, msg: '点评失败'});
+                            return;
+                        }
+                        noticeService.send('financeData', {'review' : comment, 'finance' : row});
+                        callback({isOK:true, msg:''});
+                    });
+                }
+            }
+        });
     }
 };
 

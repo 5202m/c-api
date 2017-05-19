@@ -29,6 +29,7 @@ var router = express.Router();
 var ZxFinanceService = require('../../service/zxFinanceService.js');
 var ApiResult = require('../../util/ApiResult.js');
 var Logger = require('../../resources/logConf').getLogger("zxFinanceAPI");
+let common = require('../../util/common');
 
 /**
  * @api {get} /zxFinanceData/list 财经数据列表
@@ -284,6 +285,74 @@ router.get('/getLastReview', function(req, res){
  */
 router.get('/getFinanceDataLastReview', function(req, res){
     ZxFinanceService.getFinanceDataLastReview(function(data){
+        res.json(ApiResult.result(null, data));
+    });
+});
+
+/**
+ * @api {post} /zxFinanceData/saveFinanceDataReview 保存点评内容
+ * @apiName saveFinanceDataReview
+ * @apiGroup zxFinanceData
+ *
+ * @apiParam {String} name 点评数据name，必填
+ * @apiParam {String} userId 点评用户ID，必填
+ * @apiParam {String} userName 用户名，必填
+ * @apiParam {String} avatar 用户头像，必填
+ * @apiParam {String} comment 点评内容，必填
+ * @apiParam {String} ip ip，必填
+ * @apiParam {String} bid basicIndexId，必填
+ * @apiParam {String} date 日期，必填
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/zxFinanceData/saveFinanceDataReview
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "name": "长期资本净流入(亿美元)",
+ *       "basicIndexId" : "116",
+ *       "date" : "2017-05-16",
+ *       "userId": "carl_zhou",
+ *       "userName": "周老师",
+ *       "avatar": "http://192.168.35.91:8090/upload/pic/header/chat/201611/20161108102117_59014347.jpg",
+ *       "comment": "test",
+ *       "ip": "172.30.110.1"
+ *     }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
+router.post('/saveFinanceDataReview', function(req, res){
+    let requires = ["name","bid","date","userId", "userName", "avatar", "comment","ip"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.body[name]);
+    });
+    if (!isSatify) {
+        Logger.warn("[saveFinanceDataReview] Parameters missed! Expecting parameters: ", requires, req.body);
+        res.json(ApiResult.result("code_1000", null));
+        return;
+    }
+    let params = {
+        name : req.body['name'],
+        basicIndexId : req.body['bid'],
+        date : req.body['date'],
+        userId : req.body['userId'],
+        userName : req.body['userName'],
+        avatar : req.body['avatar'],
+        comment : req.body['comment'],
+        createUser : req.body['userId'],
+        ip : req.body['ip']
+    };
+    ZxFinanceService.saveFinanceDataReview(params, (data) => {console.log(data);
         res.json(ApiResult.result(null, data));
     });
 });

@@ -194,7 +194,7 @@ router.get("/existRecord", (req, res) => {
 });
 
 /**
- * @api {get} /message/getWhUseMsgCount 从数据库中加载已有的聊天记录
+ * @api {get} /message/getWhUseMsgCount 获取用户私聊信息条数
  * @apiName getWhUseMsgCount
  * @apiGroup message
  *

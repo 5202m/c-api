@@ -4,6 +4,8 @@ var chatPraiseService = require('../service/chatPraiseService'); //引入chatPra
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common'); //引入common类
 var ObjectId = require('mongoose').Types.ObjectId;
+var async = require('async'); //引入async
+var ApiResult = require('../util/ApiResult');
 /**
  * 晒单服务类
  * 备注：查询各分析师的晒单数据
@@ -71,45 +73,70 @@ var showTradeService = {
      * @param callback
      */
     getShowTradeList: function(params, callback) {
-        var searchObj = { "groupType": params.groupType, "valid": 1, "status": 1, "tradeType": 2 };
+        var searchObj = {
+            "groupType": params.groupType,
+            "valid": 1,
+            "status": 1,
+            "tradeType": 2
+        };
         if (common.isValid(params.userNo)) {
-            searchObj = { "groupType": params.groupType, "valid": 1, "tradeType": (params.tradeType ? params.tradeType : 2), "boUser.userNo": params.userNo };
+            searchObj = {
+                "groupType": params.groupType,
+                "valid": 1,
+                "tradeType": (params.tradeType ? params.tradeType : 2),
+                "boUser.userNo": params.userNo
+            };
             if (common.isValid(params.status)) {
                 searchObj.status = params.status;
             }
         }
-        //var from = (params.pageNo-1) * params.pageSize;
+        var from = (params.pageNo - 1) * params.pageSize;
         var orderByJsonObj = { "showDate": 'desc' };
         if (common.isValid(params.skipLimit)) {
             callback(null);
             return;
         }
         common.wrapSystemCategory(searchObj, params.systemCategory);
-        chatShowTrade.find(searchObj)
-            .sort(orderByJsonObj)
-            //.skip(from)
-            .limit(params.pageSize)
-            .exec("find", function(err, data) {
-                if (err) {
-                    logger.error("查询晒单数据失败! >>getShowTradeList:", err);
-                    callback(null);
-                    return;
+        async.parallel({
+                list: function(callbackTmp) {
+                    chatShowTrade.find(searchObj)
+                        .sort(orderByJsonObj)
+                        .skip(from)
+                        .limit(params.pageSize)
+                        .exec("find", function(err, data) {
+                            if (err) {
+                                logger.error("查询晒单数据失败! >>getShowTradeList:", err);
+                                callbackTmp(null, null);
+                                return;
+                            }
+                            var result = null;
+                            if (data && data.length > 0) {
+                                result = { tradeList: [] };
+                                var tradeInfo = null;
+                                for (var i = 0, lenI = data.length; i < lenI; i++) {
+                                    tradeInfo = data[i].toObject();
+                                    tradeInfo.user = data[i].boUser.toObject();
+                                    delete tradeInfo["boUser"];
+                                    result.tradeList.push(tradeInfo);
+                                }
+                            }
+                            callbackTmp(null, result);
+                        });
+                },
+                totalSize: function(callbackTmp) {
+                    chatShowTrade.find(searchObj).count(function(err, rowNum) {
+                        callbackTmp(null, rowNum);
+                    });
                 }
-                var result = null;
-                if (data && data.length > 0) {
-                    result = {
-                        tradeList: []
-                    };
-                    var tradeInfo = null;
-                    for (var i = 0, lenI = data.length; i < lenI; i++) {
-                        tradeInfo = data[i].toObject();
-                        tradeInfo.user = data[i].boUser.toObject();
-                        delete tradeInfo["boUser"];
-                        result.tradeList.push(tradeInfo);
-                    }
+            },
+            function(err, results) {
+                if (params.pageNo) {
+                    callback(ApiResult.page(params.pageNo, params.pageSize, results.totalSize, results.list ? results.list.tradeList : []));
+                } else {
+                    callback(results.list);
                 }
-                callback(result);
-            });
+            }
+        );
     },
     /**
      * 新增晒单
