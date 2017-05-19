@@ -193,7 +193,7 @@ router.get("/getAnalysts", function(req, res) {
         platform: req.query["platform"],
         analystIds: req.query["analystIds"]
     }
-    if (common.isBlank(platform) || common.isBlank(analystIds)) {
+    if (common.isBlank(params.platform) || common.isBlank(params.analystIds)) {
         res.json(ApiResult.result(errorMessage.code_1000, null));
     } else {
         common.wrapSystemCategory(params, req.query.systemCategory);
