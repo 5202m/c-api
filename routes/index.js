@@ -33,6 +33,7 @@ const adminRoutes = require("./api/adminAPI.js");
 const tokenService = require("../service/tokenService");
 const errorMessage = require("../util/errorMessage");
 const ApiResult = require('../util/ApiResult');
+const APIUtil = require('../util/APIUtil');
 
 indexRouter.get('/', function(req, res) {
     res.render('index');
@@ -59,8 +60,7 @@ exports.init = app => {
     //授权处理
     apiRoutes.all('/*', (req, res, next) => { //拦截token授权接口
         var url = req.originalUrl;
-        var reg = /\/common\/*|\/chat\/getMessageList|\/message\/*|\/token\/*|\/upload\/*/;
-        if (reg.test(url)) {
+        if (APIUtil.isUrlSkipTokenAccess(url)) {
             next();
             return;
         }

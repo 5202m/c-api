@@ -599,6 +599,25 @@ var logRequestInfo = function(req, fileName) {
     logger.info("[%s] ip=%s, method=%s, url=%s, param=%s", fileName, CommonJS.getClientIp(req), loc_method, req.originalUrl, loc_params);
 };
 
+let pathList = [
+    "/common/*",
+    "/message/*",
+    "/token/*",
+    "/upload/*",
+    "/chat/getMessageList",
+    "/article/getGroupArticles",
+    "/article/getArticleCount",
+    "/article/getArticleList",
+    "/showTrade/getShowTradeList",
+    "/chat/getAnalysts",
+    "/chat/getMemberInfo",
+    "/chat/getShowTrade",
+    "/zxFinanceData/*"
+];
+var isUrlSkipTokenAccess = function(url) {
+    return pathList.some(path => new RegExp(path).test(url));
+}
+
 module.exports = {
     /**
      * 测试相关方法
@@ -633,5 +652,10 @@ module.exports = {
     /**
      * 日志相关
      */
-    logRequestInfo: logRequestInfo
+    logRequestInfo: logRequestInfo,
+
+    /**
+     * Token 认证相关
+     */
+    isUrlSkipTokenAccess: isUrlSkipTokenAccess
 };
