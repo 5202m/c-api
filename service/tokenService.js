@@ -197,6 +197,7 @@ var tokenService = {
             'updateDate', model.updateDate || currDate,
             'remark', model.remark || ""
         );
+        callback({ isOK: true, error: null });
         // tokenAccessOnDB.update(model.appId + '_' + model.appSecret, model).then(() => {
         //     callback({ isOK: true, error: null });
         // }).catch(e => {
