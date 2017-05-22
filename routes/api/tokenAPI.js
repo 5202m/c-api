@@ -375,7 +375,6 @@ router.post('/destroyToken', function(req, res) {
 router.post('/verifyToken', function(req, res) {
     var token = req.body.token;
     var appSecret = req.body.appSecret;
-    logger.info("verifyToken token:" + token);
     if (common.isBlank(token)) {
         res.json({ isOK: false, error: errorMessage.code_5003 });
     } else {
