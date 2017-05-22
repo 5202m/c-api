@@ -26,9 +26,11 @@ let verifyAccessToken = (token, appSecret, result) => {
     try {
         let decode = jwt.decode(token, appSecret);
         if (decode.exp < Date.now()) { //expired
+            logger.debug("token expired: ", appSecret, token);
             return { isOK: false, error: errorMessage.code_5002 };
         }
         if (decode.iss !== result.appId) {
+            logger.debug("token unmatched: ", appSecret, token);
             return { isOK: false, error: errorMessage.code_5001 };
         } else return { isOK: true, appId: result.appId };
     } catch (e) {
@@ -303,6 +305,7 @@ var tokenService = {
      */
     verifyToken: function(token, appSecret, callback) {
         if (common.isBlank(token)) {
+            logger.error("token is null");
             callback({ isOK: false, error: errorMessage.code_5003 });
         } else {
             cacheClient.hgetall(tokenService.formatTokenKey(token), function(err, result) {
