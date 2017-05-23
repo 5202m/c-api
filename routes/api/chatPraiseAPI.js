@@ -122,7 +122,7 @@ router.get("/setPraise", function(req, res) {
         common.isBlank(fromPlatform)) {
         res.json(ApiResult(errorMessage.code_1000, null));
     } else {
-        chatPraiseService.setPraise(rq.query, function(data) {
+        chatPraiseService.setPraise(req.query, function(data) {
             res.json(ApiResult(null, data));
         });
     }
