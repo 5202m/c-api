@@ -71,11 +71,11 @@ exports.init = app => {
             return;
         }
         var token = req.query.token || req.body.token;
-        var access_token = req.headers.access_token || req.cookies.access_token;
-        token = token || access_token;
-        var appsecret = req.query.appsecret || req.body.appsecret;
-        var access_secret = req.headers.access_secret || req.cookies.access_secret;
-        appsecret = appsecret || access_secret;
+        var app_token = req.headers["apptoken"] || req.cookies["apptoken"];
+        token = token || app_token;
+        var secret = req.query.appsecret || req.body.appsecret;
+        var app_secret = req.headers["appsecret"] || req.cookies["appsecret"];
+        appsecret = secret || app_secret;
 
         let getPlatform = (appId, appSecret, next) => {
             let params = req.query || req.body;
@@ -102,6 +102,8 @@ exports.init = app => {
                 }
             }
         };
+        logger.debug("veriring token:", token);
+        logger.debug("headers is: ", req.headers);
         if (token) {
             tokenService.verifyToken(token, appsecret, handleTokenVerification);
         } else {

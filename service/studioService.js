@@ -231,12 +231,17 @@ var studioService = {
             _id: groupId
         };
         common.wrapSystemCategory(queryobj, params.systemCategory);
-        chatGroup.find(queryobj).select({ clientGroup: 1, name: 1, talkStyle: 1, whisperRoles: 1, point: 1, traninClient: 1 }).exec(function(err, row) {
-            if (err) {
-                logger.error("getStudioList fail:" + err);
-            }
-            callback(row);
-        });
+        chatGroup.findOne(queryobj)
+            .select({ clientGroup: 1, name: 1, talkStyle: 1, whisperRoles: 1, point: 1, traninClient: 1 })
+            .exec(function(err, row) {
+                if (err) {
+                    logger.error("getStudioList fail:" + err);
+                }
+                if(row.__proto__.constructor === Array){
+                    row = row[0];
+                }
+                callback(row);
+            });
     },
     /**
      * 检查用户组权限
