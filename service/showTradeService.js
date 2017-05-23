@@ -195,7 +195,7 @@ var showTradeService = {
     setShowTradePraise: function(params, callback) {
         var searchObj = { _id: params.praiseId };
         common.wrapSystemCategory(searchObj, params.systemCategory);
-        chatService.checkChatPraise(params.clientId, params.praiseId, params.fromPlatform, function(isOK){
+        chatService.checkChatPraise(params, function(isOK){
             if(isOK) {
                 chatShowTrade.findOne(searchObj, function (err, row) {
                     if (err) {
