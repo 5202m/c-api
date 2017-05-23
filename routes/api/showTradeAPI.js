@@ -146,7 +146,7 @@ router.get("/getShowTradeList", (req, res) => {
  * @apiParam {String} userNo 用户ID，必填
  * @apiParam {String} avatar 用户头像，必填
  * @apiParam {String} userName 用户昵称，必填
- * @apiParam {String} telePhone 手机号，选填
+ * @apiParam {String} telePhone 手机号，直播间选填，其他必填
  * @apiParam {String} tradeImg 晒单图片URL，必填
  * @apiParam {String} remark 心得，选填
  * @apiParam {String} Ip 添加晒单的IP，必填
@@ -214,6 +214,8 @@ router.post("/addShowTrade", (req, res) => {
  * @apiName setShowTradePraise
  * @apiGroup showTrade
  *
+ * @apiParam {String} clientId 用户ID，必需
+ * @apiParam {String} fromPlatform 成员类型，必需 直播间groupType值 studio/fxstudio/hxstudio
  * @apiParam {String} praiseId 晒单数据ID，必需.
  *
  * @apiUse CommonResultDescription
@@ -221,7 +223,7 @@ router.post("/addShowTrade", (req, res) => {
  *
  * @apiSampleRequest /api/showTrade/setShowTradePraise
  * @apiExample Example usage:
- *  /api/showTrade/setShowTradePraise?praiseId=58b690a812bef5f790df34b1
+ *  /api/showTrade/setShowTradePraise?clientId=sxunppxunpxix&fromPlatform=studio&praiseId=58b690a812bef5f790df34b1&
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     { result: 0,
@@ -276,7 +278,7 @@ router.get("/setShowTradePraise", (req, res) => {
  */
 router.get("/getShowTradeByIds", (req, res) => {
     if (common.isBlank(req.query["tradeIds"])) {
-        logger.warn("[addShowTrade] Parameters missed! Expecting parameter: ", "tradeIds");
+        logger.warn("[getShowTradeByIds] Parameters missed! Expecting parameter: ", "tradeIds");
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
