@@ -41,7 +41,13 @@ var messageService = {
                     callback(result);
                 });
             } else {
-                visitorService.getUserArrByUserId(userInfo.toUser.userType, null, groupType, groupId, userInfo.toUser.userId, function(userArr) {
+                visitorService.getUserArrByUserId({
+                    userType: userInfo.toUser.userType,
+                    clientGroup: null,
+                    groupType: groupType,
+                    groupId: groupId,
+                    userId: userInfo.toUser.userId
+                }, function(userArr) {
                     searchObj.$or = [{ "userId": userInfo.userId, "toUser.talkStyle": 1, "toUser.userId": { $in: userArr } },
                         { "userId": { $in: userArr }, "toUser.talkStyle": 1, "toUser.userId": userInfo.userId }
                     ];
@@ -76,7 +82,6 @@ var messageService = {
                 }
                 searchObj["toUser.talkStyle"] = 0;
             }
-            common.wrapSystemCategory(searchObj, userInfo.systemCategory);
             this.findMessageList(userInfo, searchObj, selectSQL, selectRows, function(result) {
                 callback(result);
             });
@@ -89,6 +94,7 @@ var messageService = {
      * @param selectRows
      */
     findMessageList: function(userInfo, searchObj, selectSQL, selectRows, callback) {
+        common.wrapSystemCategory(searchObj, userInfo.systemCategory);
         chatMessage.db()
             .find(searchObj)
             .select(selectSQL)

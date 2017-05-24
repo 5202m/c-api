@@ -2,6 +2,7 @@
  * 通用方法 create by alan.wu 2014-3-6
  */
 var xml2js = require('xml2js');
+var constant = require('../constant/constant');
 var common = {
     getCompanyOnlyService: function(companyId) {
         if (!companyId) {
@@ -678,7 +679,8 @@ var common = {
     wrapSystemCategory: function(searchObj, systemCategory) {
         if (systemCategory) {
             searchObj['systemCategory'] = systemCategory;
-            return searchObj;
+        } else if (searchObj.groupType) {
+            searchObj['systemCategory'] = constant.groupTypeSystemCategoryMapping[searchObj.groupType];
         }
         return searchObj;
     }
