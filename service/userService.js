@@ -1091,7 +1091,7 @@ var userService = {
             .catch(err => {
                 logger.error("getTeacherFollowers error", err);
                 deferred.reject(err);
-            })
+            });
         return deferred.promise;
     },
     getFollowedTeachers: function(params) {
@@ -1100,11 +1100,12 @@ var userService = {
         followedTeacher.find({ status: 1, followers: params.userId }, "userNo")
             .then(userNoList => {
                 let list = userNoList.map(user => user.userNo);
-                _this.getUserList(list.toString(), userList => {
-                    deferred.resolve(userList);
-                });
+                _this.getUserList(list.toString(), deferred.resolve);
             })
-            .catch(deferred.reject);
+            .catch(err => {
+                logger.error("getFollowedTeachers error", err);
+                deferred.reject(err);
+            });
         return deferred.promise;
     }
 };

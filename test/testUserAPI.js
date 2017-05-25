@@ -4,7 +4,7 @@ let request = require('request');
 let userAPI = require('../routes/api/userAPI');
 let common = require('../util/common'); //引入common类
 let logger = require('../resources/logConf').getLogger("testUserAPI");
-let url = 'http://192.168.35.81:3003/api/user';
+let url = 'http://localhost:3000/api/user';
 describe("userAPI.setTeacherFollower", () => {
     let data = {
         userId: "vxcnnfsipssdi",
@@ -48,11 +48,13 @@ describe("userAPI.setTeacherFollower", () => {
             body: Object.assign({ isFollow: 0 }, data),
             json: true
         };
-        request.post(options, (err, res, data) => {
+        request.post(options, (err, res, jsonData) => {
             should.not.exist(err);
             res.should.be.an.Object();
-            data.should.be.an.Object();
-            logger.info(JSON.stringify(data));
+            jsonData.should.be.an.Object();
+            jsonData.data.isOK.should.be.a.Boolean();
+            jsonData.data.isOK.should.be.true();
+            logger.info(JSON.stringify(jsonData));
             done();
         });
     });
@@ -64,6 +66,8 @@ describe("userAPI.getTeacherFollowers", () => {
             should.not.exist(err);
             res.should.be.an.Object();
             data.should.be.an.Object();
+            data.result.should.equal(0);
+            data.data.should.be.an.Array();
             logger.info(JSON.stringify(data));
             done();
         });
@@ -76,6 +80,8 @@ describe("userAPI.getFollowedTeachers", () => {
             should.not.exist(err);
             res.should.be.an.Object();
             data.should.be.an.Object();
+            data.result.should.equal(0);
+            data.data.should.be.an.Array();
             logger.info(JSON.stringify(data));
             done();
         });
