@@ -576,7 +576,7 @@ router.post('/modifyArticle', function(req, res) {
         res.json({ isOk: false, msg: '参数错误' });
         return;
     }
-    articleService.modifyPraiseOrDownloads(_id, type, function(apiResult) {
+    articleService.modifyPraiseOrDownloads({ '_id': _id }, type, function(apiResult) {
         res.json(apiResult);
     });
 });

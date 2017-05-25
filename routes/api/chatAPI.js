@@ -713,7 +713,10 @@ router.post("/showTradeNotice", function(req, res) {
             mobileArr.push(tradeInfo.boUser.telephone);
         }
     });
-    userService.getClientGroupByMId(mobileArr, tradeInfo.groupType, function(mbObj) {
+    userService.getClientGroupByMId({
+        mobileArr: mobileArr.toString(),
+        groupType: tradeInfo.groupType
+    }, function(mbObj) {
         tradeInfoArray.forEach(trade => {
             tradeInfo = trade;
             if (tradeInfo.tradeType == 2) { //客户晒单

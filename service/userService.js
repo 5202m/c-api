@@ -123,7 +123,11 @@ var userService = {
         }
         //更新用户记录表的在线状态(下线设置为0）
         if (common.isValid(userInfo.userId) && common.isValid(userInfo.groupId) && common.isValid(userInfo.groupType)) {
-            userService.updateChatUserGroupStatus(userInfo, 0, userInfo.sendMsgCount, function(err) {});
+            userService.updateChatUserGroupStatus({
+                userInfo: userInfo,
+                chatStatus: 0,
+                sendMsgCount: userInfo.sendMsgCount
+            }, function(err) {});
             callback(true);
         } else {
             callback(false);
