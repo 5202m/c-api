@@ -104,7 +104,7 @@ var messageService = {
                 if (diffLength > 0) { //往上一年查询
                     var year = new Date().getFullYear();
                     chatMessage.db(year <= 2015 ? 2015 : year - 1).find(searchObj).select(selectSQL).limit(diffLength).sort({ 'publishTime': 'desc' }).exec(function(err, oldList) {
-                        callback(currList.concat(oldList));
+                        callback(currList ? currList.concat(oldList) : oldList);
                     });
                 } else {
                     callback(currList);
