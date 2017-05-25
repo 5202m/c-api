@@ -197,9 +197,12 @@ var subscribeService = {
             case subscribeService.subscribeType.syllabus:
                 templateCode = "LiveReminder";
                 templateParam = {
-                    time: common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
-                    liveTime: data.startTime,
-                    teacherName: data.lecturer
+                    time : common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                    courseTime : data.startTime,
+                    teacherName : data.lecturer,
+                    groupName : data.groupName,
+                    title : data.title,
+                    context : data.context
                 };
                 break;
 
@@ -368,7 +371,8 @@ var subscribeService = {
      * @param callback
      */
     noticeArticle: function(params, callback) {
-        let articleId = params.articleId;
+        let articleId = params.dataId;
+        params.id = articleId;
         if (!articleId) {
             logger.warn("<<noticeArticle:文章编号无效：%s", articleId);
             callback(false);

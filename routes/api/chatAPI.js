@@ -667,11 +667,11 @@ router.post("/noticeArticle", function(req, res) {
     }
 });
 /**
- * @api {post} /chat/showTradeNotice 显示交易提醒
+ * @api {post} /chat/showTradeNotice 显示晒单提醒
  * @apiName showTradeNotice
  * @apiGroup chat
  *
- * @apiParam {String} tradeInfo 交易信息
+ * @apiParam {String} tradeInfo 晒单信息
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Number} data  返回的数据
@@ -713,10 +713,8 @@ router.post("/showTradeNotice", function(req, res) {
             mobileArr.push(tradeInfo.boUser.telephone);
         }
     });
-    userService.getClientGroupByMId({
-        mobileArr: mobileArr.toString(),
-        groupType: tradeInfo.groupType
-    }, function(mbObj) {
+    let params = {mobileArr:mobileArr.join(','), groupType:tradeInfo.groupType};
+    userService.getClientGroupByMId(params, function(mbObj) {
         tradeInfoArray.forEach(trade => {
             tradeInfo = trade;
             if (tradeInfo.tradeType == 2) { //客户晒单
