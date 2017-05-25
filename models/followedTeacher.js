@@ -4,10 +4,10 @@
 let mongoose = require('./commonMongoose'),
     Schema = mongoose.Schema,
     ObjectId = Schema.ObjectId,
-    teacherFollowerSchema = new Schema({ //会员Schema
+    followedTeacherSchema = new Schema({ //会员Schema
         _id: ObjectId,
         userNo: { type: String, index: true },
         followers: [],
         status: { type: Number, default: 1 }
     });
-module.exports = mongoose.model('teacherFollower', teacherFollowerSchema, "teacherFollower");
+module.exports = mongoose.model('followedTeacher', followedTeacherSchema, "followedTeacher");
