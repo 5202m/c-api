@@ -344,7 +344,16 @@ var studioService = {
      * @param callback
      */
     checkMemberAndSave: function(userInfo, callback) {
+        let illeagerNoRegX = /^[0-9]{0,6}$/; //小于等于六位的数字。
+        let isAccountNoNumber = /^\d{3,}$/.test(userInfo.accountNo); //传进来的accountNo是否数字。
+        userInfo = typeof userInfo === "string" ? JSON.parse(userInfo) : userInfo;
         var result = { isOK: false, error: errorMessage.code_10 };
+        if (isAccountNoNumber && illeagerNoRegX.test(userInfo.accountNo)) { //不接受非法的accountNo。
+            logger.error("checkMemberAndSave->illeager accountNo!");
+            result.error = Object.assign(result.error, { errmsg: "操作异常，accountNo非法，不接受少于等于6位的数字" });
+            callback(result);
+            return;
+        }
         var mobilePhone = /^\d/.test(userInfo.mobilePhone) ? common.getValidPhoneNumber(userInfo.mobilePhone) : userInfo.mobilePhone;
         member.findOne({ mobilePhone: mobilePhone, valid: 1, 'loginPlatform.chatUserGroup.userType': 0 }, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
@@ -371,6 +380,10 @@ var studioService = {
                                 currRow.accountNo += ',' + userInfo.accountNo; //保存多个账号
                             }
                         }
+                        if (isAccountNoNumber) {
+                            currRow.accountNo = currRow.accountNo.split(",")
+                                .filter(accountNo => !illeagerNoRegX.test(accountNo)).join(","); //去掉已存在的非法的AccountNo。
+                        }
                         row.save(function(err) {
                             if (err) {
                                 logger.error("checkMemberAndSave->update member fail!:" + err);
@@ -380,13 +393,13 @@ var studioService = {
                         delete result.error;
                         callback(result);
                     } else {
-                        userInfo.item = 'register_reg';//使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
+                        userInfo.item = 'register_reg'; //使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
                         studioService.setClientInfo(row, userInfo, function(resultTmp) {
                             callback(resultTmp);
                         });
                     }
                 } else {
-                    userInfo.item = 'register_reg';//使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
+                    userInfo.item = 'register_reg'; //使用交易账号登录时，如没有注册过直播间，则是新的注册用户，需要添加积分
                     studioService.setClientInfo(row, userInfo, function(resultTmp) {
                         callback(resultTmp);
                     });
