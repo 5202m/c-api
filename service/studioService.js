@@ -344,12 +344,12 @@ var studioService = {
      * @param callback
      */
     checkMemberAndSave: function(userInfo, callback) {
-        let illeagerNoRegX = /^[0-9]{0,6}$/; //小于等于六位的数字。
+        let illegalNoRegX = /^[0-9]{0,6}$/; //小于等于六位的数字。
         let isAccountNoNumber = /^\d{3,}$/.test(userInfo.accountNo); //传进来的accountNo是否数字。
         userInfo = typeof userInfo === "string" ? JSON.parse(userInfo) : userInfo;
         var result = { isOK: false, error: errorMessage.code_10 };
-        if (isAccountNoNumber && illeagerNoRegX.test(userInfo.accountNo)) { //不接受非法的accountNo。
-            logger.error("checkMemberAndSave->illeager accountNo!");
+        if (isAccountNoNumber && illegalNoRegX.test(userInfo.accountNo)) { //不接受非法的accountNo。
+            logger.error("checkMemberAndSave->illegal accountNo!", userInfo.accountNo);
             result.error = Object.assign(result.error, { errmsg: "操作异常，accountNo非法，不接受少于等于6位的数字" });
             callback(result);
             return;
@@ -381,8 +381,12 @@ var studioService = {
                             }
                         }
                         if (isAccountNoNumber) {
-                            currRow.accountNo = currRow.accountNo.split(",")
-                                .filter(accountNo => !illeagerNoRegX.test(accountNo)).join(","); //去掉已存在的非法的AccountNo。
+                            if (currRow.accountNo) {
+                                currRow.accountNo = currRow.accountNo.split(",")
+                                    .filter(accountNo => !illegalNoRegX.test(accountNo)).join(","); //去掉已存在的非法的AccountNo。
+                            } else {
+                                currRow.accountNo = userInfo.accountNo;
+                            }
                         }
                         row.save(function(err) {
                             if (err) {
