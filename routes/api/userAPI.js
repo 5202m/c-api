@@ -1228,5 +1228,160 @@ router.get("/getAnalystList", (req, res) => {
         res.json(APIUtil.APIResult(null, data));
     });
 });
+/**
+ * @api {post} /user/setTeacherFollower 设置关注/取消关注分析师
+ * @apiName setTeacherFollower
+ * @apiGroup user
+ *
+ * @apiParam {String} userId  用户在所属groupType的userId，例如："fxnxiiiiuuuuc"。
+ * @apiParam {String} analystNo  分析师ID，必填。
+ * @apiParam {Number} [isFollow]  1为关注；0为取消关注，不传的话默认为1。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/setTeacherFollower
+ * @apiExample Example usage:
+ *  /api/user/setTeacherFollower
+ * @apiParamExample {json} Request-Example:
+ *  设置关注
+ *     {
+ *       userId: "vxcnnfsipssdi",
+ *       analystNo: "hxjls"
+ *   }
+ * 设置取消关注
+ *     {
+ *       userId: "vxcnnfsipssdi",
+ *       analystNo: "hxjls"，
+ *       isFollow: 0
+ *   }
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
+router.post("/setTeacherFollower", (req, res) => {
+    let requires = ["userId", "analystNo"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.body[name]);
+    });
+    if (!isSatify) {
+        logger.warn("[setTeacherFollower] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    if ('isFollow' in req.body) {
+        let isFollow = req.body['isFollow'];
+        isFollow = parseInt(isFollow);
+        if (isNaN(isFollow)) {
+            logger.warn("[setTeacherFollower] Parameters Error! Expecting parameters \"isFollow\" is Number, but it's : ", typeof req.body['isFollow']);
+            res.json(APIUtil.APIResult("code_1000", null));
+            return;
+        }
+        req.body['isFollow'] = isFollow;
+    }
+    userService.setTeacherFollower(req.body)
+        .then((data) => {
+            res.json(APIUtil.APIResult(null, data));
+        }).catch(e => {
+            res.json(APIUtil.APIResult(e, null));
+        });
+});
+/**
+ * @api {get} /user/getTeacherFollowers 获取关注分析师的用户列表
+ * @apiName getTeacherFollowers
+ * @apiGroup user
+ *
+ * @apiParam {String} userNo  分析师ID，必填。
+ * @apiParam {String} groupType  房间类型，必填。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getTeacherFollowers
+ * @apiExample Example usage:
+ *  /api/user/getTeacherFollowers?userNo=hxjls&groupType=hxstudio
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
+router.get("/getTeacherFollowers", (req, res) => {
+    let requires = ["userNo", "groupType"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.query[name]);
+    });
+    if (!isSatify) {
+        logger.warn("[getTeacherFollowers] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    userService.getTeacherFollowers(req.query)
+        .then((data) => {
+            res.json(APIUtil.APIResult(null, data));
+        }).catch(err => {
+            res.json(APIUtil.APIResult(err, null));
+        });
+});
+
+/**
+ * @api {get} /user/getFollowedTeachers 获取用户关注的分析师列表
+ * @apiName getFollowedTeachers
+ * @apiGroup user
+ *
+ * @apiParam {String} userId  用户ID，必填。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getFollowedTeachers
+ * @apiExample Example usage:
+ *  /api/user/getFollowedTeachers?userId=fxnxiiiiuuuuc
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
+router.get("/getFollowedTeachers", (req, res) => {
+    let requires = ["userId"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.query[name]);
+    });
+    if (!isSatify) {
+        logger.warn("[getFollowedTeachers] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    userService.getFollowedTeachers(req.query)
+        .then((data) => {
+            res.json(APIUtil.APIResult(null, data));
+        }).catch(err => {
+            res.json(APIUtil.APIResult(err, null));
+        });
+});
 
 module.exports = router;

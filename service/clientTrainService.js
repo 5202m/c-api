@@ -417,6 +417,7 @@ var clientTrainService = {
                                 signObj.signDays = row.serialSigDays;
                             }
                         }
+                        signObj.historySignTime = row.historySignTime || [];
                         callback(null, signObj);
                     });
                 },

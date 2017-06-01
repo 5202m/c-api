@@ -237,7 +237,7 @@ var studioService = {
                 if (err) {
                     logger.error("getStudioList fail:" + err);
                 }
-                if(row.__proto__.constructor === Array){
+                if (row.__proto__.constructor === Array) {
                     row = row[0];
                 }
                 callback(row);
@@ -402,9 +402,16 @@ var studioService = {
      */
     checkMemberAndSave: function(params, callback) {
         let userInfo = params.userInfo;
+        let illegalNoRegX = /^[0-9]{0,6}$/; //小于等于六位的数字。
+        let isAccountNoNumber = /^\d{3,}$/.test(userInfo.accountNo); //传进来的accountNo是否数字。
         userInfo = typeof userInfo === "string" ? JSON.parse(userInfo) : userInfo;
-
         var result = { isOK: false, error: errorMessage.code_10 };
+        if (isAccountNoNumber && illegalNoRegX.test(userInfo.accountNo)) { //不接受非法的accountNo。
+            logger.error("checkMemberAndSave->illegal accountNo!", userInfo.accountNo);
+            result.error = Object.assign(result.error, { errmsg: "操作异常，accountNo非法，不接受少于等于6位的数字" });
+            callback(result);
+            return;
+        }
         var mobilePhone = /^\d/.test(userInfo.mobilePhone) ? common.getValidPhoneNumber(userInfo.mobilePhone) : userInfo.mobilePhone;
         let queryObj = { mobilePhone: mobilePhone, valid: 1, 'loginPlatform.chatUserGroup.userType': 0 };
         common.wrapSystemCategory(queryObj, params.systemCategory);
@@ -432,6 +439,14 @@ var studioService = {
                             }
                             if (common.isValid(userInfo.accountNo) && common.isValid(currRow.accountNo) && !common.containSplitStr(currRow.accountNo, userInfo.accountNo)) {
                                 currRow.accountNo += ',' + userInfo.accountNo; //保存多个账号
+                            }
+                        }
+                        if (isAccountNoNumber) {
+                            if (currRow.accountNo) {
+                                currRow.accountNo = currRow.accountNo.split(",")
+                                    .filter(accountNo => !illegalNoRegX.test(accountNo)).join(","); //去掉已存在的非法的AccountNo。
+                            } else {
+                                currRow.accountNo = userInfo.accountNo;
                             }
                         }
                         row.save(function(err) {
