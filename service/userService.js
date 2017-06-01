@@ -12,6 +12,9 @@ var visitorService = require('../service/visitorService');
 var chatPraiseService = require('../service/chatPraiseService');
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common');
+let followedTeacher = require('../models/followedTeacher'); //引入followedTeacher数据模型
+let ObjectId = require('mongoose').Schema.ObjectId;
+let async = require('async');
 let Deferred = common.Deferred;
 
 /**
@@ -934,12 +937,43 @@ var userService = {
                 }
             });
     },
+    handleMemberInfoData: function(data) {
+        var result = {
+            mobilePhone: data.mobilePhone
+        };
+        if (data.loginPlatform && data.loginPlatform.chatUserGroup && data.loginPlatform.chatUserGroup.length > 0) {
+            var chatUserGroup = data.loginPlatform.chatUserGroup[0];
+            result.groupType = chatUserGroup._id;
+            result.userId = chatUserGroup.userId;
+            result.avatar = chatUserGroup.avatar;
+            result.nickname = chatUserGroup.nickname;
+            result.userType = chatUserGroup.userType;
+            result.vipUser = chatUserGroup.vipUser;
+            result.clientGroup = chatUserGroup.clientGroup;
+            result.createDate = (chatUserGroup.createDate instanceof Date ? chatUserGroup.createDate.getTime() : 0);
+            var rooms = [],
+                room;
+            for (var i = 0, lenI = chatUserGroup.rooms ? chatUserGroup.rooms.length : 0; i < lenI; i++) {
+                room = chatUserGroup.rooms[i];
+                rooms.push({
+                    roomId: room._id,
+                    onlineStatus: room.onlineStatus,
+                    sendMsgCount: room.sendMsgCount,
+                    onlineDate: (room.onlineDate instanceof Date ? room.onlineDate.getTime() : 0),
+                    offlineDate: (room.offlineDate instanceof Date ? room.offlineDate.getTime() : 0)
+                });
+            }
+            result.rooms = rooms;
+        }
+        return result;
+    },
     /**
      * 按照手机号查询用户信息
      * @param params  {{mobilePhone:String, userId:String, groupType:String}}
      * @param callback
      */
     getMemberInfo: function(params, callback) {
+        let _this = this;
         var searchObj = {
             valid: 1,
             status: 1
@@ -961,35 +995,30 @@ var userService = {
                 callback(err, null);
                 return;
             }
-            var result = {
-                mobilePhone: data.mobilePhone
-            };
-            if (data.loginPlatform && data.loginPlatform.chatUserGroup && data.loginPlatform.chatUserGroup.length > 0) {
-                var chatUserGroup = data.loginPlatform.chatUserGroup[0];
-                result.groupType = chatUserGroup._id;
-                result.userId = chatUserGroup.userId;
-                result.avatar = chatUserGroup.avatar;
-                result.nickname = chatUserGroup.nickname;
-                result.userType = chatUserGroup.userType;
-                result.vipUser = chatUserGroup.vipUser;
-                result.clientGroup = chatUserGroup.clientGroup;
-                result.createDate = (chatUserGroup.createDate instanceof Date ? chatUserGroup.createDate.getTime() : 0);
-                var rooms = [],
-                    room;
-                for (var i = 0, lenI = chatUserGroup.rooms ? chatUserGroup.rooms.length : 0; i < lenI; i++) {
-                    room = chatUserGroup.rooms[i];
-                    rooms.push({
-                        roomId: room._id,
-                        onlineStatus: room.onlineStatus,
-                        sendMsgCount: room.sendMsgCount,
-                        onlineDate: (room.onlineDate instanceof Date ? room.onlineDate.getTime() : 0),
-                        offlineDate: (room.offlineDate instanceof Date ? room.offlineDate.getTime() : 0)
-                    });
-                }
-                result.rooms = rooms;
-            }
+            var result = _this.handleMemberInfoData(data);
             callback(null, result);
         });
+    },
+    getMemberListByUserNos: function(params) {
+        let _this = this;
+        let deferred = new Deferred();
+        var searchObj = {
+            valid: 1,
+            status: 1
+        };
+        searchObj["loginPlatform.chatUserGroup._id"] = params.groupType;
+        searchObj["loginPlatform.chatUserGroup.userId"] = {
+            "$in": params.userNos
+        };
+        member.find(searchObj, {
+                "mobilePhone": 1,
+                "loginPlatform.chatUserGroup.$": 1
+            })
+            .then(jsonData => {
+                deferred.resolve(jsonData.map(user => _this.handleMemberInfoData(user)));
+            })
+            .catch(deferred.reject);
+        return deferred.promise;
     },
     /**
      * 获取分析师列表
@@ -1000,6 +1029,84 @@ var userService = {
         boUser.find({ valid: 1, status: 0, /*systemCategory: systemCategory,*/ 'role.roleNo': common.getPrefixReg("analyst") }, "userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag introduction", function(err, rows) {
             callback(rows);
         });
+    },
+    setTeacherFollower: function(params) {
+        let deferred = new common.Deferred();
+        params.isFollow = 'isFollow' in params ? params.isFollow : 1; //如果isFollow不存在，则设置1为默认值
+        followedTeacher.findOne({ status: 1, userNo: params.analystNo })
+            .then(row => {
+                if (!row) {
+                    row = new followedTeacher({
+                        _id: null,
+                        userNo: params.analystNo,
+                        followers: [],
+                        status: 1
+                    });
+                }
+                if (!row.followers) {
+                    row.followers = new Array();
+                }
+                if (params.isFollow === 1 && row.followers.some(no => no === params.userId)) { //已经是关注者了，并且又要重新设置关注，那么直接resolve。
+                    deferred.resolve({ isOK: false, userNo: row.userNo });
+                    return;
+                }
+                if (params.isFollow === 0) { //取消关注。
+                    row.followers = row.followers.filter(followerId => followerId !== params.userId);
+                    row.save().then(data => {
+                        deferred.resolve({ isOK: true, userNo: params.analystNo });
+                    }).catch(err => {
+                        logger.error("setTeacherFollower and save Error: ", err);
+                        deferred.reject(err);
+                    });
+                } else { //设置关注。
+                    row.followers.push(params.userId);
+                    row.save().then(data => {
+                        deferred.resolve({ isOK: true, userNo: params.analystNo });
+                    }).catch(err => {
+                        logger.error("setTeacherFollower and save Error: ", err);
+                        deferred.reject(err);
+                    });
+                }
+            })
+            .catch(err => {
+                logger.error("setTeacherFollower Error: ", err);
+                deferred.reject(err);
+            });
+        return deferred.promise;
+    },
+    getTeacherFollowers: function(params) {
+        let _this = this;
+        let deferred = new common.Deferred();
+        followedTeacher.findOne({ status: 1, userNo: params.userNo })
+            .then(row => {
+                if (!row.followers || row.followers.length === 0) {
+                    deferred.resolve([]);
+                    return;
+                }
+                _this.getMemberListByUserNos({
+                    userNos: row.followers,
+                    groupType: params.groupType
+                }).then(deferred.resolve).catch(deferred.reject);
+            })
+            .catch(err => {
+                logger.error("getTeacherFollowers error", err);
+                deferred.reject(err);
+            });
+        return deferred.promise;
+    },
+    getFollowedTeachers: function(params) {
+        let _this = this;
+        let deferred = new common.Deferred();
+        followedTeacher.find({ status: 1, followers: params.userId }, "userNo")
+            .then(userNoList => {
+                let list = userNoList.map(user => user.userNo);
+                _this.getUserList(list.toString(), deferred.resolve);
+            })
+            .catch(err => {
+                logger.error("getFollowedTeachers error", err);
+                deferred.reject(err);
+            });
+        return deferred.promise;
     }
 };
 
