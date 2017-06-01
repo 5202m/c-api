@@ -305,20 +305,37 @@ router.post("/addSignin", (req, res) => {
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
+ * @apiSuccess {Object} data.signinInfo  签到数据
+ * @apiSuccess {Number} data.signinInfo.signDays  当月内连续签到次数
+ * @apiSuccess {Array} data.signinInfo.historySignTime  历史签到时间数据
+ * @apiSuccess {Array} data.signinUser  当天最近10条签到用户
  *
  * @apiSampleRequest /api/clientTrain/getSignin
  * @apiExample Example usage:
- *  /api/clientTrain/getSignin?groupType=studio&mobilePhone=13800138000
+ *  /api/clientTrain/getSignin?mobilePhone=13168722543&groupType=hxstudio
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     {
- *          "result": 0,
- *          "errcode": "0",
- *          "errmsg": "",
- *          "data": {
- *          	...
- *          }
- *      }
+ * {
+ *   "result": 0,
+ *   "errcode": "0",
+ *   "errmsg": "",
+ *   "data": {
+ *     "signinInfo": {
+ *       "signDays": 1,
+ *       "historySignTime": [
+ *         "2017-03-31T10:17:40.745Z",
+ *         "2017-04-05T08:31:59.560Z",
+ *         "2017-04-06T06:51:00.391Z",
+ *         "2017-04-21T02:01:33.482Z",
+ *         "2017-04-22T03:37:58.211Z",
+ *         "2017-05-27T09:52:05.457Z",
+ *         "2017-05-31T01:49:23.714Z",
+ *         "2017-06-01T01:21:11.343Z"
+ *       ]
+ *     },
+ *     "signinUser": []
+ *   }
+ * }
  *
  * @apiUse ParametersMissedError
  */
