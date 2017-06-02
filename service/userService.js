@@ -970,7 +970,7 @@ var userService = {
                 }
             }
         };
-        common.wrapSystemCategory(searchObj, params.systemCategory);
+        common.wrapSystemCategory(emailSearchObj, params.systemCategory);
         member.find(emailSearchObj).count(function(err, count) {
             if (count > 0) {
                 callback({ isOK: false, msg: "该邮箱地址已绑定到其他账户，请使用其他邮箱！" });
