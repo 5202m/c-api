@@ -2,7 +2,6 @@ var chatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数
 var logger = require('../resources/logConf').getLogger('showTradeService'); //引入log4js
 var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
 var chatService = require('../service/chatService');//引入chatService
-var studioService = require('../service/studioService');//引入studioService
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common'); //引入common类
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -146,7 +145,7 @@ var showTradeService = {
      * @param callback
      */
     addShowTrade: function(params, callback) {
-        let userId = common.isValid(params.telePhone) ? studioService.formatMobileToUserId(params.telePhone) : '';
+        let userId = common.isValid(params.telePhone) ? common.formatMobileToUserId(params.telePhone) : '';
         if(common.isValid(userId) && params.userNo != userId){
             params.userNo = userId;
         }

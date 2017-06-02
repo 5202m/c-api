@@ -493,21 +493,6 @@ var studioService = {
             });
     },
     /**
-     * 通过手机号码提取用户id
-     * @param mobilePhone
-     */
-    formatMobileToUserId: function(mobilePhone) {
-        var str = [];
-        str[0] = 'p', str[1] = 'x', str[2] = 'i', str[3] = 'u', str[4] = 'd', str[5] = 'c', str[6] = 'v', str[7] = 's', str[8] = 'n', str[9] = 'f';
-        var userId = '';
-        for (var i = 0; i < mobilePhone.length; i++) {
-            userId += str[parseInt(mobilePhone.charAt(i))];
-        }
-        var index1 = Math.floor(Math.random() * 10),
-            index2 = Math.floor(Math.random() * 10);
-        return str[index1] + userId + str[index2];
-    },
-    /**
      * 设置客户信息
      * @param memberRow 是否存在客户记录
      * @param userInfo
@@ -520,7 +505,7 @@ var studioService = {
                 callback(result);
             } else {
                 userInfo.groupId = defId; //提取默认房间
-                userInfo.userId = studioService.formatMobileToUserId(userInfo.mobilePhone);
+                userInfo.userId = common.formatMobileToUserId(userInfo.mobilePhone);
                 result.userId = userInfo.userId;
                 result.defGroupId = defId;
                 /*userInfo.pwd=common.getMD5(constant.pwdKey+userInfo.pwd);*/
