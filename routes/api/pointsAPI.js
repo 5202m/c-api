@@ -72,7 +72,7 @@ router.get('/pointsInfo', function(req, res) {
         if (pointsInfo) {
             res.json(APIUtil.APIResult(null, pointsInfo));
         } else {
-            res.json(APIUtil.APIResult("code_3003", null));
+            res.json(APIUtil.APIResult("code_11", null));
         }
     });
 });
