@@ -312,6 +312,8 @@ module.exports = {
                 room = room.toObject();
                 delete room["traninClient"];
                 delete room["chatRules"];
+            } else {
+                room = {};
             }
             if (result) {
                 result = _this.fillOpenTime(result, room.openDate);
