@@ -64,7 +64,7 @@ exports.init = app => {
             //TODO 当网站组调整完毕，就可以删掉这个默认添加systemcategory的功能。
             let params = req.query || req.body;
             if (!params.systemCategory) {
-                params.systemCategory = 'pm';
+                params.systemCategory = params.companyId || 'pm';
             }
             //TODO 当网站组调整完毕，就可以删掉这个默认添加systemcategory的功能。
             next();
