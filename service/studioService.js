@@ -100,6 +100,7 @@ var studioService = {
                                     userInfo.email = group.email;
                                     userInfo.accountNo = group.accountNo;
                                     userInfo.mobilePhone = row.mobilePhone;
+                                    userInfo.joinDate = row.createDate;
                                 }
                             } else {
                                 logger.warn("memberInfo error", err, row, JSON.stringify({
