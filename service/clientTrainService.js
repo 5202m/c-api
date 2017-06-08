@@ -190,7 +190,7 @@ var clientTrainService = {
         let deferred = new Deferred();
         var searchObj = { "groupType": groupType, roomType: 'train', valid: 1 };
         var limit = 50,
-            searchFields = "_id status defaultAnalyst point openDate clientGroup name traninClient trainConfig label remark";
+            searchFields = "_id status defaultAnalyst point openDate clientGroup name traninClient trainConfig label remark logo";
         if (!isAll) {
             searchObj.status = { $in: [1, 2] };
         }
