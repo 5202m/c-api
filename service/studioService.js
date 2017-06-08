@@ -794,12 +794,25 @@ var studioService = {
      * @param callback
      */
     getTrainRoomList: function(groupType, callback) {
-        chatGroup.find({ valid: 1, status: { $in: [1, 2] }, groupType: groupType, "defaultAnalyst._id": { $ne: null } }).select({ clientGroup: 1, remark: 1, name: 1, level: 1, groupType: 1, talkStyle: 1, whisperRoles: 1, chatRules: 1, openDate: 1, defTemplate: 1, defaultAnalyst: 1, openDate: 1, students: 1 }).sort({ 'sequence': 'asc' }).exec(function(err, rows) {
-            if (err) {
-                logger.error("getStudioList fail:" + err);
+        let searchObj = {
+            valid: 1,
+            status: {
+                $in: [1, 2]
+            },
+            groupType: groupType,
+            "defaultAnalyst._id": {
+                $ne: null
             }
-            callback(rows);
-        });
+        };
+        let fields = "clientGroup remark name level groupType talkStyle whisperRoles chatRules openDate defTemplate defaultAnalyst openDate students";
+        chatGroup.find(searchObj, fields)
+            .sort({ 'sequence': 'asc' })
+            .exec(function(err, rows) {
+                if (err) {
+                    logger.error("getTrainRoomList fail:" + err);
+                }
+                callback(rows);
+            });
     },
     /**
      * 通过用户userNo提取信息

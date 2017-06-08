@@ -357,5 +357,53 @@ router.get('/getSubscribeTypeList', function(req, res) {
 
 });
 
+/**
+ * @api {get} /subscribe/getSubscribeNum 查询可订阅类型数据
+ * @apiName getSubscribeNum
+ * @apiGroup subscribe
+ *
+ * @apiParam {String} groupType 直播间groupType值
+ * @apiParam {String} analystId 直播间分析师ID
+ * @apiParam {String} [subscribeTypes] 订阅类型，允许传入用逗号分隔的多个类型，也可以不传。不传就统计所有订阅类型。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/subscribe/getSubscribeNum
+ * @apiExample Example usage:
+ *  /api/subscribe/getSubscribeNum?groupType=hxstudio&analystId=fox
+ * or 
+ *  /api/subscribe/getSubscribeNum?groupType=hxstudio&analystId=fox&subscribeTypes=daily_quotation,live_reminder
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
+router.get('/getSubscribeNum', function(req, res) {
+    let requires = ["groupType", "analystId"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.query[name]);
+    });
+    if (!isSatify) {
+        logger.warn("[getSubscribeNum] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    SubscribeService.getSubscribeNum(req.query).then(data => {
+        res.json(APIUtil.APIResult(null, data));
+    }).catch(e => {
+        res.json(APIUtil.APIResult(e, null));
+    });
+
+});
+
 
 module.exports = router;
