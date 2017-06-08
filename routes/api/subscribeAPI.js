@@ -358,7 +358,7 @@ router.get('/getSubscribeTypeList', function(req, res) {
 });
 
 /**
- * @api {get} /subscribe/getSubscribeNum 查询可订阅类型数据
+ * @api {get} /subscribe/getSubscribeNum 查询分析师的总订阅数量
  * @apiName getSubscribeNum
  * @apiGroup subscribe
  *
