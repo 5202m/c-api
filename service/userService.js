@@ -1085,7 +1085,7 @@ var userService = {
         let deferred = new common.Deferred();
         followedTeacher.findOne({ status: 1, userNo: params.userNo })
             .then(row => {
-                if (!row.followers || row.followers.length === 0) {
+                if (!row || !row.followers || row.followers.length === 0) {
                     deferred.resolve([]);
                     return;
                 }

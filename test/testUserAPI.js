@@ -72,6 +72,17 @@ describe("userAPI.getTeacherFollowers", () => {
             done();
         });
     });
+    it("Should work as expect when teacher doesn't exist", done => {
+        request({ url: `${url}/getTeacherFollowers?userNo=notExist&groupType=hxstudio`, json: true }, (err, res, data) => {
+            should.not.exist(err);
+            res.should.be.an.Object();
+            data.should.be.an.Object();
+            data.result.should.equal(0);
+            data.data.should.be.empty();
+            logger.info(JSON.stringify(data));
+            done();
+        });
+    });
 });
 
 describe("userAPI.getFollowedTeachers", () => {
@@ -82,6 +93,17 @@ describe("userAPI.getFollowedTeachers", () => {
             data.should.be.an.Object();
             data.result.should.equal(0);
             data.data.should.be.an.Array();
+            logger.info(JSON.stringify(data));
+            done();
+        });
+    });
+    it("Should work as expect when the user doesn't exist", done => {
+        request({ url: `${url}/getFollowedTeachers?userId=notExist`, json: true }, (err, res, data) => {
+            should.not.exist(err);
+            res.should.be.an.Object();
+            data.should.be.an.Object();
+            data.result.should.equal(0);
+            data.data.should.be.empty();
             logger.info(JSON.stringify(data));
             done();
         });
