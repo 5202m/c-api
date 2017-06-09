@@ -391,7 +391,8 @@ router.post("/checkChatPraise", function(req, res) {
     if (common.isBlank(clientId) || common.isBlank(praiseId) || common.isBlank(fromPlatform)) {
         res.json(ApiResult.result(null, true));
     } else {
-        chatService.checkChatPraise(clientId, praiseId, fromPlatform, function(isOK) {
+        let params = {clientId:clientId,praiseId:praiseId,fromPlatform:fromPlatform};
+        chatService.checkChatPraise(params, function(isOK) {
             res.json(ApiResult.result(null, isOK));
         });
     }

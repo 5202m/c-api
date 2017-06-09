@@ -744,7 +744,10 @@ var chatService = {
      * 检查客户是否已经点赞
      * 已点赞返回false，否则返回true
      */
-    checkChatPraise: function(clientId, praiseId, fromPlatform, callback) {
+    checkChatPraise: function(params, callback) {
+        let clientId = params.clientId,
+            praiseId = params.praiseId,
+            fromPlatform = params.fromPlatform;
         var cacheClient = require('../cache/cacheClient');
         var key = 'chatPraise_' + fromPlatform + '_' + clientId + '_' + praiseId;
         cacheClient.hgetall(key, function(err, result) {
