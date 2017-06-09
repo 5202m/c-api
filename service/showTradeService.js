@@ -1,6 +1,7 @@
 var chatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数据模型
 var logger = require('../resources/logConf').getLogger('showTradeService'); //引入log4js
 var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
+var chatService = require('../service/chatService');//引入chatService
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common'); //引入common类
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -167,25 +168,31 @@ var showTradeService = {
      */
     setShowTradePraise: function(params, callback) {
         var searchObj = { _id: params.praiseId };
-        chatShowTrade.findOne(searchObj, function(err, row) {
-            if (err) {
-                logger.error("查询数据失败! >>setShowTradePraise:", err);
-                callback({ isOK: false, msg: '点赞失败' });
-            } else {
-                if (common.isBlank(row.praise)) {
-                    row.praise = 1;
-                } else {
-                    row.praise += 1;
-                }
-                var setObj = { '$set': { 'praise': row.praise } };
-                chatShowTrade.findOneAndUpdate(searchObj, setObj, function(err1, row1) {
-                    if (err1) {
-                        logger.error('setShowTradePraise=>fail!' + err1);
+        chatService.checkChatPraise(params, function(isOK){
+            if(isOK) {
+                chatShowTrade.findOne(searchObj, function(err, row) {
+                    if (err) {
+                        logger.error("查询数据失败! >>setShowTradePraise:", err);
                         callback({ isOK: false, msg: '点赞失败' });
                     } else {
-                        callback({ isOK: true, msg: '点赞成功' });
+                        if (common.isBlank(row.praise)) {
+                            row.praise = 1;
+                        } else {
+                            row.praise += 1;
+                        }
+                        var setObj = { '$set': { 'praise': row.praise } };
+                        chatShowTrade.findOneAndUpdate(searchObj, setObj, function(err1, row1) {
+                            if (err1) {
+                                logger.error('setShowTradePraise=>fail!' + err1);
+                                callback({ isOK: false, msg: '点赞失败' });
+                            } else {
+                                callback({ isOK: true, msg: '点赞成功' });
+                            }
+                        });
                     }
                 });
+            }else{
+                callback({isOK: false, msg: '当天只能点赞一次'});
             }
         });
     },
