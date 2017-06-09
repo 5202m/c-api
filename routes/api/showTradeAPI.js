@@ -282,9 +282,8 @@ router.get("/getShowTradeByIds", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    let tradeIds = req.query["tradeIds"];
     showTradeService.getShowTradeByIds(
-        (tradeIds.indexOf(',') > -1 ? tradeIds.split(",") : tradeIds),
+        req.query["tradeIds"].split(","),
         (data) => {
             res.json(APIUtil.APIResultFromData(data));
         }
