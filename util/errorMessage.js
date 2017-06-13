@@ -112,7 +112,8 @@ var errorMessage = {
     "code_4016": { 'errcode': "4016", 'errmsg': "您已报名，请勿重复报名！" },
     "code_4017": { 'errcode': "4017", 'errmsg': "报名已结束，请关注下期培训班！" },
     "code_4018": { 'errcode': "4018", 'errmsg': "报名出错，请稍后再试！" },
-    "code_4019": { 'errcode': "4019", 'errmsg': "报名成功，请关注开课时间{time}！" }
+    "code_4019": { 'errcode': "4019", 'errmsg': "报名成功，请关注开课时间{time}！" },
+    "code_5004": { 'errcode': "5004", 'errmsg': "当天只能点赞一次" }
 };
 //导出类
 module.exports = errorMessage;
