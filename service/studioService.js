@@ -641,11 +641,11 @@ var studioService = {
                 return;
         }
         common.wrapSystemCategory(searchObj, params.systemCategory);
-        member.findOne(searchObj, 'mobilePhone loginPlatform.chatUserGroup.$', function(err, row) {
+        member.findOne(searchObj, 'mobilePhone createDate loginPlatform.chatUserGroup.$', function(err, row) {
             if (row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                 result.isOK = true;
                 var info = row.loginPlatform.chatUserGroup[0];
-                result.userInfo = { mobilePhone: row.mobilePhone, userId: info.userId, nickname: info.nickname, avatar: info.avatar, groupType: info._id, defTemplate: info.defTemplate };
+                result.userInfo = { mobilePhone: row.mobilePhone, userId: info.userId, nickname: info.nickname, avatar: info.avatar, groupType: info._id, defTemplate: info.defTemplate, joinDate:info.createDate };
                 result.userInfo.clientGroup = info.vipUser ? constant.clientGroup.vip : info.clientGroup;
                 result.userInfo.userGroup = info.clientGroup;
                 result.userInfo.isVip = info.vipUser;
