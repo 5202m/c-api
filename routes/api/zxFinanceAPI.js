@@ -56,7 +56,9 @@ let common = require('../../util/common');
  *          "errcode": "0",
  *          "errmsg": "",
  *          "data": {
- *          	...
+ *          	"financeEvent": [ ], //财经事件
+ *            "financeVacation": [ ], //假期预告
+ *            "financeData": [ ]  //财经日历
  *          }
  *      }
  *

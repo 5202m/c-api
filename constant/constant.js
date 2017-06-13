@@ -37,6 +37,11 @@ var constant = {
                 roomId: "studio_teach", //房间ID
                 flag: 'S' //是否只取一次课，用于课程安排接口
             },
+            uce: { //客户中心
+                groupType: "studio", //房间组别
+                roomId: "studio_teach", //房间ID
+                flag: 'W' //一周课程
+            },
             webui: { //webui
                 groupType: "studio", //房间组别
                 roomId: "studio_teach", //房间ID

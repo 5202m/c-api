@@ -208,7 +208,7 @@ var clientTrainService = {
      */
     getTrainList: function(params) {
         let groupType = params.groupType,
-            teachId = params.teachId,
+            teachId = params.authorId,
             isAll = params.isAll,
             userId = params.userId;
         let deferred = new Deferred();

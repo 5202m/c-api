@@ -4,7 +4,7 @@
 var mongoose = require('./commonMongoose'),
     userSchema = mongoose.createSchema({ //会员Schema
         _id: String,
-        userNo: String,
+        userNo: {type:String,index:true},
         userName: String,
         telephone: String,
         position: String,

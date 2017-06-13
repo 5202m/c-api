@@ -146,11 +146,11 @@ router.get("/getShowTradeList", (req, res) => {
  * @apiParam {String} userNo 用户ID，必填
  * @apiParam {String} avatar 用户头像，必填
  * @apiParam {String} userName 用户昵称，必填
- * @apiParam {String} telePhone 手机号，直播间选填，其他必填
+ * @apiParam {String} telePhone 手机号，必填
  * @apiParam {String} tradeImg 晒单图片URL，必填
- * @apiParam {String} remark 心得，选填
+ * @apiParam {String} [remark] 心得，选填
  * @apiParam {String} Ip 添加晒单的IP，必填
- * @apiParam {String} title 晒单的标题，选填
+ * @apiParam {String} [title] 晒单的标题，选填
  * @apiParam {Number} tradeType 类别 1 分析师晒单，2 客户晒单，必填
  *
  * @apiUse CommonResultDescription
@@ -191,7 +191,8 @@ router.post("/addShowTrade", (req, res) => {
         "userName",
         "tradeImg",
         "Ip",
-        "tradeType"
+        "tradeType",
+        "telePhone"
     ];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);

@@ -73,7 +73,7 @@ var chatPointsService = {
         let groupType = params.groupType,
             userId = params.userId,
             systemCategory = params.systemCategory;
-        query = common.wrapSystemCategory({
+        let query = common.wrapSystemCategory({
             groupType: groupType,
             userId: userId,
             isDeleted: 0

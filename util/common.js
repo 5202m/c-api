@@ -683,6 +683,21 @@ var common = {
             searchObj['systemCategory'] = constant.groupTypeSystemCategoryMapping[searchObj.groupType];
         }
         return searchObj;
+    },
+    /**
+     * 通过手机号码提取用户id
+     * @param mobilePhone
+     */
+    formatMobileToUserId: function(mobilePhone) {
+        var str = [];
+        str[0] = 'p', str[1] = 'x', str[2] = 'i', str[3] = 'u', str[4] = 'd', str[5] = 'c', str[6] = 'v', str[7] = 's', str[8] = 'n', str[9] = 'f';
+        var userId = '';
+        for (var i = 0; i < mobilePhone.length; i++) {
+            userId += str[parseInt(mobilePhone.charAt(i))];
+        }
+        var index1 = Math.floor(Math.random() * 10),
+            index2 = Math.floor(Math.random() * 10);
+        return str[index1] + userId + str[index2];
     }
 };
 

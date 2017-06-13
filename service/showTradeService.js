@@ -2,12 +2,12 @@ var chatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数
 var logger = require('../resources/logConf').getLogger('showTradeService'); //引入log4js
 var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
 var chatService = require('../service/chatService');//引入chatService
-var studioService = require('../service/studioService');//引入studioService
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common'); //引入common类
 var ObjectId = require('mongoose').Types.ObjectId;
 var async = require('async'); //引入async
 var ApiResult = require('../util/ApiResult');
+var errorMessage = require('../util/errorMessage');
 /**
  * 晒单服务类
  * 备注：查询各分析师的晒单数据
@@ -146,7 +146,7 @@ var showTradeService = {
      * @param callback
      */
     addShowTrade: function(params, callback) {
-        let userId = common.isValid(params.telePhone) ? studioService.formatMobileToUserId(params.telePhone) : '';
+        let userId = common.isValid(params.telePhone) ? common.formatMobileToUserId(params.telePhone) : '';
         if(common.isValid(userId) && params.userNo != userId){
             params.userNo = userId;
         }
@@ -200,7 +200,7 @@ var showTradeService = {
                 chatShowTrade.findOne(searchObj, function (err, row) {
                     if (err) {
                         logger.error("查询数据失败! >>setShowTradePraise:", err);
-                        callback({isOK: false, msg: '点赞失败'});
+                        callback({ isOK: false, error: errorMessage.code_2025 });//callback({isOK: false, msg: '点赞失败'});
                     } else {
                         if (common.isBlank(row.praise)) {
                             row.praise = 1;
@@ -213,15 +213,15 @@ var showTradeService = {
                                 if (err1) {
                                     logger.error(
                                         'setShowTradePraise=>fail!' + err1);
-                                    callback({isOK: false, msg: '点赞失败'});
+                                    callback({ isOK: false, error: errorMessage.code_2025 });//callback({isOK: false, msg: '点赞失败'});
                                 } else {
-                                    callback({isOK: true, msg: '点赞成功'});
+                                    callback({ isOK: true, error: null });//callback({isOK: true, msg: '点赞成功'});
                                 }
                             });
                     }
                 });
             }else{
-                callback({isOK: false, msg: '当天只能点赞一次'});
+                callback({ isOK: false, error: errorMessage.code_5004 });//callback({isOK: false, msg: '当天只能点赞一次'});
             }
         });
     },

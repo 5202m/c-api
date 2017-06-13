@@ -115,7 +115,8 @@ var errorMessage = {
     "code_4019": { 'errcode': "4019", 'errmsg': "报名成功，请关注开课时间{time}！" },
     "code_5001": { 'errcode': "5001", 'errmsg': "Token信息不匹配，验证失败！" },
     "code_5002": { 'errcode': "5002", 'errmsg': "Token信息已经过期，请重新申请！" },
-    "code_5003": { 'errcode': "5003", 'errmsg': "非法Token，请确认！" }
+    "code_5003": { 'errcode': "5003", 'errmsg': "非法Token，请确认！" },
+    "code_5004": { 'errcode': "5004", 'errmsg': "当天只能点赞一次" }
 };
 //导出类
 module.exports = errorMessage;
