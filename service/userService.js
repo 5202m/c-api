@@ -1197,7 +1197,9 @@ var userService = {
      * @param callback
      */
     getMemberInfo: function(params, callback) {
+        callback = callback || (() => {});
         let _this = this;
+        let deferred = new Deferred();
         var searchObj = {
             valid: 1,
             status: 1
@@ -1218,14 +1220,18 @@ var userService = {
                     logger.error("getMemberByMobile>>get momber info error:" + err);
                 }
                 callback(err, null);
+                deferred.reject(err);
                 return;
             }
             var result = _this.handleMemberInfoData(data);
             callback(null, result);
+            deferred.resolve(result);
         });
+        return deferred.promise;
     },
     getMemberListByUserNos: function(params) {
         let _this = this;
+        let userNos = typeof params.userNos === 'string' ? params.userNos.split(',') : params.userNos;
         let deferred = new Deferred();
         var searchObj = {
             valid: 1,
@@ -1233,7 +1239,7 @@ var userService = {
         };
         searchObj["loginPlatform.chatUserGroup._id"] = params.groupType;
         searchObj["loginPlatform.chatUserGroup.userId"] = {
-            "$in": params.userNos
+            "$in": userNos
         };
         member.find(searchObj, {
                 "mobilePhone": 1,
@@ -1304,7 +1310,7 @@ var userService = {
         let deferred = new common.Deferred();
         followedTeacher.findOne({ status: 1, userNo: params.userNo })
             .then(row => {
-                if (!row.followers || row.followers.length === 0) {
+                if (!row || !row.followers || row.followers.length === 0) {
                     deferred.resolve([]);
                     return;
                 }

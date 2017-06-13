@@ -1383,5 +1383,103 @@ router.get("/getFollowedTeachers", (req, res) => {
             res.json(APIUtil.APIResult(err, null));
         });
 });
+/**
+ * @api {get} /user/getMemberInfo 根据用户ID或者手机号码获取用户信息
+ * @apiName getMemberInfo
+ * @apiGroup user
+ *
+ * @apiParam {String} groupType  用户组别。
+ * @apiParam {String} [userId]  用户ID。
+ * @apiParam {String} [mobilePhone]  用户手机号码。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getMemberInfo
+ * @apiExample Example usage:
+ *  /api/user/getMemberInfo?userId=fxnxiiiiuuuuc&groupType=fxstudio
+ * or
+ *  /api/user/getMemberInfo?mobilePhone=18122223333&groupType=fxstudio
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
+router.get("/getMemberInfo", (req, res) => {
+    let requires = ["groupType"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.query[name]);
+    });
+    if (!isSatify) {
+        logger.warn("[getMemberInfo] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    let required = req.query["userId"] || req.query["mobilePhone"];
+    if (!required) {
+        logger.warn("[getMemberInfo] Parameters missed! Expecting parameters: userId or mobilePhone");
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    userService.getMemberInfo(req.query)
+        .then((data) => {
+            res.json(APIUtil.APIResult(null, data));
+        }).catch(err => {
+            res.json(APIUtil.APIResult(err, null));
+        });
+});
+
+/**
+ * @api {get} /user/getMemberListByUserNos 获取用户ID列表获取一组用户信息
+ * @apiName getMemberListByUserNos
+ * @apiGroup user
+ *
+ * @apiParam {String} groupType  用户组别。
+ * @apiParam {String} userNos  用户ID，支持用逗号分隔的多个IDs。
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Object} data  返回的数据
+ *
+ * @apiSampleRequest /api/user/getMgetMemberListByUserNosemberInfo
+ * @apiExample Example usage:
+ *  /api/user/getMemberListByUserNos?userNos=pxnxiiiiuuuuu,pxnxiipcvfnvx&groupType=fxstudio
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode": "0",
+ *          "errmsg": "",
+ *          "data": {
+ *          	...
+ *          }
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
+router.get("/getMemberListByUserNos", (req, res) => {
+    let requires = ["groupType", "userNos"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.query[name]);
+    });
+    if (!isSatify) {
+        logger.warn("[getMemberListByUserNos] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    userService.getMemberListByUserNos(req.query)
+        .then((data) => {
+            res.json(APIUtil.APIResult(null, data));
+        }).catch(err => {
+            res.json(APIUtil.APIResult(err, null));
+        });
+});
 
 module.exports = router;

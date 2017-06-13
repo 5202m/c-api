@@ -20,7 +20,7 @@ let chatMessageSchema = mongoose.createSchema({
     groupId: { type: String, index: true }, //组别Id
     toUser: { //@或私聊目标用户
         userType: { type: Number, default: 0 }, //区分系统用户还是会员，0表示会员，1表示系统用户
-        userId: String,
+        userId: { type: String, index: true },
         nickname: String,
         talkStyle: { type: Number, default: 0 }, //聊天方式，0公聊，1私聊
         question: String,

@@ -843,8 +843,16 @@ var studioService = {
             if (err) {
                 logger.error("getStudioList fail:" + err);
             }
-            callback(rows);
-        });
+        };
+        let fields = "clientGroup remark name level groupType talkStyle whisperRoles chatRules openDate defTemplate defaultAnalyst openDate students";
+        chatGroup.find(searchObj, fields)
+            .sort({ 'sequence': 'asc' })
+            .exec(function(err, rows) {
+                if (err) {
+                    logger.error("getTrainRoomList fail:" + err);
+                }
+                callback(rows);
+            });
     },
     /**
      * 通过用户userNo提取信息

@@ -785,6 +785,27 @@ var subscribeService = {
                 }
             }).form(params);
         });
+    },
+    getSubscribeNum: function(param) {
+        let deferred = new common.Deferred();
+        let subscribeTypes = typeof param.subscribeTypes === 'string' ? param.subscribeTypes.split(',') : param.subscribeTypes;
+        let searchObj = {
+            groupType: param.groupType,
+            analyst: {
+                $regex: param.analystId
+            }
+        };
+        if (subscribeTypes && subscribeTypes.length !== 0) {
+            searchObj.type = { $in: subscribeTypes };
+        }
+        ChatSubscribe.find(searchObj).count((err, num) => {
+            if (err) {
+                deferred.reject(err);
+                return;
+            }
+            deferred.resolve({ total: num });
+        });
+        return deferred.promise;
     }
 };
 
