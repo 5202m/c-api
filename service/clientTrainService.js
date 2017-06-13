@@ -248,6 +248,7 @@ var clientTrainService = {
                             label: row.label,
                             remark: row.remark,
                             sequence: row.sequence,
+                            logo: row.logo,
                             openDate: JSON.parse(row.openDate)
                         });
                     }
