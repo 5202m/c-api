@@ -529,7 +529,7 @@ var studioService = {
                     var hasRoomsRow = common.checkArrExist(memberRow.loginPlatform.chatUserGroup) && memberRow.loginPlatform.chatUserGroup.id(userInfo.groupType);
                     userService.createChatUserGroupInfo(userInfo, hasRoomsRow, function(isSuccess) {
                         if (isSuccess) {
-                            callback({ isOK: true, userId: userInfo.userId });
+                            callback({ isOK: true, userId: userInfo.userId, joinDate: isSuccess.createDate });
                         } else {
                             callback(result);
                         }
@@ -537,7 +537,7 @@ var studioService = {
                 } else {
                     userService.saveMember(userInfo, function(isSuccess) {
                         if (isSuccess) {
-                            callback({ isOK: true, userId: userInfo.userId });
+                            callback({ isOK: true, userId: userInfo.userId, joinDate: isSuccess.createDate});
                         } else {
                             callback(result);
                         }
