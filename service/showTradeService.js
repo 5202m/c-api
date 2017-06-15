@@ -1,7 +1,7 @@
 var chatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数据模型
 var logger = require('../resources/logConf').getLogger('showTradeService'); //引入log4js
 var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
-var chatService = require('../service/chatService');//引入chatService
+var chatService = require('../service/chatService'); //引入chatService
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common'); //引入common类
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -146,10 +146,13 @@ var showTradeService = {
      * @param callback
      */
     addShowTrade: function(params, callback) {
-        let userId = common.isValid(params.telePhone) ? common.formatMobileToUserId(params.telePhone) : '';
-        if(common.isValid(userId) && params.userNo != userId){
-            params.userNo = userId;
+        if (common.isBlank(params.userNo)) { // 为App而做的，根据手机号码自动生成一个UserId。
+            let userId = common.isValid(params.telePhone) ? common.formatMobileToUserId(params.telePhone) : '';
+            if (common.isValid(userId) && params.userNo != userId) {
+                params.userNo = userId;
+            }
         }
+
         var insertModel = {
             _id: null,
             groupType: params.groupType, //聊天室组别
@@ -195,33 +198,33 @@ var showTradeService = {
     setShowTradePraise: function(params, callback) {
         var searchObj = { _id: params.praiseId };
         common.wrapSystemCategory(searchObj, params.systemCategory);
-        chatService.checkChatPraise(params, function(isOK){
-            if(isOK) {
-                chatShowTrade.findOne(searchObj, function (err, row) {
+        chatService.checkChatPraise(params, function(isOK) {
+            if (isOK) {
+                chatShowTrade.findOne(searchObj, function(err, row) {
                     if (err) {
                         logger.error("查询数据失败! >>setShowTradePraise:", err);
-                        callback({ isOK: false, error: errorMessage.code_2025 });//callback({isOK: false, msg: '点赞失败'});
+                        callback({ isOK: false, error: errorMessage.code_2025 }); //callback({isOK: false, msg: '点赞失败'});
                     } else {
                         if (common.isBlank(row.praise)) {
                             row.praise = 1;
                         } else {
                             row.praise += 1;
                         }
-                        var setObj = {'$set': {'praise': row.praise}};
+                        var setObj = { '$set': { 'praise': row.praise } };
                         chatShowTrade.findOneAndUpdate(searchObj, setObj,
-                            function (err1, row1) {
+                            function(err1, row1) {
                                 if (err1) {
                                     logger.error(
                                         'setShowTradePraise=>fail!' + err1);
-                                    callback({ isOK: false, error: errorMessage.code_2025 });//callback({isOK: false, msg: '点赞失败'});
+                                    callback({ isOK: false, error: errorMessage.code_2025 }); //callback({isOK: false, msg: '点赞失败'});
                                 } else {
-                                    callback({ isOK: true, error: null });//callback({isOK: true, msg: '点赞成功'});
+                                    callback({ isOK: true, error: null }); //callback({isOK: true, msg: '点赞成功'});
                                 }
                             });
                     }
                 });
-            }else{
-                callback({ isOK: false, error: errorMessage.code_5004 });//callback({isOK: false, msg: '当天只能点赞一次'});
+            } else {
+                callback({ isOK: false, error: errorMessage.code_5004 }); //callback({isOK: false, msg: '当天只能点赞一次'});
             }
         });
     },
