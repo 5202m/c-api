@@ -50,7 +50,7 @@ var userService = {
      */
     getUserList: function(params, callback) {
         let userNo = params.userNo;
-        let searchObj = { userNo: { $in: userNOs.split(",") } };
+        let searchObj = { userNo: { $in: userNo.split(",") } };
         common.wrapSystemCategory(searchObj, params.systemCategory);
         boUser.find(searchObj, "userNo userName position avatar status valid", function(err, rows) {
             if (err) {
