@@ -419,8 +419,11 @@ var clientTrainService = {
                             } else {
                                 signObj.signDays = row.serialSigDays;
                             }
+                            signObj.historySignTime = row.historySignTime || [];
+                        } else {
+                            signObj.historySignTime = [];
                         }
-                        signObj.historySignTime = row.historySignTime || [];
+                        
                         callback(null, signObj);
                     });
                 },
