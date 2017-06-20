@@ -136,15 +136,17 @@ var clientTrainService = {
                                 retInfo = errorMessage.code_3008;
                                 deferred.resolve(retInfo);
                             } else {
-                                clientTrainService.saveTrain(params).then(function(saveRet) {
-                                    deferred.resolve(saveRet);
-                                });
+                                clientTrainService.saveTrain(Object.assign({}, params, { userId: userInfo.userId }))
+                                    .then(function(saveRet) {
+                                        deferred.resolve(saveRet);
+                                    });
                             }
                         }
                     } else {
-                        clientTrainService.saveTrain(params).then(function(saveRet) {
-                            deferred.resolve(saveRet);
-                        });
+                        clientTrainService.saveTrain(Object.assign({}, params, { userId: userInfo.userId }))
+                            .then(function(saveRet) {
+                                deferred.resolve(saveRet);
+                            });
                     }
                 } else {
                     deferred.reject({ isOK: false, msg: '查询培训报名数据失败！' });
