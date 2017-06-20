@@ -103,15 +103,10 @@ class TokenAccessOnDB {
                     _this.save(row).then(deferred.resolve).catch(deferred.reject);
                 } else {
                     row.save().then(deferred.resolve).catch(deferred.reject);
-                    // TokenAccess.findOneAndUpdate({ tokenAccessId: tokenAccessId }, model, (err, data) => {
-                    //     if (err) {
-                    //         logger.error(err);
-                    //     }
-                    //     console.log(data);
-                    // });
                 }
             }).catch(e => {
                 logger.error(e);
+                deferred.reject(e);
             });
         return deferred.promise;
     }
@@ -144,25 +139,26 @@ var tokenService = {
     resyncTokenAccess: function() {
         let tokenAccessOnDB = new TokenAccessOnDB();
         let _this = this;
+        let dbUpdater = item => {
+            return tokenAccessOnDB.update(item.tokenAccessId, item);
+        };
+        let redisUpdater = item => {
+            let deferred = new common.Deferred();
+            _this.updateTokenAccess(item, result => {
+                if (result.isOK) {
+                    deferred.resolve(result);
+                } else {
+                    deferred.reject(result);
+                }
+            });
+            return deferred.promise;
+        };
         let doResync = (listOnDB, listOnRedis) => {
-            let dbUpdater = item => {
-                return tokenAccessOnDB.update(item.tokenAccessId, item);
-            };
-            let redisUpdater = item => {
-                let deferred = new common.Deferred();
-                _this.updateTokenAccess(item, result => {
-                    if (result.isOK) {
-                        deferred.resolve(result);
-                    } else {
-                        deferred.reject(result);
-                    }
-                });
-                return deferred.promise;
-            };
             let seriesUpdate = (list, updater) => {
                 async.eachSeries(list, function(item, callbackTmp) {
                     updater(item).then(callbackTmp).catch(e => {
                         logger.error(e);
+                        callbackTmp(e);
                     });
                 }, function(result) {
                     logger.info(result);
@@ -171,11 +167,11 @@ var tokenService = {
             seriesUpdate(listOnDB, redisUpdater);
             seriesUpdate(listOnRedis, dbUpdater);
         };
-        this.getTokenAccessList(null, listOnRedis => {
+        this.getTokenAccessList(null).then(listOnRedis => {
             tokenAccessOnDB.getAll().then(listOnDB => {
                 doResync(listOnDB, listOnRedis);
             }).catch(logger.error);
-        });
+        }).catch(logger.error);
     },
     /**
      * 创建新的TokenAccess
@@ -242,7 +238,8 @@ var tokenService = {
      * 查询TokenAccess
      * @param model
      */
-    getTokenAccessList: function(model, callback) {
+    getTokenAccessList: function(model) {
+        let deferred = new common.Deferred();
         cacheClient.keys('TokenAccess:*', function(err, keys) {
             var tokenAccessList = [];
             async.eachSeries(keys, function(item, callbackTmp) {
@@ -257,10 +254,16 @@ var tokenService = {
                     }
                     callbackTmp(err);
                 });
-            }, function(err) {
-                callback(tokenAccessList);
+            }, function(err, result) {
+                if (err) {
+                    logger.error(err);
+                    deferred.reject(err);
+                    return;
+                }
+                deferred.resolve(tokenAccessList);
             });
         });
+        return deferred.promise;
     },
     /**
      * 查询TokenAccess
