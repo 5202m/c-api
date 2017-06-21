@@ -1073,12 +1073,12 @@ router.post("/modifyEmail", (req, res) => {
  * @apiName modifyPwd
  * @apiGroup user
  *
- * @apiParam {String} mobilePhone 手机号，必填
- * @apiParam {String} groupType 组别，必填 取userInfo.groupType值
- * @apiParam {String} clientGroup 客户组别，必填 取userInfo.clientGroup值
- * @apiParam {String} userId 用户ID，必填 取userInfo.userId值
- * @apiParam {String} password 原密码，必填
- * @apiParam {String} newPwd 新密码，必填
+ * @apiParam {String} mobilePhone 手机号
+ * @apiParam {String} groupType 组别，取userInfo.groupType值
+ * @apiParam {String} clientGroup 客户组别，取userInfo.clientGroup值
+ * @apiParam {String} userId 用户ID，取userInfo.userId值
+ * @apiParam {String} [password] 原密码
+ * @apiParam {String} newPwd 新密码
  * @apiParam {String} item 积分类别，对应mis后台配置的类别，目前未配置，留空
  *
  * @apiUse CommonResultDescription
@@ -1131,7 +1131,7 @@ router.post("/modifyPwd", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    requires = ["password", "newPwd"];
+    requires = ["newPwd"];
     isSatify = requires.every((name) => {
         return common.isValid(req.body["params"][name]);
     });
