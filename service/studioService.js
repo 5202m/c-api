@@ -189,9 +189,14 @@ var studioService = {
      */
     getClientGroupList: function(params, callback) {
         let groupType = params.groupType;
-        let queryObj = { valid: 1, groupType: groupType };
+        let queryObj = {
+            valid: 1,
+            groupType: groupType
+        };
         common.wrapSystemCategory(queryObj, params.systemCategory);
-        chatClientGroup.find(queryObj).sort({ 'sequence': 'asc' }).exec(function(err, rows) {
+        chatClientGroup.find(queryObj).sort({
+            'sequence': 'asc'
+        }).exec(function(err, rows) {
             if (err) {
                 logger.error("getClientGroupList fail:" + err);
             }
@@ -208,17 +213,40 @@ var studioService = {
             oldPwd = params.oldPwd || "";
         var searchObj = null;
         if (common.isValid(oldPwd)) {
-            searchObj = { valid: 1, 'mobilePhone': mobilePhone, 'loginPlatform.chatUserGroup': { $elemMatch: { _id: groupType, pwd: common.getMD5(constant.pwdKey + oldPwd) } } };
+            searchObj = {
+                valid: 1,
+                'mobilePhone': mobilePhone,
+                'loginPlatform.chatUserGroup': {
+                    $elemMatch: {
+                        _id: groupType,
+                        pwd: common.getMD5(constant.pwdKey + oldPwd)
+                    }
+                }
+            };
         } else {
-            searchObj = { valid: 1, 'mobilePhone': mobilePhone, 'loginPlatform.chatUserGroup._id': groupType };
+            searchObj = {
+                valid: 1,
+                'mobilePhone': mobilePhone,
+                'loginPlatform.chatUserGroup._id': groupType
+            };
         }
         common.wrapSystemCategory(searchObj, params.systemCategory);
-        member.findOneAndUpdate(searchObj, { '$set': { 'loginPlatform.chatUserGroup.$.pwd': common.getMD5(constant.pwdKey + newPwd) } }, function(err, row) {
+        member.findOneAndUpdate(searchObj, {
+            '$set': {
+                'loginPlatform.chatUserGroup.$.pwd': common.getMD5(constant.pwdKey + newPwd)
+            }
+        }, function(err, row) {
             if (err || !row) {
                 logger.error("resetPwd fail:" + err);
-                callback({ isOK: false, error: errorMessage.code_1008 });
+                callback({
+                    isOK: false,
+                    error: errorMessage.code_1008
+                });
             } else {
-                callback({ isOK: true, msg: "Reset password Success!" });
+                callback({
+                    isOK: true,
+                    msg: "Reset password Success!"
+                });
             }
         });
     },
@@ -233,7 +261,14 @@ var studioService = {
         };
         common.wrapSystemCategory(queryobj, params.systemCategory);
         chatGroup.findOne(queryobj)
-            .select({ clientGroup: 1, name: 1, talkStyle: 1, whisperRoles: 1, point: 1, traninClient: 1 })
+            .select({
+                clientGroup: 1,
+                name: 1,
+                talkStyle: 1,
+                whisperRoles: 1,
+                point: 1,
+                traninClient: 1
+            })
             .exec(function(err, row) {
                 if (err) {
                     logger.error("getStudioList fail:" + err);
@@ -253,16 +288,28 @@ var studioService = {
             clientGroup = params.clientGroup,
             userId = params.userId;
         let deferred = new Deferred();
-        var searchObj = { valid: 1 };
+        var searchObj = {
+            valid: 1
+        };
         if (roomType) {
             searchObj.roomType = roomType;
         } else if (groupId) {
             searchObj._id = groupId;
         }
         if (userId) {
-            searchObj.$or = [
-                { 'clientGroup': common.getSplitMatchReg(clientGroup), status: 1 },
-                { 'clientGroup': common.getSplitMatchReg(clientGroup), status: 2, traninClient: { $elemMatch: { isAuth: 1, clientId: userId } } } //授权访问
+            searchObj.$or = [{
+                    'clientGroup': common.getSplitMatchReg(clientGroup),
+                    status: 1
+                }, {
+                    'clientGroup': common.getSplitMatchReg(clientGroup),
+                    status: 2,
+                    traninClient: {
+                        $elemMatch: {
+                            isAuth: 1,
+                            clientId: userId
+                        }
+                    }
+                } //授权访问
             ];
         } else {
             searchObj.clientGroup = common.getSplitMatchReg(clientGroup);
@@ -289,7 +336,10 @@ var studioService = {
     getDefaultRoom: function(params, callback) {
         let groupType = params.groupType,
             clientGroup = params.clientGroup;
-        let queryObj = { groupType: groupType, clientGroupId: clientGroup };
+        let queryObj = {
+            groupType: groupType,
+            clientGroupId: clientGroup
+        };
         common.wrapSystemCategory(queryObj, params.systemCategory);
         chatClientGroup.findOne(queryObj, function(err, row) {
             if (err) {
@@ -312,7 +362,10 @@ var studioService = {
             clientGroup = params.clientGroup;
         userInfo = typeof userInfo === "string" ? JSON.parse(userInfo) : userInfo;
         common.wrapSystemCategory(userInfo, params.systemCategory);
-        var result = { isOK: false, error: errorMessage.code_10 };
+        var result = {
+            isOK: false,
+            error: errorMessage.code_10
+        };
         if (userInfo.nickname) {
             //判断昵称唯一
             studioService.checkNickName(userInfo, function(err, isValid) {
@@ -335,8 +388,14 @@ var studioService = {
      * 直播间注册保存
      */
     studioRegisterSave: function(userInfo, clientGroup, callback) {
-        var result = { isOK: false, error: errorMessage.code_10 };
-        let queryObj = { mobilePhone: userInfo.mobilePhone, valid: 1 };
+        var result = {
+            isOK: false,
+            error: errorMessage.code_10
+        };
+        let queryObj = {
+            mobilePhone: userInfo.mobilePhone,
+            valid: 1
+        };
         common.wrapSystemCategory(queryObj, userInfo.systemCategory);
         member.findOne(queryObj, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
@@ -371,19 +430,59 @@ var studioService = {
             });
             if (common.isValid(userInfo.item)) {
                 //注册积分
-                var pointsParams = { clientGroup: clientGroup, groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: userInfo.item, val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: userInfo.ip };
+                var pointsParams = {
+                    clientGroup: clientGroup,
+                    groupType: userInfo.groupType,
+                    userId: userInfo.mobilePhone,
+                    item: userInfo.item,
+                    val: 0,
+                    isGlobal: false,
+                    remark: '',
+                    opUser: userInfo.userId,
+                    opIp: userInfo.ip
+                };
                 chatPointsService.add(pointsParams, function() {
                     //DEMO积分
                     if (clientGroup == constant.clientGroup.simulate || clientGroup == constant.clientGroup.notActive || clientGroup == constant.clientGroup.active) {
-                        var pointsParamsD = { clientGroup: clientGroup, groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: "hand_openDemo", val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: userInfo.ip };
+                        var pointsParamsD = {
+                            clientGroup: clientGroup,
+                            groupType: userInfo.groupType,
+                            userId: userInfo.mobilePhone,
+                            item: "hand_openDemo",
+                            val: 0,
+                            isGlobal: false,
+                            remark: '',
+                            opUser: userInfo.userId,
+                            opIp: userInfo.ip
+                        };
                         chatPointsService.add(pointsParamsD, function() {
                             //N客户积分
                             if (clientGroup == constant.clientGroup.notActive || clientGroup == constant.clientGroup.active) {
-                                var pointsParamsN = { clientGroup: clientGroup, groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: "hand_openReal", val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: userInfo.ip };
+                                var pointsParamsN = {
+                                    clientGroup: clientGroup,
+                                    groupType: userInfo.groupType,
+                                    userId: userInfo.mobilePhone,
+                                    item: "hand_openReal",
+                                    val: 0,
+                                    isGlobal: false,
+                                    remark: '',
+                                    opUser: userInfo.userId,
+                                    opIp: userInfo.ip
+                                };
                                 chatPointsService.add(pointsParamsN, function() {
                                     //A客户积分
                                     if (clientGroup == constant.clientGroup.active) {
-                                        var pointsParamsA = { clientGroup: clientGroup, groupType: userInfo.groupType, userId: userInfo.mobilePhone, item: "hand_deposit", val: 0, isGlobal: false, remark: '', opUser: userInfo.userId, opIp: userInfo.ip };
+                                        var pointsParamsA = {
+                                            clientGroup: clientGroup,
+                                            groupType: userInfo.groupType,
+                                            userId: userInfo.mobilePhone,
+                                            item: "hand_deposit",
+                                            val: 0,
+                                            isGlobal: false,
+                                            remark: '',
+                                            opUser: userInfo.userId,
+                                            opIp: userInfo.ip
+                                        };
                                         chatPointsService.add(pointsParamsA, function(result) {});
                                     }
                                 });
@@ -406,15 +505,24 @@ var studioService = {
         let illegalNoRegX = /^[0-9]{0,6}$/; //小于等于六位的数字。
         let isAccountNoNumber = /^\d{3,}$/.test(userInfo.accountNo); //传进来的accountNo是否数字。
         userInfo = typeof userInfo === "string" ? JSON.parse(userInfo) : userInfo;
-        var result = { isOK: false, error: errorMessage.code_10 };
+        var result = {
+            isOK: false,
+            error: errorMessage.code_10
+        };
         if (isAccountNoNumber && illegalNoRegX.test(userInfo.accountNo)) { //不接受非法的accountNo。
             logger.error("checkMemberAndSave->illegal accountNo!", userInfo.accountNo);
-            result.error = Object.assign(result.error, { errmsg: "操作异常，accountNo非法，不接受少于等于6位的数字" });
+            result.error = Object.assign(result.error, {
+                errmsg: "操作异常，accountNo非法，不接受少于等于6位的数字"
+            });
             callback(result);
             return;
         }
         var mobilePhone = /^\d/.test(userInfo.mobilePhone) ? common.getValidPhoneNumber(userInfo.mobilePhone) : userInfo.mobilePhone;
-        let queryObj = { mobilePhone: mobilePhone, valid: 1, 'loginPlatform.chatUserGroup.userType': 0 };
+        let queryObj = {
+            mobilePhone: mobilePhone,
+            valid: 1,
+            'loginPlatform.chatUserGroup.userType': 0
+        };
         common.wrapSystemCategory(queryObj, params.systemCategory);
         member.findOne(queryObj, "loginPlatform.chatUserGroup", function(err, row) {
             if (err) {
@@ -481,7 +589,9 @@ var studioService = {
      */
     checkNickName: function(userInfo, callback) {
         let queryObj = {
-            mobilePhone: { $ne: userInfo.mobilePhone },
+            mobilePhone: {
+                $ne: userInfo.mobilePhone
+            },
             valid: 1,
             "loginPlatform.chatUserGroup": {
                 $elemMatch: {
@@ -515,7 +625,11 @@ var studioService = {
      * @param userInfo
      */
     setClientInfo: function(memberRow, userInfo, callback) {
-        var result = { isOK: false, error: errorMessage.code_10, defGroupId: '' };
+        var result = {
+            isOK: false,
+            error: errorMessage.code_10,
+            defGroupId: ''
+        };
         studioService.getDefaultRoom(userInfo, function(defId) {
             if (common.isBlank(defId)) {
                 logger.error("setClientInfo fail: ", "caused by getDefaultRoom fail!", "userInfo=" + JSON.stringify(userInfo));
@@ -530,7 +644,11 @@ var studioService = {
                     var hasRoomsRow = common.checkArrExist(memberRow.loginPlatform.chatUserGroup) && memberRow.loginPlatform.chatUserGroup.id(userInfo.groupType);
                     userService.createChatUserGroupInfo(userInfo, hasRoomsRow, function(isSuccess) {
                         if (isSuccess) {
-                            callback({ isOK: true, userId: userInfo.userId, joinDate: isSuccess.createDate });
+                            callback({
+                                isOK: true,
+                                userId: userInfo.userId,
+                                joinDate: isSuccess.createDate
+                            });
                         } else {
                             callback(result);
                         }
@@ -538,7 +656,11 @@ var studioService = {
                 } else {
                     userService.saveMember(userInfo, function(isSuccess) {
                         if (isSuccess) {
-                            callback({ isOK: true, userId: userInfo.userId, joinDate: isSuccess.createDate });
+                            callback({
+                                isOK: true,
+                                userId: userInfo.userId,
+                                joinDate: isSuccess.createDate
+                            });
                         } else {
                             callback(result);
                         }
@@ -558,13 +680,21 @@ var studioService = {
      * @param callback
      */
     joinNewGroup: function(groupType, mobilePhone, userId, newGroupId, isLogin, callback) {
-        var result = { isOK: false, error: null };
+        var result = {
+            isOK: false,
+            error: null
+        };
         if (!isLogin) {
             result.isOK = true;
             callback(result);
             return;
         }
-        userService.joinNewRoom({ groupType: groupType, userId: userId, groupId: newGroupId, mobilePhone: mobilePhone }, function() {
+        userService.joinNewRoom({
+            groupType: groupType,
+            userId: userId,
+            groupId: newGroupId,
+            mobilePhone: mobilePhone
+        }, function() {
             result.isOK = true;
             callback(result);
         });
@@ -576,7 +706,12 @@ var studioService = {
     checkClientGroup: function(mobilePhone, accountNo, platformKey, callback) {
         var clientGroup = constant.clientGroup.register;
         var apiService = require('../service/' + platformKey + 'ApiService'); //引入ApiService
-        apiService.checkAClient({ mobilePhone: mobilePhone, accountNo: accountNo, ip: '', isCheckByMobile: true }, function(result) {
+        apiService.checkAClient({
+            mobilePhone: mobilePhone,
+            accountNo: accountNo,
+            ip: '',
+            isCheckByMobile: true
+        }, function(result) {
             console.log("checkAClient->flagResult:" + JSON.stringify(result));
             if (result.flag == 2) {
                 clientGroup = constant.clientGroup.notActive;
@@ -608,7 +743,10 @@ var studioService = {
     login: function(params, callback) {
         let userInfo = params.userInfo,
             type = params.type;
-        var result = { isOK: false, error: '' },
+        var result = {
+                isOK: false,
+                error: ''
+            },
             searchObj = null;
         switch (type) {
             case 1: //手机号登录
@@ -643,10 +781,31 @@ var studioService = {
             case 4: //手机号+密码登录
                 var pwd = common.getMD5(constant.pwdKey + userInfo.password);
                 searchObj = {
-                    $or: [{ mobilePhone: userInfo.mobilePhone, 'loginPlatform.chatUserGroup': { $elemMatch: { "_id": userInfo.groupType, "pwd": pwd } } },
-                        { 'loginPlatform.chatUserGroup': { $elemMatch: { email: userInfo.mobilePhone, _id: userInfo.groupType, "pwd": pwd } } },
-                        { 'loginPlatform.chatUserGroup': { $elemMatch: { userName: userInfo.mobilePhone, _id: userInfo.groupType, "pwd": pwd } } }
-                    ],
+                    $or: [{
+                        mobilePhone: userInfo.mobilePhone,
+                        'loginPlatform.chatUserGroup': {
+                            $elemMatch: {
+                                "_id": userInfo.groupType,
+                                "pwd": pwd
+                            }
+                        }
+                    }, {
+                        'loginPlatform.chatUserGroup': {
+                            $elemMatch: {
+                                email: userInfo.mobilePhone,
+                                _id: userInfo.groupType,
+                                "pwd": pwd
+                            }
+                        }
+                    }, {
+                        'loginPlatform.chatUserGroup': {
+                            $elemMatch: {
+                                userName: userInfo.mobilePhone,
+                                _id: userInfo.groupType,
+                                "pwd": pwd
+                            }
+                        }
+                    }],
                     'loginPlatform.chatUserGroup._id': userInfo.groupType,
                     valid: 1
                 };
@@ -661,7 +820,15 @@ var studioService = {
             if (row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                 result.isOK = true;
                 var info = row.loginPlatform.chatUserGroup[0];
-                result.userInfo = { mobilePhone: row.mobilePhone, userId: info.userId, nickname: info.nickname, avatar: info.avatar, groupType: info._id, defTemplate: info.defTemplate, joinDate: info.createDate };
+                result.userInfo = {
+                    mobilePhone: row.mobilePhone,
+                    userId: info.userId,
+                    nickname: info.nickname,
+                    avatar: info.avatar,
+                    groupType: info._id,
+                    defTemplate: info.defTemplate,
+                    joinDate: info.createDate
+                };
                 result.userInfo.clientGroup = info.vipUser ? constant.clientGroup.vip : info.clientGroup;
                 result.userInfo.userGroup = info.clientGroup;
                 result.userInfo.isVip = info.vipUser;
@@ -671,7 +838,9 @@ var studioService = {
                 result.userInfo.password = common.isBlank(info.pwd) ? '' : '已设置';
                 if (type == 1 && userInfo.thirdId && !info.thirdId) { //微信直播间登录，绑定openId
                     member.update(searchObj, {
-                        $set: { "loginPlatform.chatUserGroup.$.thirdId": userInfo.thirdId }
+                        $set: {
+                            "loginPlatform.chatUserGroup.$.thirdId": userInfo.thirdId
+                        }
                     }, function(err) {
                         if (err) {
                             logger.error("login << save thirdId fail:" + err);
@@ -709,7 +878,9 @@ var studioService = {
                 "loginPlatform.chatUserGroup.$.clientGroup": newClientGroup,
                 "loginPlatform.chatUserGroup.$.accountNo": accountNo
             }
-        }, { 'new': true }, function(err) {
+        }, {
+            'new': true
+        }, function(err) {
             if (err) {
                 logger.error("updateClientGroup fail:" + err);
                 callback(false);
@@ -733,7 +904,10 @@ var studioService = {
                 logger.error("get highs or lows vote fail:" + err);
                 result.highs = 0;
                 result.lows = 0;
-                callback({ isOK: false, data: result });
+                callback({
+                    isOK: false,
+                    data: result
+                });
             } else if (!err && result) {
                 if (highsorlows == 'highs') {
                     result.highs = parseInt(result.highs) + 1;
@@ -747,7 +921,10 @@ var studioService = {
                 map.data = result;
                 callback(map);
             } else {
-                result = { "highs": 0, "lows": 0 };
+                result = {
+                    "highs": 0,
+                    "lows": 0
+                };
                 if (highsorlows == 'highs') {
                     result.highs = 1;
                     cacheClient.hmset(key, result);
@@ -777,13 +954,19 @@ var studioService = {
                 logger.error("get highs or lows vote fail:" + err);
                 result.highs = 0;
                 result.lows = 0;
-                callback({ isOK: false, data: result });
+                callback({
+                    isOK: false,
+                    data: result
+                });
             } else if (!err && result) {
                 map.isOK = true;
                 map.data = result;
                 callback(map);
             } else {
-                result = { "highs": 0, "lows": 0 };
+                result = {
+                    "highs": 0,
+                    "lows": 0
+                };
                 map.isOK = true;
                 map.data = result;
                 callback(map);
@@ -800,8 +983,15 @@ var studioService = {
         let userInfo = params.userInfo,
             defTemplate = params.defTemplate;
 
-        var searchObj = { "status": 1, "valid": 1, "mobilePhone": userInfo.mobilePhone, "loginPlatform.chatUserGroup._id": userInfo.groupType };
-        var setObj = { "loginPlatform.chatUserGroup.$.defTemplate": defTemplate };
+        var searchObj = {
+            "status": 1,
+            "valid": 1,
+            "mobilePhone": userInfo.mobilePhone,
+            "loginPlatform.chatUserGroup._id": userInfo.groupType
+        };
+        var setObj = {
+            "loginPlatform.chatUserGroup.$.defTemplate": defTemplate
+        };
         common.wrapSystemCategory(searchObj, params.systemCategory);
         member.findOneAndUpdate(searchObj, setObj, function(err, row) {
             var isSuccess = !err && row;
@@ -821,14 +1011,20 @@ var studioService = {
         let groupType = params.groupType;
         let queryObj = {
             valid: 1,
-            status: { $in: [1, 2] },
+            status: {
+                $in: [1, 2]
+            },
             groupType: groupType,
-            "defaultAnalyst._id": { $ne: null }
+            "defaultAnalyst._id": {
+                $ne: null
+            }
         };
         common.wrapSystemCategory(queryObj, params.systemCategory);
         let fields = "clientGroup remark name level groupType talkStyle whisperRoles chatRules openDate defTemplate defaultAnalyst openDate students";
         chatGroup.find(searchObj, fields)
-            .sort({ 'sequence': 'asc' })
+            .sort({
+                'sequence': 'asc'
+            })
             .exec(function(err, rows) {
                 if (err) {
                     logger.error("getTrainRoomList fail:" + err);
@@ -843,7 +1039,9 @@ var studioService = {
     getUserInfoByUserNo: function(params, callback) {
         let groupType = params.groupType,
             userNo = params.userNo;
-        let queryObj = { userNo: userNo };
+        let queryObj = {
+            userNo: userNo
+        };
         common.wrapSystemCategory(queryObj, params.systemCategory);
         boUser.findOne(queryObj, "userNo userName position avatar introduction introductionImg winRate earningsM wechatCodeImg wechatCode tag", function(err, rows) {
             if (err) {
