@@ -117,7 +117,7 @@ router.post("/saveVisitorRecord", (req, res) => {
 });
 
 /**
- * @api {get} /visitor/getVistiorByName 完善资料积分变化
+ * @api {get} /visitor/getVistiorByName 通过昵称查询访客名，访客userId
  * @apiName getVistiorByName
  * @apiGroup visitor
  *
