@@ -93,7 +93,7 @@ var visitorService = {
                         }
                     } else {
                         if (model.visitorId && data.loginTimes > 0) { //已经登录过,防止数据覆盖
-                            model.nickname = data.nickname;
+                            //model.nickname = data.nickname;
                             model.clientGroup = data.clientGroup;
                         }
                         common.copyObject(data, model, true); //数据复制
