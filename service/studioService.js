@@ -455,6 +455,7 @@ var studioService = {
                                 logger.error("checkMemberAndSave->update member fail!:" + err);
                             }
                         });
+                        result.joinDate = currRow.createDate;
                         result.isOK = true;
                         delete result.error;
                         callback(result);
@@ -537,7 +538,7 @@ var studioService = {
                 } else {
                     userService.saveMember(userInfo, function(isSuccess) {
                         if (isSuccess) {
-                            callback({ isOK: true, userId: userInfo.userId, joinDate: isSuccess.createDate});
+                            callback({ isOK: true, userId: userInfo.userId, joinDate: isSuccess.createDate });
                         } else {
                             callback(result);
                         }
@@ -660,7 +661,7 @@ var studioService = {
             if (row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
                 result.isOK = true;
                 var info = row.loginPlatform.chatUserGroup[0];
-                result.userInfo = { mobilePhone: row.mobilePhone, userId: info.userId, nickname: info.nickname, avatar: info.avatar, groupType: info._id, defTemplate: info.defTemplate, joinDate:info.createDate };
+                result.userInfo = { mobilePhone: row.mobilePhone, userId: info.userId, nickname: info.nickname, avatar: info.avatar, groupType: info._id, defTemplate: info.defTemplate, joinDate: info.createDate };
                 result.userInfo.clientGroup = info.vipUser ? constant.clientGroup.vip : info.clientGroup;
                 result.userInfo.userGroup = info.clientGroup;
                 result.userInfo.isVip = info.vipUser;
