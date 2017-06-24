@@ -1,9 +1,10 @@
+let uniqueValidator = require('mongoose-unique-validator');
 let mongoose = require('./commonMongoose'),
     Schema = mongoose.Schema,
     ObjectId = Schema.ObjectId,
     tokenAccessSchema = new Schema({
         "_id": ObjectId,
-        "tokenAccessId": { type: String, index: true },
+        "tokenAccessId": { type: String, unique: true, index: true, match: /^TokenAccess/ },
         "platform": String,
         "appId": String,
         "appSecret": String,
@@ -18,4 +19,5 @@ let mongoose = require('./commonMongoose'),
         "updateDate": Date,
         "remark": String
     });
+tokenAccessSchema.plugin(uniqueValidator);
 module.exports = mongoose.model('tokenAccess', tokenAccessSchema, 'tokenAccess');

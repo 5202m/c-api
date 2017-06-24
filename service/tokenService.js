@@ -77,16 +77,16 @@ class TokenAccessOnDB {
         return deferred.promise;
     }
     update(model, tokenAccessId) {
+        model.tokenAccessId = model.tokenAccessId ? model.tokenAccessId : `TokenAccess:${model.appId}_${model.appSecret}`;
         tokenAccessId = tokenAccessId ? tokenAccessId : model.tokenAccessId;
         let deferred = new common.Deferred();
         let _this = this;
         let updateFieldsByModel = (row) => {
-            let accessId = model.appId && model.appSecret ? `TokenAccess:${model.appId}_${model.appSecret}` : row.tokenAccessId;
             row = row ? row : {};
             row.platform = model.platform || row.platform;
             row.appId = model.appId || row.appId;
             row.appSecret = model.appSecret || row.appSecret;
-            row.tokenAccessId = accessId;
+            row.tokenAccessId = tokenAccessId;
             row.expires = model.expires || row.expires;
             row.valid = model.valid || row.valid;
             row.status = model.status || row.status;
@@ -104,7 +104,7 @@ class TokenAccessOnDB {
                 let isCreate = !row;
                 row = updateFieldsByModel(row);
                 if (isCreate) {
-                    logger.debug("Saving new token access with tokenAccessId of", tokenAccessId);
+                    logger.debug("Saving new token access to DB with tokenAccessId of", tokenAccessId);
                     _this.save(row).then(deferred.resolve).catch(deferred.reject);
                 } else {
                     logger.debug("Updating token access with tokenAccessId of", tokenAccessId);
