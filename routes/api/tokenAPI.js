@@ -255,7 +255,7 @@ router.get('/getTokenAccessByPlatform', function(req, res) {
         res.json(null);
     } else {
         tokenService.getTokenAccessList({ platform: platform })
-            .then(res.json)
+            .then(res.json.bind(res))
             .catch(e => {
                 logger.error(e);
                 res.json(null);
