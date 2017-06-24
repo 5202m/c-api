@@ -59,10 +59,13 @@ exports.init = app => {
 
     //授权处理
     apiRoutes.all('/*', (req, res, next) => { //拦截token授权接口
-        var url = req.originalUrl;
-        if (APIUtil.isUrlSkipTokenAccess(url)) {
+        let url = req.originalUrl;
+        let params = req.query || req.body;
+        if (APIUtil.isUrlSkipTokenAccess(url) ||
+            (["android", "ios"].some(platform => params.platform === platform) &&
+                APIUtil.isUrlSkipTokenForApp(url))
+        ) {
             //TODO 当网站组调整完毕，就可以删掉这个默认添加systemcategory的功能。
-            let params = req.query || req.body;
             if (!params.systemCategory) {
                 params.systemCategory = params.companyId || 'pm';
             }
@@ -114,7 +117,7 @@ exports.init = app => {
             }
         }
     });
-    // tokenService.resyncTokenAccess();
+    tokenService.resyncTokenAccesses();
 
     apiRoutes.use('/token', tokenRoutes);
     apiRoutes.use('/article', articleRoutes);

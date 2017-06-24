@@ -87,9 +87,12 @@ router.post('/setTokenAccess', function(req, res) {
             res.json(result);
         } else {
             if (common.isValid(model.tokenAccessId)) {
-                tokenService.updateTokenAccess(model, function(resultTmp) {
-                    res.json(resultTmp);
-                });
+                tokenService.updateTokenAccess(model)
+                    .then(function(resultTmp) {
+                        res.json(resultTmp);
+                    }).catch(e => {
+                        throw new Error(e);
+                    });
             } else {
                 tokenService.createTokenAccess(model, function(resultTmp) {
                     res.json(resultTmp);
@@ -251,9 +254,12 @@ router.get('/getTokenAccessByPlatform', function(req, res) {
     if (common.isBlank(platform)) {
         res.json(null);
     } else {
-        tokenService.getTokenAccessByPlatform(platform, function(data) {
-            res.json(data);
-        })
+        tokenService.getTokenAccessList({ platform: platform })
+            .then(res.json)
+            .catch(e => {
+                logger.error(e);
+                res.json(null);
+            });
     }
 });
 

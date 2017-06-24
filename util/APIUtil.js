@@ -614,8 +614,11 @@ let pathList = [
     "/chat/getShowTrade",
     "/zxFinanceData/*"
 ];
-var isUrlSkipTokenAccess = function(url) {
-    return pathList.some(path => new RegExp(path).test(url));
+let pathFromAppList = [
+    "/showTrade/*"
+];
+var isSkipTokenVerification = function(list) {
+    return url => list.some(path => new RegExp(path).test(url));
 }
 
 module.exports = {
@@ -657,5 +660,6 @@ module.exports = {
     /**
      * Token 认证相关
      */
-    isUrlSkipTokenAccess: isUrlSkipTokenAccess
+    isUrlSkipTokenAccess: isSkipTokenVerification(pathList),
+    isUrlSkipTokenForApp: isSkipTokenVerification(pathFromAppList)
 };
