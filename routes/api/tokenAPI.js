@@ -139,9 +139,12 @@ router.get('/getTokenAccessList', function(req, res) {
     if (common.isValid(req.query.appId) || common.isValid(req.query.appSecret) || common.isValid(req.query.platform)) {
         model = { appId: req.query.appId, appSecret: req.query.appSecret, platform: req.query.platform };
     }
-    tokenService.getTokenAccessList(model, function(result) {
-        res.json(result);
-    });
+    tokenService.getTokenAccessList(model)
+        .then(res.json.bind(res))
+        .catch(e => {
+            logger.error(e);
+            res.json(null);
+        });
 });
 
 /**
