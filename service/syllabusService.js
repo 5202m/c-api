@@ -455,7 +455,7 @@ var syllabusService = {
         }
         var course = courseArr[0];
         var tagRegAll = /<[^>]+>|<\/[^>]+>/g;
-        ArticleService.findArticle("class_note", groupId, "trading_strategy", false, function(article) {
+        ArticleService.findArticle("class_note", groupId, /*"trading_strategy", */false, function(article) {
             if (article && article.detailList && article.detailList.length > 0) {
                 var articleDetail = article.detailList[0];
                 course.strategyTitle = articleDetail.title || "";
