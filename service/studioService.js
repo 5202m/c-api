@@ -565,6 +565,7 @@ var studioService = {
                         });
                         result.joinDate = currRow.createDate;
                         result.isOK = true;
+                        result.isNewMember = false;
                         delete result.error;
                         callback(result);
                     } else {
@@ -647,7 +648,8 @@ var studioService = {
                             callback({
                                 isOK: true,
                                 userId: userInfo.userId,
-                                joinDate: isSuccess.createDate
+                                joinDate: isSuccess.createDate,
+                                isNewMember: false
                             });
                         } else {
                             callback(result);
@@ -659,7 +661,8 @@ var studioService = {
                             callback({
                                 isOK: true,
                                 userId: userInfo.userId,
-                                joinDate: isSuccess.createDate
+                                joinDate: isSuccess.createDate,
+                                isNewMember: true
                             });
                         } else {
                             callback(result);
