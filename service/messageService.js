@@ -314,7 +314,7 @@ var messageService = {
             "toUser.talkStyle": 1,
             publishTime: { "$gte": publishTime + '_' }
         };
-        common.wrapSystemCategory(queryObj, params.systemCategory);
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         var o = {
             //映射方法
             map: function() {
