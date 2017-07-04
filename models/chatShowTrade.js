@@ -42,6 +42,7 @@ var chatShowTradeSchema = mongoose.createSchema({
     status: Number, //状态：0 待审核， 1 审核通过， -1 审核不通过
     praise: Number, //点赞数
     isAccord: {type: Number, default: 0 }, //是否晒单盖楼， 1 是， 0 否
+    sorted: {type: Number, default: 0 }, //排序
     comments: [{ //评论
         _id: ObjectId, //评论编号
         userId: String, //用户编号

@@ -32,7 +32,7 @@ var showTradeService = {
             "valid": 1,
             "tradeType": 1,
             "systemCategory": systemCategory
-        }).sort({ "showDate": -1 }).exec("find", function(err, data) {
+        }).sort({ "sorted" : -1,"showDate": -1 }).exec("find", function(err, data) {
             if (err) {
                 logger.error("查询晒单数据失败!>>getShowTrade:", err);
                 callback(null);
@@ -93,7 +93,7 @@ var showTradeService = {
             }
         }
         var from = (params.pageNo - 1) * params.pageSize;
-        var orderByJsonObj = { "showDate": 'desc' };
+        var orderByJsonObj = { "sorted" : 'desc',"showDate": 'desc' };
         if (common.isValid(params.skipLimit)) {
             callback(null);
             return;
