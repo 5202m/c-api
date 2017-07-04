@@ -12,8 +12,8 @@ const TokenAccess = require('../models/tokenAccess');
 const ObjectId = require('mongoose').Types.ObjectId;
 const async = require('async'); //引入async
 
-let generateToken = (appId, appSecret, hours) => {
-    let expires = moment().add(hours, 'hours').valueOf();
+let generateToken = (appId, appSecret, seconds) => {
+    let expires = moment().add(seconds, 's').valueOf();
     let token = jwt.encode({
             iss: appId,
             exp: expires
@@ -50,7 +50,7 @@ class TokenAccessOnDB {
     getByQuery(query) {
         let deferred = new common.Deferred();
         query = Object.assign({ valid: 1, status: 1 }, query);
-        TokenAccess.findOne(query).then(deferred.resolve).catch(deferred.reject);
+        TokenAccess.find(query).then(deferred.resolve).catch(deferred.reject);
         return deferred.promise;
     }
     save(model) {
@@ -62,7 +62,7 @@ class TokenAccessOnDB {
             'platform': model.platform,
             'appId': model.appId,
             'appSecret': model.appSecret,
-            'expires': (model.expires ? model.expires : 2),
+            'expires': (model.expires !== undefined ? model.expires : 2),
             'valid': 1,
             'status': 1,
             'createUser': model.createUser || "",
@@ -87,9 +87,9 @@ class TokenAccessOnDB {
             row.appId = model.appId || row.appId;
             row.appSecret = model.appSecret || row.appSecret;
             row.tokenAccessId = tokenAccessId;
-            row.expires = model.expires || row.expires;
-            row.valid = model.valid || row.valid;
-            row.status = model.status || row.status;
+            row.expires = 'expires' in model ? model.expires : row.expires;
+            row.valid = 'valid' in model ? model.valid : row.valid;
+            row.status = 'status' in model ? model.status : row.status;
             row.createUser = model.createUser || row.createUser;
             row.createIp = model.createIp || row.createIp;
             row.createDate = model.createDate || row.createDate;
@@ -101,8 +101,8 @@ class TokenAccessOnDB {
         };
         this.getByQuery({ tokenAccessId: tokenAccessId })
             .then(row => {
-                let isCreate = !row;
-                row = updateFieldsByModel(row);
+                let isCreate = row.length === 0;
+                row = updateFieldsByModel(row[0]);
                 if (isCreate) {
                     logger.debug("Saving new token access to DB with tokenAccessId of", tokenAccessId);
                     _this.save(row).then(deferred.resolve).catch(deferred.reject);
@@ -142,65 +142,15 @@ var tokenService = {
     formatTokenKey: function(token) {
         return 'token:' + token;
     },
-    resyncTokenAccesses: function() {
-        let tokenAccessOnDB = new TokenAccessOnDB();
-        let _this = this;
-        let seriesUpdate = (list, updater) => {
-            if (list.length === 0) {
-                return;
-            }
-            async.each(list, function(item, callbackTmp) {
-                updater(item).then((err, data) => callbackTmp(data))
-                    .catch(e => {
-                        logger.error(e);
-                        callbackTmp(e);
-                    });
-            }, function(err, result) {
-                if (err) {
-                    logger.error(err);
-                } else {
-                    logger.info("Updated", list.length, "tokens");
-                }
-            });
-        };
-        this.getTokenAccessList(null).then(listOnRedis => {
-            logger.debug("Got", listOnRedis.length, "tokens from redis.");
-            tokenAccessOnDB.getAll().then(listOnDB => {
-                logger.debug("Got ", listOnDB.length, "tokens from DB.");
-
-                logger.debug("Doing the token async from DB to redis.");
-                seriesUpdate(listOnDB, _this.updateTokenAccess.bind(_this));
-
-                logger.debug("Doing the token async from redis to DB.");
-                seriesUpdate(listOnRedis, tokenAccessOnDB.update.bind(tokenAccessOnDB));
-            }).catch(e => logger.error(e));
-        }).catch(e => logger.error(e));
-    },
     /**
      * 创建新的TokenAccess
      * @param model
      */
     createTokenAccess: function(model, callback) {
-        var currDate = new Date();
         let tokenAccessOnDB = new TokenAccessOnDB();
-        cacheClient.hmset(this.formatTokenAccessById(model.appId + '_' + model.appSecret),
-            'platform', model.platform,
-            'appId', model.appId,
-            'appSecret', model.appSecret,
-            'expires', (model.expires ? model.expires : 2),
-            'valid', 1,
-            'status', 1,
-            'createUser', model.createUser || "",
-            'createIp', model.createIp || "",
-            'createDate', model.createDate || currDate,
-            'updateUser', model.updateUser || (model.createUser || ""),
-            'updateIp', model.updateIp || (model.createIp || ""),
-            'updateDate', model.updateDate || currDate,
-            'remark', model.remark || ""
-        );
-        callback({ isOK: true, error: null });
-        tokenAccessOnDB.update(model)
-            .then(logger.debug.bind(logger)).catch(logger.error.bind(logger));
+        tokenAccessOnDB.save(model)
+            .then(() => callback({ isOK: true, error: null }))
+            .catch(e => callback({ isOK: false, error: e }));
     },
     /**
      * 更新TokenAccess
@@ -210,14 +160,13 @@ var tokenService = {
         var ids = ids.split(",");
         let tokenAccessOnDB = new TokenAccessOnDB();
         async.eachSeries(ids, function(id, callbackTmp) {
-            cacheClient.del(id, function(err) {
-                callbackTmp(err);
-                tokenAccessOnDB.update({ valid: 0, status: 0, tokenAccessId: id })
-                    .then(logger.debug.bind(logger)).catch(logger.error.bind(logger));
-            });
-        }, function(err) {
-            callback(!err);
-        });
+            tokenAccessOnDB.update({ valid: 0, status: 0, tokenAccessId: id })
+                .then(() => callbackTmp(true))
+                .catch((e) => {
+                    logger.error(e);
+                    callbackTmp(false);
+                });
+        }, () => callback({ isOK: true, error: null }));
     },
     /**
      * 更新TokenAccess
@@ -226,22 +175,9 @@ var tokenService = {
     updateTokenAccess: function(model) {
         let deferred = new common.Deferred();
         let tokenAccessOnDB = new TokenAccessOnDB();
-        cacheClient.hgetall(model.tokenAccessId, function(err, row) {
-            if (err) {
-                logger.error("updateTokenAccess to redis fail:", err, row);
-                deferred.reject({ isOK: false, error: errorMessage.code_11 });
-            } else if (!row) {
-                tokenService.createTokenAccess(model, function(isOK) {
-                    deferred.resolve({ isOK: true, error: null });
-                });
-            } else {
-                common.copyObject(row, model);
-                row.updateDate = new Date();
-                tokenService.createTokenAccess(row, function(isOK) {
-                    deferred.resolve({ isOK: true, error: null });
-                });
-            }
-        });
+        tokenAccessOnDB.update(model)
+            .then(deferred.resolve.bind(deferred))
+            .catch(deferred.reject.bind(deferred));
         return deferred.promise;
     },
     /**
@@ -250,46 +186,10 @@ var tokenService = {
      */
     getTokenAccessList: function(model) {
         let deferred = new common.Deferred();
-        cacheClient.keys('TokenAccess:*', function(err, keys) {
-            var tokenAccessList = [];
-            async.eachSeries(keys, function(item, callbackTmp) {
-                cacheClient.hgetall(item, function(err, result) {
-                    result.tokenAccessId = tokenService.formatTokenAccessById(result.appId + '_' + result.appSecret);
-                    if (model) {
-                        if (model.appId == result.appId || model.appSecret == result.appSecret || result.platform == model.platform) {
-                            tokenAccessList.push(result);
-                        }
-                    } else {
-                        tokenAccessList.push(result);
-                    }
-                    callbackTmp(err);
-                });
-            }, function(err, result) {
-                if (err) {
-                    logger.error(err);
-                    deferred.reject(err);
-                    return;
-                }
-                deferred.resolve(tokenAccessList);
-            });
-        });
-        return deferred.promise;
-    },
-    /**
-     * 查询TokenAccess
-     * @param model
-     */
-    getTokenAccessById: function(tokenAccessById) {
-        let deferred = new common.Deferred();
-        cacheClient.hgetall(tokenService.formatTokenAccessById(tokenAccessById), function(err, result) {
-            if (err || !result) {
-                logger.error("getTokenAccessById failure:", tokenAccessById, err);
-                deferred.reject(err);
-            } else {
-                result.tokenAccessId = tokenService.formatTokenAccessById(result.appId + '_' + result.appSecret);
-                deferred.resolve(result);
-            }
-        });
+        let tokenAccessOnDB = new TokenAccessOnDB();
+        tokenAccessOnDB.getByQuery(model)
+            .then(deferred.resolve)
+            .catch(deferred.reject);
         return deferred.promise;
     },
     /**
@@ -305,8 +205,27 @@ var tokenService = {
                 if (err) {
                     logger.error("get Token from cacheClient failure", err);
                     callback({ isOK: false, error: errorMessage.code_5003 });
+                    return;
                 }
-                callback(verifyAccessToken(token, appSecret, result));
+                if (common.isBlank(result)) {
+                    logger.debug("the token had been deleted or expired", token);
+                    callback({ isOK: false, error: errorMessage.code_5002 });
+                    return;
+                }
+                logger.debug("token found: ", result);
+                let verifyResult = verifyAccessToken(token, appSecret, result);
+                if (result.expires == 0) {
+                    tokenService.destroyToken(token, (isDeleted) => {
+                        if (isDeleted) {
+                            logger.info("One-off token had been destroyed: ", result);
+                        } else {
+                            logger.error("One-off token isn't destroyed: ", appSecret, result);
+                        }
+                        callback(verifyResult);
+                    });
+                } else {
+                    callback(verifyResult);
+                }
             });
         }
     },
@@ -315,30 +234,19 @@ var tokenService = {
      * @param expires 0:一次有效  1:1个小时  2:2个小时
      */
     getToken: function(appId, appSecret, callback) {
-        tokenService.getTokenAccessById(this.formatTokenAccessById(appId + "_" + appSecret))
-            .then(function(row) {
+        tokenService.getTokenAccessList({ tokenAccessId: this.formatTokenAccessById(appId + "_" + appSecret) })
+            .then(function(rows) {
+                let row = rows[0];
+                if (!row) {
+                    logger.error("getToken failure, no such appId and appSecret:", appId, appSecret);
+                    callback(errorMessage.code_11);
+                    return;
+                }
                 var token = row.token,
                     expires = parseFloat(row.expires);
-                if (common.isValid(token) && expires > 0) {
-                    cacheClient.hgetall(tokenService.formatTokenKey(token), (err, result) => {
-                        let verify = verifyAccessToken(token, appSecret, result);
-                        if (verify.isOK) {
-                            result.token = token;
-                            callback(result);
-                            return;
-                        }
-                        tokenService.destroyToken(token, function() {
-                            tokenService.createToken(expires, row, function(newTokenObject) {
-                                callback(newTokenObject); //返回token
-                            });
-                        });
-                    });
-
-                } else {
-                    tokenService.createToken(expires, row, function(newToken) {
-                        callback(newToken); //返回token
-                    });
-                }
+                tokenService.createToken(expires, row, function(newToken) {
+                    callback(newToken); //返回token
+                });
             }).catch(e => {
                 logger.error("getToken failure, due to: ", e);
                 callback(errorMessage.code_1001);
@@ -350,23 +258,26 @@ var tokenService = {
      * @param row
      */
     createToken: function(expires, row, callback) {
-        var beginTime = 0,
-            endTime = 0,
+        let endTime = 0,
             time = 0;
+        let beginTime = new Date().getTime();
         if (expires > 0) {
-            beginTime = new Date().getTime();
-            time = expires * 3600;
+            time = expires * 60 * 60;
         } else {
-            time = 0.1 * 3600; //如果是零，即一次性使用，默认给6分钟有效
+            time = 6 * 60; //如果是零，即一次性使用，默认给6分钟有效
         }
-        let token = generateToken(row.appId, row.appSecret, expires);
-        var key = tokenService.formatTokenKey(token);
+        endTime = beginTime + time;
+        let token = generateToken(row.appId, row.appSecret, time);
+        let key = tokenService.formatTokenKey(token);
         cacheClient.hmset(key,
             'expires', expires,
             'beginTime', beginTime,
             'appId', row.appId
         );
-        callback({ token: token, expires: expires, beginTime: beginTime, appId: row.appId }); //返回token
+        if (expires != -1) {
+            cacheClient.expire(key, time);
+        }
+        callback({ token: token, expires: expires, beginTime: beginTime, endTime: endTime, appId: row.appId }); //返回token
     },
     /**
      * 注销token

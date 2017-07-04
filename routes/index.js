@@ -117,7 +117,6 @@ exports.init = app => {
             }
         }
     });
-    tokenService.resyncTokenAccesses();
 
     apiRoutes.use('/token', tokenRoutes);
     apiRoutes.use('/article', articleRoutes);

@@ -31,19 +31,19 @@ var errorMessage = require('../../util/errorMessage');
  * @apiName setTokenAccess
  * @apiGroup token
  *
- * @apiParam {String} appId 必填
- * @apiParam {String} appSecret 必填
- * @apiParam {String} platform 平台，必填
- * @apiParam {String} tokenAccessId tokenAccessId，更新时为必填
- * @apiParam {String} token token
- * @apiParam {Number} expires 过期时间
- * @apiParam {Boolean} createUser 创建人
- * @apiParam {String} createIp 创建IP
- * @apiParam {String} createDate 创建时间
- * @apiParam {String} updateUser 更新人
- * @apiParam {String} updateIp 更新IP
- * @apiParam {String} updateDate 更新时间
- * @apiParam {String} remark 备注
+ * @apiParam {String} appId 应用token的标识符
+ * @apiParam {String} appSecret 应用token的Secret码
+ * @apiParam {String} platform 平台
+ * @apiParam {String} [tokenAccessId] 更新时为必填
+ * @apiParam {String} [token] token
+ * @apiParam {Number} [expires] 过期时间
+ * @apiParam {Boolean} [createUser] 创建人
+ * @apiParam {String} [createIp] 创建IP
+ * @apiParam {String} [createDate] 创建时间
+ * @apiParam {String} [updateUser] 更新人
+ * @apiParam {String} [updateIp] 更新IP
+ * @apiParam {String} [updateDate] 更新时间
+ * @apiParam {String} [remark] 备注
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -135,10 +135,17 @@ router.post('/setTokenAccess', function(req, res) {
  * @apiUse ParametersMissedError
  */
 router.get('/getTokenAccessList', function(req, res) {
-    var model = null;
-    if (common.isValid(req.query.appId) || common.isValid(req.query.appSecret) || common.isValid(req.query.platform)) {
-        model = { appId: req.query.appId, appSecret: req.query.appSecret, platform: req.query.platform };
+    var model = {};
+    if (common.isValid(req.query.appId)) {
+        model.appId = req.query.appId;
     }
+    if (common.isValid(req.query.appSecret)) {
+        model.appSecret = req.query.appSecret;
+    }
+    if (common.isValid(req.query.platform)) {
+        model.platform = req.query.platform;
+    }
+
     tokenService.getTokenAccessList(model)
         .then(res.json.bind(res))
         .catch(e => {
@@ -217,12 +224,15 @@ router.get('/getTokenAccessById', function(req, res) {
     if (common.isBlank(tokenAccessId)) {
         res.json(null);
     } else {
-        tokenService.getTokenAccessById(tokenAccessId).then(function(data) {
-            res.json(data);
-        }).catch(e => {
-            logger.error("getTokenAccessById failure", e);
-            res.json(null);
-        });
+        tokenService.getTokenAccessList({ tokenAccessId: tokenAccessId })
+            .then(function(data) {
+                data = data[0];
+                res.json(data);
+            })
+            .catch(e => {
+                logger.error("getTokenAccessById failure", e);
+                res.json(null);
+            });
     }
 });
 
