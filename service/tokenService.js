@@ -208,11 +208,11 @@ var tokenService = {
                     return;
                 }
                 if (common.isBlank(result)) {
-                    logger.debug("the token had been deleted or expired", token);
+                    logger.info("the token had been deleted or expired", token);
                     callback({ isOK: false, error: errorMessage.code_5002 });
                     return;
                 }
-                logger.debug("token found: ", result);
+                logger.debug("token found: ", JSON.stringify(result));
                 let verifyResult = verifyAccessToken(token, appSecret, result);
                 if (result.expires == 0) {
                     tokenService.destroyToken(token, (isDeleted) => {

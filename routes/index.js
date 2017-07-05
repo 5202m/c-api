@@ -86,11 +86,15 @@ exports.init = app => {
                 next();
                 return;
             }
-            tokenService.getTokenAccessById(`${appId}_${appSecret}`).then(row => {
-                params.systemCategory = row.platform;
-                logger.debug(`Added systemCategory = ${row.platform} for url: ${url}`);
-                next();
-            }).catch(next);
+            tokenService.getTokenAccessList({
+                    tokenAccessId: tokenService.formatTokenAccessById(`${appId}_${appSecret}`)
+                })
+                .then(rows => {
+                    let row = rows[0];
+                    params.systemCategory = row.platform;
+                    logger.debug(`Added systemCategory = ${row.platform} for url: ${url}`);
+                    next();
+                }).catch(next);
         };
         let handleTokenVerification = data => {
             if (data.isOK) {
@@ -106,7 +110,6 @@ exports.init = app => {
             }
         };
         logger.debug("veriring token:", token);
-        logger.debug("headers is: ", req.headers);
         if (token) {
             tokenService.verifyToken(token, appsecret, handleTokenVerification);
         } else {
