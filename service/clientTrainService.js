@@ -240,53 +240,62 @@ var clientTrainService = {
      * @param clientip
      * @param callback
      */
-    addSignin: function(userInfo, clientip, callback) {
+    addSignin: function(params, callback) {
+        let userInfo = {
+                mobilePhone: params["mobilePhone"],
+                groupType: params["groupType"],
+                avatar: params["avatar"],
+                clientGroup: params["clientGroup"]
+            },
+            clientip = params["clientip"],
+            isNoPoints = params["isNoPoints"] == 1;
         var searchObj = { userId: userInfo.mobilePhone, groupType: userInfo.groupType };
         signin.findOne(searchObj, function(err, signinInfo) {
             if (err) {
                 logger.error("查询签到数据失败!:", err);
                 callback({ isOK: false, msg: '客户签到失败' });
-            } else {
-                if (signinInfo == null) {
-                    signinInfo = new signin({
-                        userId: userInfo.mobilePhone,
-                        groupType: userInfo.groupType,
-                        avatar: userInfo.avatar,
-                        signinTime: null,
-                        historySignTime: [],
-                        signinDays: 0,
-                        serialSigDays: 0
-                    });
-                }
-                var today = new Date();
-                clientTrainService.checkSign(signinInfo, today, function(err, isSerial, isExist) {
-                    if (err) {
-                        callback({ isOK: false, msg: '客户签到失败' });
-                        return;
-                    } else if (isExist) {
-                        callback({ isOK: false, msg: errorMessage.code_3002.errmsg });
-                        return;
-                    } else {
-                        if (isSerial) {
-                            signinInfo.serialSigDays += 1;
-                        } else {
-                            signinInfo.serialSigDays = 1;
-                        }
-                        signinInfo.signinDays += 1;
-                        signinInfo.signinTime = today;
-                        signinInfo.historySignTime.push(today);
-                        signinInfo.save(function(err) {
-                            if (err) {
-                                logger.error("客户签到数据失败! >>addSignin:", err);
-                                callback({ isOK: false, msg: '客户签到失败' });
-                            } else {
-                                callback({ isOK: true, msg: '客户签到成功', signDays: signinInfo.serialSigDays });
-                                clientTrainService.addSignPoints(userInfo, clientip, signinInfo.serialSigDays);
-                            }
-                        });
-                    }
+                return;
+            }
+            if (signinInfo == null) {
+                signinInfo = new signin({
+                    userId: userInfo.mobilePhone,
+                    groupType: userInfo.groupType,
+                    avatar: userInfo.avatar,
+                    signinTime: null,
+                    historySignTime: [],
+                    signinDays: 0,
+                    serialSigDays: 0
                 });
             }
+            var today = new Date();
+            clientTrainService.checkSign(signinInfo, today).then(function({ isSerial, isExist }) {
+                if (isExist) {
+                    callback({ isOK: false, msg: errorMessage.code_3002.errmsg });
+                    return;
+                }
+                if (isSerial) {
+                    signinInfo.serialSigDays += 1;
+                } else {
+                    signinInfo.serialSigDays = 1;
+                }
+                signinInfo.signinDays += 1;
+                signinInfo.signinTime = today;
+                signinInfo.historySignTime.push(today);
+                signinInfo.save(function(err) {
+                    if (err) {
+                        logger.error("客户签到数据失败! >>addSignin:", err);
+                        callback({ isOK: false, msg: '客户签到失败' });
+                        return;
+                    }
+                    callback({ isOK: true, msg: '客户签到成功', signDays: signinInfo.serialSigDays });
+                    if (isNoPoints) {
+                        return;
+                    }
+                    clientTrainService.addSignPoints(userInfo, clientip, signinInfo.serialSigDays);
+                });
+            }).catch(e => {
+                callback({ isOK: false, msg: '客户签到失败' });
+            });
         });
     },
 
@@ -297,31 +306,43 @@ var clientTrainService = {
      * @param callback (err, isSerial, isExist)
      */
     checkSign: function(signInfo, today, callback) {
-        if (!signInfo || !signInfo.signinTime) {
-            callback(null, true, false); //从未签到
-        } else {
-            var lastSignDate = signInfo.signinTime;
-            lastSignDate = new Date(lastSignDate.getFullYear(), lastSignDate.getMonth(), lastSignDate.getDate());
-            today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            if (lastSignDate.getTime() == today.getTime()) {
-                callback(null, false, true); //重复
-            } else if (lastSignDate.getMonth() != today.getMonth()) { //跨月
-                callback(null, false, false); //月初
-            } else {
-                chatSyllabusHis.count({
-                    groupType: signInfo.groupType,
-                    date: { $gt: lastSignDate, $lt: today }
-                }, function(err, cnt) {
-                    if (err) {
-                        logger.error("验证签到连续性，查询课程历史信息出错! >>isSerial:", err);
-                        //从未签到
-                        callback(err, false, false);
-                    } else {
-                        callback(null, cnt <= 0, false);
-                    }
-                });
-            }
+        let deferred = new common.Deferred();
+        let result = {
+            isSerial: false,
+            isExist: false
+        };
+        if (!signInfo || !signInfo.signinTime) { //从未签到
+            result.isSerial = true;
+            deferred.resolve(result);
+            return deferred.promise;
         }
+        var lastSignDate = signInfo.signinTime;
+        lastSignDate = new Date(lastSignDate.getFullYear(), lastSignDate.getMonth(), lastSignDate.getDate());
+        today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        if (lastSignDate.getTime() == today.getTime()) { //重复
+            result.isExist = true;
+            deferred.resolve(result);
+            return deferred.promise;
+        }
+        if (lastSignDate.getMonth() != today.getMonth()) { //跨月
+            //月初
+            deferred.resolve(result);
+            return deferred.promise;
+        }
+        chatSyllabusHis.count({
+            groupType: signInfo.groupType,
+            date: { $gt: lastSignDate, $lt: today }
+        }, function(err, cnt) {
+            if (err) {
+                logger.error("验证签到连续性，查询课程历史信息出错! >>isSerial:", err);
+                //从未签到
+                deferred.reject(err);
+                return deferred.promise;
+            }
+            result.isSerial = cnt <= 0;
+            deferred.resolve(result);
+        });
+        return deferred.promise;
     },
 
     /**
@@ -389,7 +410,7 @@ var clientTrainService = {
                         } else {
                             signObj.historySignTime = [];
                         }
-                        
+
                         callback(null, signObj);
                     });
                 },

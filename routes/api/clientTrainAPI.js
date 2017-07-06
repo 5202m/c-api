@@ -240,11 +240,12 @@ router.get("/getTrainList", (req, res) => {
  * @apiName addSignin
  * @apiGroup clientTrain
  *
- * @apiParam {String} groupType 组别，必填，直播间groupType值
+ * @apiParam {String} groupType 组别，直播间groupType值
  * @apiParam {String} mobilePhone 手机号.
  * @apiParam {Boolean} clientip 客户ip
  * @apiParam {String} clientGroup 客户组 vip/active/notActive/real/simulate/register/visitor
- * @apiParam {String} avatar 用户头像
+ * @apiParam {String} [avatar] 用户头像
+ * @apiParam {Number} [isNoPoints] 是否自动添加积分，只接受0或者1，1以外的值都认为是0。
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据
@@ -283,13 +284,7 @@ router.post("/addSignin", (req, res) => {
         return;
     }
 
-    clientTrainService.addSignin({
-            mobilePhone: req.body["mobilePhone"],
-            groupType: req.body["groupType"],
-            avatar: req.body["avatar"],
-            clientGroup: req.body["clientGroup"]
-        },
-        req.body["clientip"],
+    clientTrainService.addSignin(req.body,
         (data) => {
             res.json(APIUtil.APIResult(null, data));
         }

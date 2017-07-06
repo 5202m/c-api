@@ -176,13 +176,17 @@ module.exports = {
                         if (err) {
                             logger.error("查询客户签到数据失败!:", err);
                         }
-                        clientTrainService.checkSign(row, today, function(err, isSerial, isExist) {
-                            var result = { signDays: 0 };
-                            if (row && row.signinTime && (isSerial || isExist)) {
-                                result.signDays = row.serialSigDays;
-                            }
-                            callback(null, result);
-                        });
+                        clientTrainService.checkSign(row, today)
+                            .then(function({ isSerial, isExist }) {
+                                var result = { signDays: 0 };
+                                if (row && row.signinTime && (isSerial || isExist)) {
+                                    result.signDays = row.serialSigDays;
+                                }
+                                callback(null, result);
+                            }).catch(e => {
+                                logger.error(e);
+                                callback(e, { signDays: 0 });
+                            });
                     });
                 },
                 signinUser: function(callback) { //当天最近10条签到用户
