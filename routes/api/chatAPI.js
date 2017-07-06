@@ -232,7 +232,7 @@ router.post("/praiseAnalyst", function(req, res) {
         platform: req.body["platform"] || req.query["platform"],
         analystId: req.body["analystId"] || req.query["analystId"]
     };
-    if (common.isBlank(analystId) || common.isBlank(platform)) {
+    if (common.isBlank(params.analystId) || common.isBlank(params.platform)) {
         res.json(ApiResult.result(errorMessage.code_1000, null));
     } else {
         common.wrapSystemCategory(params, req.body.systemCategory);
@@ -713,7 +713,7 @@ router.post("/showTradeNotice", function(req, res) {
             mobileArr.push(tradeInfo.boUser.telephone);
         }
     });
-    let params = {mobileArr:mobileArr.join(','), groupType:tradeInfo.groupType};
+    let params = { mobileArr: mobileArr.join(','), groupType: tradeInfo.groupType };
     userService.getClientGroupByMId(params, function(mbObj) {
         tradeInfoArray.forEach(trade => {
             tradeInfo = trade;
