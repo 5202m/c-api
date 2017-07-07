@@ -106,10 +106,7 @@ router.get("/getShowTrade", (req, res) => {
  *     { result: 0,
  *       errcode: '0',
  *       errmsg: '',
- *       data:
- *        {
- *          tradeList: [{}]
- *        }
+ *       data:[{}]
  *      }
  *
  * @apiUse ParametersMissedError
