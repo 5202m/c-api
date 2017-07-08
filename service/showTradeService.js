@@ -128,12 +128,14 @@ var showTradeService = {
                         groupType: params.groupType,
                         mobilePhones: mobilePhoneArray
                     }).then(rows => {
-                        rows.forEach(row => {
-                            let trade = results.list.tradeList.find(item => item.user.telephone === row.mobilePhone);
-                            if (!trade)
-                                return;
-                            trade.user.userName = row.loginPlatform.chatUserGroup[0].nickname || "";
-                            trade.user.avatar = row.loginPlatform.chatUserGroup[0].avatar || "";
+                        let trades = results.list.tradeList.filter(item => item.user.telephone === row.mobilePhone);
+                        if (!trades) {
+                            logger.debug("Didn't find any tradeList mathced rows.");
+                            return;
+                        }
+                        trades.forEach(trade => {
+                            trade.user.userName = row.loginPlatform.chatUserGroup[0].nickname || trade.user.userName || "";
+                            trade.user.avatar = row.loginPlatform.chatUserGroup[0].avatar || trade.user.avatar || "";
                         });
                         callbackTmp(null, results);
                     }).catch(e => {
