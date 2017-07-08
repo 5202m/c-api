@@ -1026,6 +1026,28 @@ var userService = {
             .catch(deferred.reject);
         return deferred.promise;
     },
+    getMemberListByMobilePhones: function(params) {
+        let deferred = new common.Deferred();
+        let mobilePhoneArray = typeof params.mobilePhones === 'string' ? params.mobilePhones.split(",") : params.mobilePhones;
+        let queryObj = {
+            mobilePhone: { $in: mobilePhoneArray },
+            valid: 1,
+            "loginPlatform.chatUserGroup._id": params.groupType
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        let fieldObj = {
+            "mobilePhone": 1,
+            "loginPlatform.chatUserGroup.$": 1
+        };
+        member.find(queryObj, fieldObj, (err, rows) => {
+            if (err) {
+                logger.error(err);
+                deferred.reject(err);
+            }
+            deferred.resolve(rows);
+        });
+        return deferred.promise;
+    },
     /**
      * 获取分析师列表
      * @param systemCategory

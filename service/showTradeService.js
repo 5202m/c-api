@@ -1,11 +1,11 @@
 var chatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数据模型
 var logger = require('../resources/logConf').getLogger('showTradeService'); //引入log4js
 var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
-var chatService = require('../service/chatService');//引入chatService
+var chatService = require('../service/chatService'); //引入chatService
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common'); //引入common类
 var ObjectId = require('mongoose').Types.ObjectId;
-var async = require('async');//引入async
+var async = require('async'); //引入async
 var ApiResult = require('../util/ApiResult');
 var errorMessage = require('../util/errorMessage');
 /**
@@ -28,7 +28,7 @@ var showTradeService = {
             "groupType": groupType,
             "valid": 1,
             "tradeType": 1
-        }).sort({ "showDate": -1 }).exec("find", function(err, data) {
+        }).sort({ "sorted": -1, "showDate": -1 }).exec("find", function(err, data) {
             if (err) {
                 logger.error("查询晒单数据失败!>>getShowTrade:", err);
                 callback(null);
@@ -66,55 +66,90 @@ var showTradeService = {
      * @param callback
      */
     getShowTradeList: function(params, callback) {
-        var searchObj = { "groupType": params.groupType, "valid": 1, "status": 1, "tradeType": 2 };
+        var searchObj = {
+            "groupType": params.groupType,
+            "valid": 1,
+            "status": 1,
+            "tradeType": 2
+        };
         if (common.isValid(params.userNo)) {
-            searchObj = { "groupType": params.groupType, "valid": 1, "tradeType": (params.tradeType ? params.tradeType : 2), "boUser.userNo": params.userNo };
+            searchObj = {
+                "groupType": params.groupType,
+                "valid": 1,
+                "tradeType": (params.tradeType ? params.tradeType : 2),
+                "boUser.userNo": params.userNo
+            };
             if (common.isValid(params.status)) {
                 searchObj.status = params.status;
             }
         }
-        var from = (params.pageNo-1) * params.pageSize;
-        var orderByJsonObj = { "showDate": 'desc' };
         if (common.isValid(params.skipLimit)) {
             callback(null);
             return;
         }
-        async.parallel({
-            list: function(callbackTmp) {
-                chatShowTrade.find(searchObj)
-                .sort(orderByJsonObj)
-                .skip(from)
-                .limit(params.pageSize)
-                .exec("find", function (err, data) {
-                    if (err) {
-                        logger.error("查询晒单数据失败! >>getShowTradeList:", err);
-                        callbackTmp(null, null);
+        async.waterfall([
+                function(callbackTmp) {
+                    let results = {};
+                    var from = (params.pageNo - 1) * params.pageSize;
+                    var orderByJsonObj = { "sorted": 'desc', "showDate": 'desc' };
+                    chatShowTrade.find(searchObj)
+                        .sort(orderByJsonObj)
+                        .skip(from)
+                        .limit(params.pageSize)
+                        .exec("find", function(err, data) {
+                            if (err) {
+                                logger.error("查询晒单数据失败! >>getShowTradeList:", err);
+                                callbackTmp(null, null);
+                                return;
+                            }
+                            var result = null;
+                            if (data && data.length > 0) {
+                                result = { tradeList: [] };
+                                var tradeInfo = null;
+                                for (var i = 0, lenI = data.length; i < lenI; i++) {
+                                    tradeInfo = data[i].toObject();
+                                    tradeInfo.user = data[i].boUser.toObject();
+                                    delete tradeInfo["boUser"];
+                                    result.tradeList.push(tradeInfo);
+                                }
+                            }
+                            results.list = result;
+                            callbackTmp(null, results);
+                        });
+                },
+                function(results, callbackTmp) {
+                    if (searchObj.tradeType === 1) {
+                        callbackTmp(null, results);
                         return;
                     }
-                    var result = null;
-                    if (data && data.length > 0) {
-                        result = {tradeList:[]};
-                        var tradeInfo = null;
-                        for (var i = 0, lenI = data.length; i < lenI; i++) {
-                            tradeInfo = data[i].toObject();
-                            tradeInfo.user = data[i].boUser.toObject();
-                            delete tradeInfo["boUser"];
-                            result.tradeList.push(tradeInfo);
-                        }
-                    }
-                    callbackTmp(null, result);
-                });
-            },
-            totalSize: function(callbackTmp){
-                chatShowTrade.find(searchObj).count(function(err,rowNum){
-                    callbackTmp(null, rowNum);
-                });
-            }
-            },
+                    let mobilePhoneArray = results.list.tradeList.map(item => item.user.telephone);
+                    userService.getMemberListByMobilePhones({
+                        groupType: params.groupType,
+                        mobilePhones: mobilePhoneArray
+                    }).then(rows => {
+                        rows.forEach(row => {
+                            let trade = results.list.tradeList.find(item => item.user.telephone === row.mobilePhone);
+                            if (!trade)
+                                return;
+                            trade.user.userName = row.loginPlatform.chatUserGroup[0].nickname || "";
+                            trade.user.avatar = row.loginPlatform.chatUserGroup[0].avatar || "";
+                        });
+                        callbackTmp(null, results);
+                    }).catch(e => {
+                        callbackTmp(null, results);
+                    });
+                },
+                function(results, callbackTmp) {
+                    chatShowTrade.find(searchObj).count(function(err, rowNum) {
+                        results.totalSize = rowNum;
+                        callbackTmp(null, results);
+                    });
+                }
+            ],
             function(err, results) {
-                if(params.pageNo) {
+                if (params.pageNo) {
                     callback(ApiResult.page(params.pageNo, params.pageSize, results.totalSize, results.list ? results.list.tradeList : []));
-                }else{
+                } else {
                     callback(results.list);
                 }
             }
@@ -169,12 +204,12 @@ var showTradeService = {
      */
     setShowTradePraise: function(params, callback) {
         var searchObj = { _id: params.praiseId };
-        chatService.checkChatPraise(params, function(isOK){
-            if(isOK) {
+        chatService.checkChatPraise(params, function(isOK) {
+            if (isOK) {
                 chatShowTrade.findOne(searchObj, function(err, row) {
                     if (err) {
                         logger.error("查询数据失败! >>setShowTradePraise:", err);
-                        callback({ isOK: false, error: errorMessage.code_2025 });//callback({ isOK: false, msg: '点赞失败' });
+                        callback({ isOK: false, error: errorMessage.code_2025 }); //callback({ isOK: false, msg: '点赞失败' });
                     } else {
                         if (common.isBlank(row.praise)) {
                             row.praise = 1;
@@ -185,15 +220,15 @@ var showTradeService = {
                         chatShowTrade.findOneAndUpdate(searchObj, setObj, function(err1, row1) {
                             if (err1) {
                                 logger.error('setShowTradePraise=>fail!' + err1);
-                                callback({ isOK: false, error: errorMessage.code_2025 });//callback({ isOK: false, msg: '点赞失败' });
+                                callback({ isOK: false, error: errorMessage.code_2025 }); //callback({ isOK: false, msg: '点赞失败' });
                             } else {
-                                callback({ isOK: true, error: null });//callback({ isOK: true, msg: '点赞成功' });
+                                callback({ isOK: true, error: null }); //callback({ isOK: true, msg: '点赞成功' });
                             }
                         });
                     }
                 });
-            }else{
-                callback({ isOK: false, error: errorMessage.code_5004 });//callback({isOK: false, msg: '当天只能点赞一次'});
+            } else {
+                callback({ isOK: false, error: errorMessage.code_5004 }); //callback({isOK: false, msg: '当天只能点赞一次'});
             }
         });
     },
