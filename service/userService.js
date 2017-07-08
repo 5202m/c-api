@@ -1034,7 +1034,6 @@ var userService = {
             valid: 1,
             "loginPlatform.chatUserGroup._id": params.groupType
         };
-        common.wrapSystemCategory(queryObj, params.systemCategory);
         let fieldObj = {
             "mobilePhone": 1,
             "loginPlatform.chatUserGroup.$": 1
