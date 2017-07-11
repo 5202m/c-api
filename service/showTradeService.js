@@ -133,10 +133,6 @@ var showTradeService = {
                         callbackTmp(null, results);
                         return;
                     }
-                    if (!results.list) {
-                        callbackTmp(null, results);
-                        return;
-                    }
                     let mobilePhoneArray = results.list.tradeList.map(item => item.user.telephone);
                     userService.getMemberListByMobilePhones({
                         groupType: params.groupType,
@@ -146,7 +142,8 @@ var showTradeService = {
                         rows.forEach(row => {
                             let trades = results.list.tradeList.filter(item => item.user.telephone === row.mobilePhone);
                             if (!trades) {
-                                logger.debug("Didn't find any tradeList mathced rows.");
+                                logger.debug("Didn't find any tradeList mathced rows with mobilePhone: ",
+                                    row.mobilePhone);
                                 return;
                             }
                             trades.forEach(trade => {
@@ -156,6 +153,7 @@ var showTradeService = {
                         });
                         callbackTmp(null, results);
                     }).catch(e => {
+                        logger.debug(e);
                         callbackTmp(null, results);
                     });
                 },
