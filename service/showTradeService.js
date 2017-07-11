@@ -128,17 +128,21 @@ var showTradeService = {
                         groupType: params.groupType,
                         mobilePhones: mobilePhoneArray
                     }).then(rows => {
-                        let trades = results.list.tradeList.filter(item => item.user.telephone === row.mobilePhone);
-                        if (!trades) {
-                            logger.debug("Didn't find any tradeList mathced rows.");
-                            return;
-                        }
-                        trades.forEach(trade => {
-                            trade.user.userName = row.loginPlatform.chatUserGroup[0].nickname || trade.user.userName || "";
-                            trade.user.avatar = row.loginPlatform.chatUserGroup[0].avatar || trade.user.avatar || "";
+                        rows.forEach(row => {
+                            let trades = results.list.tradeList.filter(item => item.user.telephone === row.mobilePhone);
+                            if (!trades) {
+                                logger.debug("Didn't find any tradeList mathced rows with mobilePhone: ",
+                                    row.mobilePhone);
+                                return;
+                            }
+                            trades.forEach(trade => {
+                                trade.user.userName = row.loginPlatform.chatUserGroup[0].nickname || trade.user.userName || "";
+                                trade.user.avatar = row.loginPlatform.chatUserGroup[0].avatar || trade.user.avatar || "";
+                            });
                         });
                         callbackTmp(null, results);
                     }).catch(e => {
+                        logger.debug(e);
                         callbackTmp(null, results);
                     });
                 },

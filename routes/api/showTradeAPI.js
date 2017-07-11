@@ -83,9 +83,9 @@ router.get("/getShowTrade", (req, res) => {
  * @apiParam {String} groupType 成员类型，必需. 取直播间groupType值
  * @apiParam {String} pageSize 条数，必需
  * @apiParam {Number} pageNo 页码
- * @apiParam {String} userNo 指定用户的晒单，查所有可不传
- * @apiParam {Number} tradeType 晒单类型 1：分析师晒单，2：客户晒单 查所有可不传
- * @apiParam {Number} status 状态：0 待审核， 1 审核通过， -1 审核不通过 查所有可不传
+ * @apiParam {String} [userNo] 指定用户的晒单，查所有可不传
+ * @apiParam {Number} [tradeType] 晒单类型 1：分析师晒单，2：客户晒单 查所有可不传
+ * @apiParam {Number} [status] 状态：0 待审核， 1 审核通过， -1 审核不通过 查所有可不传
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
@@ -129,9 +129,9 @@ router.get("/getShowTradeList", (req, res) => {
     showTradeService.getShowTradeList(
         req.query,
         (data) => {
-            if(req.query['pageNo']){
+            if (req.query['pageNo']) {
                 res.json(ApiResult.result(null, data));
-            }else{
+            } else {
                 res.json(APIUtil.APIResultFromData(data));
             }
         }
