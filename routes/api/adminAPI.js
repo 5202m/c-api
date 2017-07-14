@@ -171,12 +171,13 @@ router.get("/getChatGroupListByAuthUser", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    adminService.getChatGroupListByAuthUser(
-        req.query.userId,
-        (data) => {
+    adminService.getChatGroupListByAuthUser(req.query)
+        .then(data => {
             res.json(APIUtil.APIResult(null, data));
-        }
-    );
+        }).catch(e => {
+            logger.error("getChatGroupListByAuthUser failure: ", e);
+            res.json(APIUtil.APIResult("code_10", null));
+        });
 });
 /**
  * @api {get} /admin/getChatGroupRoomsList 获取聊天室列表
@@ -228,11 +229,13 @@ router.get("/getChatGroupListByAuthUser", (req, res) => {
  * @apiUse ParametersMissedError
  */
 router.get("/getChatGroupRoomsList", (req, res) => {
-    adminService.getChatGroupRoomsList(
-        (data) => {
+    adminService.getChatGroupRoomsList(req.query)
+        .then(data => {
             res.json(APIUtil.APIResult(null, data));
-        }
-    );
+        }).catch(e => {
+            logger.error("getChatGroupRoomsList failure: ", e);
+            res.json(APIUtil.APIResult("code_10", null));
+        });
 });
 /**
  * @api {post} /admin/setUserGag 设置禁言用户
