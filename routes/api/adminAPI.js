@@ -35,6 +35,7 @@ const common = require('../../util/common');
 const errorMessage = require('../../util/errorMessage.js');
 const adminService = require('../../service/adminService');
 const APIUtil = require('../../util/APIUtil');
+const logger = require('../../resources/logConf').getLogger('adminAPI'); //引入log4js
 
 /**
  * @api {post} /admin/checkSystemUserInfo 获取房间的在线人数

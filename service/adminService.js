@@ -116,13 +116,17 @@ var adminService = {
      */
     getChatGroupRoomsList: function(param) {
         let deferred = new common.Deferred();
+        let systemCategory = param.systemCategory;
         let queryObj = { code: constant.chatGroup.dict_chat_group_type, valid: 1, status: 1 };
-        boDict.findOne(queryObj, "children", function(err, roomTypes) {
+        queryObj["children.systemCategory"] = {
+            $regex: `${systemCategory},|,${systemCategory}|,${systemCategory},|${systemCategory}`
+        };
+        boDict.findOne(queryObj, "children.$", function(err, roomTypes) {
             if (err) {
                 deferred.reject(err);
                 return;
             }
-            deferred.resolve(roomTypes.children);
+            deferred.resolve(roomTypes ? roomTypes.children : roomTypes);
         });
         return deferred.promise;
     },
