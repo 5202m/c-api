@@ -279,7 +279,7 @@ router.get("/getChatGroupRoomsList", (req, res) => {
  * @apiUse ParametersMissedError
  */
 router.post("/setUserGag", (req, res) => {
-    let requires = ["userId", "groupType", "groupId", "gagDate", "gagTips", "gagRemark"];
+    let requires = ["userId", "groupType", "groupId"/*, "gagDate", "gagTips", "gagRemark"*/];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
@@ -330,7 +330,7 @@ router.post("/setUserGag", (req, res) => {
  * @apiUse ParametersMissedError
  */
 router.post("/setVisitorGag", (req, res) => {
-    let requires = ["groupType", "groupId", "userId", "type"];
+    let requires = ["groupType", "groupId", "userId"/*, "type"*/];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });

@@ -205,7 +205,7 @@ var adminService = {
                         callback({ isOk: false, isIn: false, msg: '未设置规则' });
                     }
                 } else {
-                    callback({ isOk: false, isIn: false, msg: '禁言失败' });
+                    callback({ isOk: false, isIn: false, msg: '未设置规则' });
                 }
             }
         });
