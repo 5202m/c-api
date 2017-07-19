@@ -259,7 +259,7 @@ var userService = {
                             return deferred.promise;
                         }
                     }
-                    if (!isImg && isPass && type != 'speak_not_allowed' && common.isValid(beforeVal)) {
+                    if (/*!isImg && */isPass && type != 'speak_not_allowed' && common.isValid(beforeVal)) {
                         beforeVal = beforeVal.replace(/(^[,，])|([,|，]$)/g, ''); //去掉结尾的逗号
                         beforeVal = beforeVal.replace(/,|，/g, '|'); //逗号替换成|，便于统一使用正则表达式
                         if (type == 'visitor_filter') {
