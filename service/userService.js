@@ -12,9 +12,6 @@ var visitorService = require('../service/visitorService');
 var chatPraiseService = require('../service/chatPraiseService');
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common');
-let followedTeacher = require('../models/followedTeacher'); //引入followedTeacher数据模型
-let ObjectId = require('mongoose').Schema.ObjectId;
-let async = require('async');
 let Deferred = common.Deferred;
 
 /**
@@ -50,7 +47,7 @@ var userService = {
      */
     getUserList: function(params, callback) {
         let userNo = params.userNo;
-        let searchObj = { userNo: { $in: userNo.split(",") } };
+        let searchObj = { userNo: { $in: userNOs.split(",") } };
         common.wrapSystemCategory(searchObj, params.systemCategory);
         boUser.find(searchObj, "userNo userName position avatar status valid", function(err, rows) {
             if (err) {
@@ -259,7 +256,7 @@ var userService = {
                             return deferred.promise;
                         }
                     }
-                    if (/*!isImg && */isPass && type != 'speak_not_allowed' && common.isValid(beforeVal)) {
+                    if (isPass && type != 'speak_not_allowed' && common.isValid(beforeVal)) {
                         beforeVal = beforeVal.replace(/(^[,，])|([,|，]$)/g, ''); //去掉结尾的逗号
                         beforeVal = beforeVal.replace(/,|，/g, '|'); //逗号替换成|，便于统一使用正则表达式
                         if (type == 'visitor_filter') {
@@ -268,33 +265,36 @@ var userService = {
                                 return deferred.promise;
                             }
                         }
-                        if (type == 'speak_num_set' && visitorSpeak.allowed && speakNum > 0 && Number(beforeVal) <= speakNum) { //发言次数限制(针对游客）
-                            deferred.reject({ isOK: false, tip: tip });
-                            return deferred.promise;
-                        }
-                        if (type == 'keyword_filter') { //过滤关键字或过滤链接
-                            if (eval('/' + beforeVal + '/').test(contentVal)) {
-                                deferred.reject({ isOK: false, tip: tip });
-                                return deferred.promise;
+						if(!isImg){
+						    if (type == 'speak_num_set' && visitorSpeak.allowed && speakNum > 0 && Number(beforeVal) <= speakNum) { //发言次数限制(针对游客）
+                               deferred.reject({ isOK: false, tip: tip });
+                               return deferred.promise;
                             }
-                        }
-                        if (type == 'url_not_allowed') { //禁止链接
-                            var val = beforeVal.replace(/\//g, '\\/').replace(/\./g, '\\.');
-                            if (eval('/' + val + '/').test(contentVal)) {
-                                deferred.reject({ isOK: false, tip: tip });
-                                return deferred.promise;
-                            }
-                        }
-                        if (type == 'url_allowed') { //除该连接外其他连接会禁止
-                            urlArr.push(beforeVal);
-                            urlTipArr.push(tip);
-                        }
-                        if (type == 'keyword_replace') { //替换关键字
-                            if (eval('/' + beforeVal + '/').test(contentVal)) {
-                                content.value = common.encodeHtml(content.value).replace(eval('/' + beforeVal + '/g'), ruleArr[i].afterRuleVal);
-                                resultTip.push(tip);
-                            }
-                        }
+							if (type == 'keyword_filter') { //过滤关键字或过滤链接
+								if (eval('/' + beforeVal + '/').test(contentVal)) {
+									deferred.reject({ isOK: false, tip: tip });
+									return deferred.promise;
+								}
+							}
+							if (type == 'url_not_allowed') { //禁止链接
+								var val = beforeVal.replace(/\//g, '\\/').replace(/\./g, '\\.');
+								if (eval('/' + val + '/').test(contentVal)) {
+									deferred.reject({ isOK: false, tip: tip });
+									return deferred.promise;
+								}
+							}
+							if (type == 'url_allowed') { //除该连接外其他连接会禁止
+								urlArr.push(beforeVal);
+								urlTipArr.push(tip);
+							}
+							if (type == 'keyword_replace') { //替换关键字
+								if (eval('/' + beforeVal + '/').test(contentVal)) {
+									content.value = common.encodeHtml(content.value).replace(eval('/' + beforeVal + '/g'), ruleArr[i].afterRuleVal);
+									resultTip.push(tip);
+								}
+							}
+						}
+                        
                     }
                     if (isPass && type == 'need_approval') { //需要审批
                         needApproval = true;
@@ -1161,45 +1161,12 @@ var userService = {
                 }
             });
     },
-    handleMemberInfoData: function(data) {
-        var result = {
-            mobilePhone: data.mobilePhone
-        };
-        if (data.loginPlatform && data.loginPlatform.chatUserGroup && data.loginPlatform.chatUserGroup.length > 0) {
-            var chatUserGroup = data.loginPlatform.chatUserGroup[0];
-            result.groupType = chatUserGroup._id;
-            result.userId = chatUserGroup.userId;
-            result.avatar = chatUserGroup.avatar;
-            result.nickname = chatUserGroup.nickname;
-            result.userType = chatUserGroup.userType;
-            result.vipUser = chatUserGroup.vipUser;
-            result.clientGroup = chatUserGroup.clientGroup;
-            result.createDate = (chatUserGroup.createDate instanceof Date ? chatUserGroup.createDate.getTime() : 0);
-            var rooms = [],
-                room;
-            for (var i = 0, lenI = chatUserGroup.rooms ? chatUserGroup.rooms.length : 0; i < lenI; i++) {
-                room = chatUserGroup.rooms[i];
-                rooms.push({
-                    roomId: room._id,
-                    onlineStatus: room.onlineStatus,
-                    sendMsgCount: room.sendMsgCount,
-                    onlineDate: (room.onlineDate instanceof Date ? room.onlineDate.getTime() : 0),
-                    offlineDate: (room.offlineDate instanceof Date ? room.offlineDate.getTime() : 0)
-                });
-            }
-            result.rooms = rooms;
-        }
-        return result;
-    },
     /**
      * 按照手机号查询用户信息
      * @param params  {{mobilePhone:String, userId:String, groupType:String}}
      * @param callback
      */
     getMemberInfo: function(params, callback) {
-        callback = callback || (() => {});
-        let _this = this;
-        let deferred = new Deferred();
         var searchObj = {
             valid: 1,
             status: 1
@@ -1220,58 +1187,37 @@ var userService = {
                     logger.error("getMemberByMobile>>get momber info error:" + err);
                 }
                 callback(err, null);
-                deferred.reject(err);
                 return;
             }
-            var result = _this.handleMemberInfoData(data);
-            callback(null, result);
-            deferred.resolve(result);
-        });
-        return deferred.promise;
-    },
-    getMemberListByUserNos: function(params) {
-        let _this = this;
-        let userNos = typeof params.userNos === 'string' ? params.userNos.split(',') : params.userNos;
-        let deferred = new Deferred();
-        var searchObj = {
-            valid: 1,
-            status: 1
-        };
-        searchObj["loginPlatform.chatUserGroup._id"] = params.groupType;
-        searchObj["loginPlatform.chatUserGroup.userId"] = {
-            "$in": userNos
-        };
-        member.find(searchObj, {
-                "mobilePhone": 1,
-                "loginPlatform.chatUserGroup.$": 1
-            })
-            .then(jsonData => {
-                deferred.resolve(jsonData.map(user => _this.handleMemberInfoData(user)));
-            })
-            .catch(deferred.reject);
-        return deferred.promise;
-    },
-    getMemberListByMobilePhones: function(params) {
-        let deferred = new common.Deferred();
-        let mobilePhoneArray = typeof params.mobilePhones === 'string' ? params.mobilePhones.split(",") : params.mobilePhones;
-        let queryObj = {
-            mobilePhone: { $in: mobilePhoneArray },
-            valid: 1,
-            "loginPlatform.chatUserGroup._id": params.groupType
-        };
-        common.wrapSystemCategory(queryObj, params.systemCategory);
-        let fieldObj = {
-            "mobilePhone": 1,
-            "loginPlatform.chatUserGroup.$": 1
-        };
-        member.find(queryObj, fieldObj, (err, rows) => {
-            if (err) {
-                logger.error(err);
-                deferred.reject(err);
+            var result = {
+                mobilePhone: data.mobilePhone
+            };
+            if (data.loginPlatform && data.loginPlatform.chatUserGroup && data.loginPlatform.chatUserGroup.length > 0) {
+                var chatUserGroup = data.loginPlatform.chatUserGroup[0];
+                result.groupType = chatUserGroup._id;
+                result.userId = chatUserGroup.userId;
+                result.avatar = chatUserGroup.avatar;
+                result.nickname = chatUserGroup.nickname;
+                result.userType = chatUserGroup.userType;
+                result.vipUser = chatUserGroup.vipUser;
+                result.clientGroup = chatUserGroup.clientGroup;
+                result.createDate = (chatUserGroup.createDate instanceof Date ? chatUserGroup.createDate.getTime() : 0);
+                var rooms = [],
+                    room;
+                for (var i = 0, lenI = chatUserGroup.rooms ? chatUserGroup.rooms.length : 0; i < lenI; i++) {
+                    room = chatUserGroup.rooms[i];
+                    rooms.push({
+                        roomId: room._id,
+                        onlineStatus: room.onlineStatus,
+                        sendMsgCount: room.sendMsgCount,
+                        onlineDate: (room.onlineDate instanceof Date ? room.onlineDate.getTime() : 0),
+                        offlineDate: (room.offlineDate instanceof Date ? room.offlineDate.getTime() : 0)
+                    });
+                }
+                result.rooms = rooms;
             }
-            deferred.resolve(rows);
+            callback(null, result);
         });
-        return deferred.promise;
     },
     /**
      * 获取分析师列表
@@ -1282,84 +1228,6 @@ var userService = {
         boUser.find({ valid: 1, status: 0, systemCategory: systemCategory, 'role.roleNo': common.getPrefixReg("analyst") }, "userNo userName position avatar winRate wechatCode wechatCodeImg earningsM tag introduction", function(err, rows) {
             callback(rows);
         });
-    },
-    setTeacherFollower: function(params) {
-        let deferred = new common.Deferred();
-        params.isFollow = 'isFollow' in params ? params.isFollow : 1; //如果isFollow不存在，则设置1为默认值
-        followedTeacher.findOne({ status: 1, userNo: params.analystNo })
-            .then(row => {
-                if (!row) {
-                    row = new followedTeacher({
-                        _id: null,
-                        userNo: params.analystNo,
-                        followers: [],
-                        status: 1
-                    });
-                }
-                if (!row.followers) {
-                    row.followers = new Array();
-                }
-                if (params.isFollow === 1 && row.followers.some(no => no === params.userId)) { //已经是关注者了，并且又要重新设置关注，那么直接resolve。
-                    deferred.resolve({ isOK: false, userNo: row.userNo });
-                    return;
-                }
-                if (params.isFollow === 0) { //取消关注。
-                    row.followers = row.followers.filter(followerId => followerId !== params.userId);
-                    row.save().then(data => {
-                        deferred.resolve({ isOK: true, userNo: params.analystNo });
-                    }).catch(err => {
-                        logger.error("setTeacherFollower and save Error: ", err);
-                        deferred.reject(err);
-                    });
-                } else { //设置关注。
-                    row.followers.push(params.userId);
-                    row.save().then(data => {
-                        deferred.resolve({ isOK: true, userNo: params.analystNo });
-                    }).catch(err => {
-                        logger.error("setTeacherFollower and save Error: ", err);
-                        deferred.reject(err);
-                    });
-                }
-            })
-            .catch(err => {
-                logger.error("setTeacherFollower Error: ", err);
-                deferred.reject(err);
-            });
-        return deferred.promise;
-    },
-    getTeacherFollowers: function(params) {
-        let _this = this;
-        let deferred = new common.Deferred();
-        followedTeacher.findOne({ status: 1, userNo: params.userNo })
-            .then(row => {
-                if (!row || !row.followers || row.followers.length === 0) {
-                    deferred.resolve([]);
-                    return;
-                }
-                _this.getMemberListByUserNos({
-                    userNos: row.followers,
-                    groupType: params.groupType
-                }).then(deferred.resolve).catch(deferred.reject);
-            })
-            .catch(err => {
-                logger.error("getTeacherFollowers error", err);
-                deferred.reject(err);
-            });
-        return deferred.promise;
-    },
-    getFollowedTeachers: function(params) {
-        let _this = this;
-        let deferred = new common.Deferred();
-        followedTeacher.find({ status: 1, followers: params.userId }, "userNo")
-            .then(userNoList => {
-                let list = userNoList.map(user => user.userNo);
-                _this.getUserList(list.toString(), deferred.resolve);
-            })
-            .catch(err => {
-                logger.error("getFollowedTeachers error", err);
-                deferred.reject(err);
-            });
-        return deferred.promise;
     }
 };
 
