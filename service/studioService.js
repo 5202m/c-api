@@ -338,7 +338,8 @@ var studioService = {
             clientGroup = params.clientGroup;
         let queryObj = {
             groupType: groupType,
-            clientGroupId: clientGroup
+            clientGroupId: clientGroup,
+            valid: 1
         };
         common.wrapSystemCategory(queryObj, params.systemCategory);
         chatClientGroup.findOne(queryObj, function(err, row) {
