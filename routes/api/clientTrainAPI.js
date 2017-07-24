@@ -126,7 +126,8 @@ router.post("/addClientTrain", (req, res) => {
     let trainParams = {
         groupId: req.body["groupId"],
         nickname: req.body["nickname"],
-        noApprove: req.body['noApprove']
+        noApprove: req.body['noApprove'],
+        userId: req.body["userId"]
     };
     common.wrapSystemCategory(trainParams, req.body.systemCategory);
     service.addClientTrain(trainParams, {
