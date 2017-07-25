@@ -133,6 +133,10 @@ var showTradeService = {
                         callbackTmp(null, results);
                         return;
                     }
+                    if (!results.list) {
+                        callbackTmp(null, results);
+                        return;
+                    }
                     let mobilePhoneArray = results.list.tradeList.map(item => item.user.telephone);
                     userService.getMemberListByMobilePhones({
                         groupType: params.groupType,
