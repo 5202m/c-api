@@ -11,9 +11,9 @@ var chatPraiseService = {
      * 提取点赞内容
      */
     getPraiseNum: function(params, callback) {
-        let userId = params.userId,
+        let userId = params.praiseId,
             type = params.type,
-            platform = params.platform;
+            platform = params.platfrom;
         let searchObj = { praiseType: type, fromPlatform: platform };
         if (common.isValid(userId)) {
             let praiseId = userId.indexOf(',') > -1 ? userId.split(",") : userId;
