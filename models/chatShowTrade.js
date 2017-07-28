@@ -32,7 +32,7 @@ var chatShowTradeSchema = new Schema({
     tradeImg: String, //晒单图片
     profit: String, //盈利
     remark: String, //心得
-    valid: Number, //是否删除 1-有效 0-无效
+    valid: Number, //是否删除 0-有效 1-无效
     updateDate: Date,
     createUser: String,
     createIp: String,
