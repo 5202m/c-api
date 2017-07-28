@@ -491,7 +491,9 @@ var userService = {
                 }
             }
         };
-
+        if(!common.hasPrefix(userInfo.groupId, userInfo.groupType)){
+            callback(false);
+        }
         var setValObj = {
             '$push': {
                 'loginPlatform.chatUserGroup.$.rooms': {
