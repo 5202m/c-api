@@ -80,7 +80,7 @@ var showTradeService = {
                 "tradeType": (params.tradeType ? params.tradeType : 2),
                 "boUser.userNo": params.userNo
             };
-            if (common.isValid(params.status)) {
+            if (common.isValid(params.status) && common.isValid(params.tradeType) && params.tradeType == 2) {
                 searchObj.status = params.status;
             }
         }
