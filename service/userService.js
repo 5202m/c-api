@@ -441,6 +441,9 @@ var userService = {
      */
     joinNewRoom: function(userInfo, callback) {
         var searchObj = { 'mobilePhone': userInfo.mobilePhone, valid: 1, 'loginPlatform.chatUserGroup': { $elemMatch: { _id: userInfo.groupType, userId: userInfo.userId, "rooms._id": { $ne: userInfo.groupId } } } };
+        if(!common.hasPrefix(userInfo.groupId, userInfo.groupType)){
+            callback(false);
+        }
         var setValObj = {
             '$push': {
                 'loginPlatform.chatUserGroup.$.rooms': {
