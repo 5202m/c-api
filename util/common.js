@@ -698,6 +698,28 @@ var common = {
         var index1 = Math.floor(Math.random() * 10),
             index2 = Math.floor(Math.random() * 10);
         return str[index1] + userId + str[index2];
+    },
+
+    /**
+     * 在数组中取指定个数随机数
+     * @param start 数组起始值
+     * @param end 数组结束值
+     * @param count 取出个数
+     * @returns {Array.<*>}
+     */
+    getRandomArrayElements: function(start, end, count) {
+        var arr = [];
+        for(var i = start; i < end; i++){
+            arr.push( i + 1 );
+        }
+        var shuffled = arr.slice(0), j = arr.length, min = j - count, temp, index;
+        while (j-- > min) {
+            index = Math.floor((j + 1) * Math.random());
+            temp = shuffled[index];
+            shuffled[index] = shuffled[j];
+            shuffled[j] = temp;
+        }
+        return shuffled.slice(min);
     }
 };
 
