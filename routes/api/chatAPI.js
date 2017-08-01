@@ -836,4 +836,54 @@ router.post("/sendNoticeArticle", function(req, res) {
     res.json(ApiResult.result(null, { isOK: true }));
 });
 
+/**
+ * @api {post} /chat/sendNoticeActivity 发送活动推送通知
+ * @apiName sendNoticeActivity
+ * @apiGroup chat
+ *
+ * @apiParam {String} groupType 组别 studio/fxstudio/hxstudio
+ * @apiParam {String} info 消息体，json 字符串
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Number} data  返回的数据
+ *
+ * @apiSampleRequest /api/chat/sendNoticeActivity
+ * @apiParamExample {json} Request-Example:
+ *     {info: '{"userId": "xxxxxxxx","nickname":"test","avatar":"xxx.jpg","mobilePhone":"138xxxxxxxxx"}', groupType: 'fxstudio'}
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *  "result": 0,
+ *  "msg": "OK",
+ *  "data": {isOK: true}
+ * }
+ *
+ * @apiUse ParametersMissedError
+ * @apiUse ParameterNotAvailableJSONError
+ */
+router.post('/sendNoticeActivity', (req, res) => {
+    let requires = ["groupType", "info"];
+    let isSatify = requires.every(name => {
+        return common.isValid(req.body[name]);
+    });
+    if (!isSatify) {
+        logger.warn("[sendNoticeActivity] Parameters missed! Expecting parameters: ", requires);
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+    let groupType = req.body["groupType"],
+        info = req.body["info"];
+    try {
+        if (typeof info === "string") {
+            info = JSON.parse(info);
+        }
+    } catch (e) {
+        logger.error(e);
+        res.json(APIUtil.APIResult("code_10", null));
+        return;
+    }
+    chatService.activity(groupType, info);
+    res.json(ApiResult.result(null, { isOK: true }));
+});
+
 module.exports = router;

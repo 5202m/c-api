@@ -720,6 +720,28 @@ var common = {
             shuffled[j] = temp;
         }
         return shuffled.slice(min);
+    },
+    /*
+     * JSON数组去重
+     * @param: [array] json Array
+     * @param: [string] 唯一的key名，根据此键名进行去重
+     */
+    uniqueArray: function(array, key){
+        var result = array;
+        for(var i = 1; i < array.length; i++){
+            var item = array[i];
+            var repeat = false;
+            for (var j = 0; j < result.length; j++) {
+                if (item[key] == result[j][key]) {
+                    repeat = true;
+                    break;
+                }
+            }
+            if (!repeat) {
+                result.push(item);
+            }
+        }
+        return result;
     }
 };
 

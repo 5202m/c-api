@@ -14,7 +14,8 @@ class NoticeMessage {
             serverTime: 'serverTime', //服务器时间
             articleInfo: 'articleInfo', //文档信息
             showTrade: 'showTrade', //推送晒单信息
-            modifyRule: 'modifyRule' //规则改变
+            modifyRule: 'modifyRule', //规则改变
+            activity: 'activity' //活动信息
         }
         this.leaveRoomFlag = { //离开房间标志
             roomClose: 'roomClose', //房间关闭或禁用或开放时间结束
@@ -331,6 +332,11 @@ class NoticeMessage {
     showTradePushInfo(namespace, tradeInfoResult) {
         messageApi.send(messageApi.buildData(namespace, messageApi.msgType.sendMsg, "notice",
             messageApi.buildNamespaceExt(namespace), { type: this.noticeType.showTrade, data: tradeInfoResult }));
+    }
+
+    activityPushInfo(namespace, activityResult) {
+        messageApi.send(messageApi.buildData(namespace, messageApi.msgType.sendMsg, "notice",
+            messageApi.buildNamespaceExt(namespace), { type: this.noticeType.activity, data: activityResult }));
     }
 }
 module.exports = new NoticeMessage();
