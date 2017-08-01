@@ -622,7 +622,7 @@ router.post("/", (req, res) => {
 
 
 /**
- * @api {get} /message/getMessageUser 查询当天发言用户列表
+ * @api {post} /message/getMessageUser 查询当天发言用户列表
  * @apiName getMessageUser
  * @apiGroup message
  *
