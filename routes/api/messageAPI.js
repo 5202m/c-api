@@ -650,7 +650,7 @@ router.post("/", (req, res) => {
 router.post("/getMessageUser", (req, res) => {
     let requires = ["groupType", "systemCategory"];
     let isSatify = requires.every((name) => {
-        return common.isValid(req.query[name]);
+        return common.isValid(req.body[name]);
     });
     if (!isSatify) {
         res.json(APIUtil.APIResult("code_1000", null));
