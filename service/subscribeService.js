@@ -611,6 +611,7 @@ var subscribeService = {
                         }
                     });
                 } else {
+                    logger.error("保存订阅数据失败! >>saveSubscribe:", JSON.stringify(data));
                     callback({ isOK: false, msg: data.errmsg || '订阅失败' });
                 }
             });
