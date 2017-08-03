@@ -268,7 +268,7 @@ var userService = {
                                 return deferred.promise;
                             }
                         }
-                        if(!isImg){
+                        if (!isImg) {
                             if (type == 'speak_num_set' && visitorSpeak.allowed && speakNum > 0 && Number(beforeVal) <= speakNum) { //发言次数限制(针对游客）
                                 deferred.reject({ isOK: false, tip: tip });
                                 return deferred.promise;
@@ -1355,7 +1355,7 @@ var userService = {
         followedTeacher.find({ status: 1, followers: params.userId }, "userNo")
             .then(userNoList => {
                 let list = userNoList.map(user => user.userNo);
-                _this.getUserList(list.toString(), deferred.resolve);
+                _this.getUserList({ userNo: list.toString() }, deferred.resolve);
             })
             .catch(err => {
                 logger.error("getFollowedTeachers error", err);
