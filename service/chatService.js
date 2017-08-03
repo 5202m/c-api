@@ -519,7 +519,7 @@ var chatService = {
                 var userSaveInfo = {};
                 if (!isAllowPass) {
                     var tipResult = userService.checkUserGag(row, userInfo.groupId); //检查用户禁言
-                    if (!tipResult.isOK) { //是否设置了用户禁言
+                    if (!tipResult.isOK && !isWh) { //是否设置了用户禁言
                         chatMessage.sendMsg(
                             userInfo.groupType,
                             userInfo.socketId,
