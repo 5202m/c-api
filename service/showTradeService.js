@@ -113,9 +113,8 @@ var showTradeService = {
                                 callbackTmp(null, null);
                                 return;
                             }
-                            var result = null;
+                            var result = { tradeList: [] };
                             if (data && data.length > 0) {
-                                result = { tradeList: [] };
                                 var tradeInfo = null;
                                 for (var i = 0, lenI = data.length; i < lenI; i++) {
                                     tradeInfo = data[i].toObject();
