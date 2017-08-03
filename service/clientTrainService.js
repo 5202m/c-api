@@ -263,8 +263,13 @@ var clientTrainService = {
 
     /**
      * 添加签到
-     * @param userInfo
-     * @param clientip
+     * @param params
+     * @param params.mobilePhone
+     * @param params.groupType
+     * @param params.avatar
+     * @param params.clientGroup
+     * @param params.clientip
+     * @param params.isNoPoints 是否不添加连续签到积分，1为不添加，0或者不传为自动添加连续签到积分。
      * @param callback
      */
     addSignin: function(params, callback) {
@@ -317,9 +322,10 @@ var clientTrainService = {
                     }
                     callback({ isOK: true, msg: '客户签到成功', signDays: signinInfo.serialSigDays });
                     if (isNoPoints) {
-                        return;
+                        clientTrainService.addSignPoints(userInfo, clientip, 0);
+                    } else {
+                        clientTrainService.addSignPoints(userInfo, clientip, signinInfo.serialSigDays);
                     }
-                    clientTrainService.addSignPoints(userInfo, clientip, signinInfo.serialSigDays);
                 });
             }).catch(e => {
                 callback({ isOK: false, msg: '客户签到失败' });
