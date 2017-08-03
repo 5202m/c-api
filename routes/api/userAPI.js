@@ -442,8 +442,8 @@ router.get("/joinNewRoom", (req, res) => {
 
     userService.joinNewRoom(
         req.query,
-        (data) => {
-            res.json(APIUtil.APIResult(null, data));
+        (isOK) => {
+            res.json(APIUtil.APIResult(null, { isOK: isOK }));
         }
     );
 });
