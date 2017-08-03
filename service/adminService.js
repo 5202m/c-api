@@ -118,13 +118,23 @@ var adminService = {
         let deferred = new common.Deferred();
         let systemCategory = param.systemCategory;
         let queryObj = { code: constant.chatGroup.dict_chat_group_type, valid: 1, status: 1 };
-        queryObj["children.systemCategory"] = {
-            $regex: `${systemCategory},|,${systemCategory}|,${systemCategory},|${systemCategory}`
+        queryObj["children"] = {
+            $elemMatch:{systemCategory:{ $regex: common.getSplitMatchReg(systemCategory)} ,valid: 1,status: 1}
         };
-        boDict.findOne(queryObj, "children.$", function(err, roomTypes) {
+        boDict.findOne(queryObj, "children", function(err, roomTypes) {
             if (err) {
                 deferred.reject(err);
                 return;
+            }
+            if(roomTypes && roomTypes.children.length > 0) {
+                let childrens = [];
+                for(let i = 0; i < roomTypes.children.length; i++){
+                    let children = roomTypes.children[i].toObject();
+                    if (children.systemCategory == systemCategory) {
+                        childrens.push(children);
+                    }
+                }
+                roomTypes.children = childrens;
             }
             deferred.resolve(roomTypes ? roomTypes.children : roomTypes);
         });
