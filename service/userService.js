@@ -491,8 +491,9 @@ var userService = {
                 }
             }
         };
-        if(!common.hasPrefix(userInfo.groupId, userInfo.groupType)){
+        if (!common.hasPrefix(userInfo.groupId, userInfo.groupType)) {
             callback(false);
+            return;
         }
         var setValObj = {
             '$push': {
