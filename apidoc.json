@@ -1,7 +1,7 @@
 {
       "name": "直播间API项目",
       "version": "0.0.1",
-      "url" : "http://192.168.35.81:3000/api",
-      "description": "此项目用于为其他项目提供高性能的API来访问数据库以及其他资源。\r\nAPI真实场域名\r\nPM：https://pmapi.24k.hk\r\nFX：https://chatapi.gwfx.com\r\nHX：https://handanapi.hx9999.com",
-      "sampleUrl": "http://192.168.35.81:3000"
+      "url" : "http://192.168.35.81:3004/api",
+      "description": "此项目用于为其他项目提供高性能的API来访问数据库以及其他资源。\r\nAPI真实场域名\r\nPM：http://pmapi.24k.hk\r\nFX：https://chatapi.gwfx.com\r\nHX：https://handanapi.hx9999.com",
+      "sampleUrl": "http://192.168.35.81:3004"
   }
