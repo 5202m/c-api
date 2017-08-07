@@ -50,7 +50,7 @@ var config = {
     filesFtpBasePath: "/",
     filesFtpPWD: "pmmisftppwd123",
     //db
-    dbURL: 'mongodb://192.168.35.236/fx_mis',
+    dbURL: 'mongodb://192.168.35.236/pm_mis_fromPD',
     dbUserName: 'pmmisuser',
     dbUserPWD: 'pmmispwd123',
     messagePush: { appKey: 'c139eac92b28b05be7d54d95', masterSecret: 'bf11c36cdc35a7b52ee1131e' }, //消息推送
