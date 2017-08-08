@@ -741,14 +741,21 @@ router.get('/cpuprofile', function(req, res) {
         //Start Profiling
         profiler.startProfiling('CPU profile');
         setTimeout(() => {
-            //Stop Profiling after duration
-            const profile = profiler.stopProfiling();
-            profile.export()
-            .pipe(fs.createWriteStream(
-                'cpuprofile-' + Date.now() + '.cpuprofile'))
-            .on('finish', () => profile.delete());
-            res.sendStatus(200);
+            try {
+                //Stop Profiling after duration
+                const profile = profiler.stopProfiling();
+                profile.export()
+                .pipe(fs.createWriteStream(
+                    './cpuprofile-' + Date.now() + '.cpuprofile'))
+                .on('finish', () => profile.delete());
+                //res.sendStatus(200);
+            }catch (e){
+                res.end(e);
+            }
         }, duration * 1000);
+        res.json(true);
+    }else{
+        res.json(null);
     }
 });
 
