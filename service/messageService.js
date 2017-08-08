@@ -314,7 +314,7 @@ var messageService = {
             "toUser.talkStyle": 1,
             publishTime: { "$gte": publishTime + '_' }
         };
-        common.wrapSystemCategory(queryObj, params.systemCategory);
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         var o = {
             //映射方法
             map: function() {
@@ -349,6 +349,48 @@ var messageService = {
                 }
                 callback(docs);
             });
+        });
+    },
+
+    /**
+     * 查询当天发言用户
+     * @param params
+     * @param callback
+     */
+    getMessageByLteTodayCurrentTime: function(params, callback){
+        var startTime = new Date();
+        var currentTime = startTime.getTime();
+        startTime.setHours(0);
+        startTime.setMinutes(0);
+        startTime.setSeconds(0);
+        startTime.setMilliseconds(0);
+        var todayStartTime=Date.parse(startTime)/1000;
+        var searchObj = {
+            groupType: params.groupType,
+            //groupId: params.groupId,
+            status: 1,
+            valid: 1,
+            publishTime: { "$gte": todayStartTime + '_', "$lte": currentTime + '_' }
+        };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
+        chatMessage.db().find(searchObj, { 'userId': 1, 'avatar': 1,  'nickname': 1, 'mobilePhone': 1 }, function(err, data) {
+            if (!err && data) {
+                for (var i = 0; i < data.length; i++) {
+                    for (var j =i+1; j <data.length; ) {
+                        if (data[i].userId == data[j].userId) {
+                            data.splice(j, 1);
+                        }
+                        else j++;
+                    }
+                }
+                callback(data);
+            } else if (err) {
+                logger.error(err);
+                callback(null);
+            } else {
+                logger.error("getMessageByLteTodayCurrentTime Error.");
+                callback(null);
+            }
         });
     }
 };

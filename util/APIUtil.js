@@ -612,6 +612,7 @@ let pathList = [
     "/chat/getAnalysts",
     "/chat/getMemberInfo",
     "/chat/getShowTrade",
+    "/chat/praiseAnalyst",
     "/zxFinanceData/*"
 ];
 let pathFromAppList = [

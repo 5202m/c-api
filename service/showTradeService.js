@@ -1,6 +1,7 @@
 var chatShowTrade = require('../models/chatShowTrade'); //引入chatShowTrade数据模型
 var logger = require('../resources/logConf').getLogger('showTradeService'); //引入log4js
 var chatPraiseService = require('../service/chatPraiseService'); //引入chatPraiseService
+var userService = require('../service/userService'); //引入chatPraiseService
 var chatService = require('../service/chatService'); //引入chatService
 var constant = require('../constant/constant'); //引入constant
 var common = require('../util/common'); //引入common类
@@ -32,7 +33,7 @@ var showTradeService = {
             "valid": 1,
             "tradeType": 1,
             "systemCategory": systemCategory
-        }).sort({ "sorted" : -1,"showDate": -1 }).exec("find", function(err, data) {
+        }).sort({ "sorted": -1, "showDate": -1 }).exec("find", function(err, data) {
             if (err) {
                 logger.error("查询晒单数据失败!>>getShowTrade:", err);
                 callback(null);
@@ -88,19 +89,20 @@ var showTradeService = {
                 "tradeType": (params.tradeType ? params.tradeType : 2),
                 "boUser.userNo": params.userNo
             };
-            if (common.isValid(params.status)) {
+            if (common.isValid(params.status) && common.isValid(params.tradeType) && params.tradeType == 2) {
                 searchObj.status = params.status;
             }
         }
-        var from = (params.pageNo - 1) * params.pageSize;
-        var orderByJsonObj = { "sorted" : 'desc',"showDate": 'desc' };
         if (common.isValid(params.skipLimit)) {
             callback(null);
             return;
         }
         common.wrapSystemCategory(searchObj, params.systemCategory);
-        async.parallel({
-                list: function(callbackTmp) {
+        async.waterfall([
+                function(callbackTmp) {
+                    let results = {};
+                    var from = (params.pageNo - 1) * params.pageSize;
+                    var orderByJsonObj = { "sorted": 'desc', "showDate": 'desc' };
                     chatShowTrade.find(searchObj)
                         .sort(orderByJsonObj)
                         .skip(from)
@@ -111,9 +113,8 @@ var showTradeService = {
                                 callbackTmp(null, null);
                                 return;
                             }
-                            var result = null;
+                            var result = { tradeList: [] };
                             if (data && data.length > 0) {
-                                result = { tradeList: [] };
                                 var tradeInfo = null;
                                 for (var i = 0, lenI = data.length; i < lenI; i++) {
                                     tradeInfo = data[i].toObject();
@@ -122,15 +123,50 @@ var showTradeService = {
                                     result.tradeList.push(tradeInfo);
                                 }
                             }
-                            callbackTmp(null, result);
+                            results.list = result;
+                            callbackTmp(null, results);
                         });
                 },
-                totalSize: function(callbackTmp) {
+                function(results, callbackTmp) {
+                    if (searchObj.tradeType === 1) {
+                        callbackTmp(null, results);
+                        return;
+                    }
+                    if (!results.list) {
+                        callbackTmp(null, results);
+                        return;
+                    }
+                    let mobilePhoneArray = results.list.tradeList.map(item => item.user.telephone);
+                    userService.getMemberListByMobilePhones({
+                        groupType: params.groupType,
+                        systemCategory: params.systemCategory,
+                        mobilePhones: mobilePhoneArray
+                    }).then(rows => {
+                        rows.forEach(row => {
+                            let trades = results.list.tradeList.filter(item => item.user.telephone === row.mobilePhone);
+                            if (!trades) {
+                                logger.debug("Didn't find any tradeList mathced rows with mobilePhone: ",
+                                    row.mobilePhone);
+                                return;
+                            }
+                            trades.forEach(trade => {
+                                trade.user.userName = row.loginPlatform.chatUserGroup[0].nickname || trade.user.userName || "";
+                                trade.user.avatar = row.loginPlatform.chatUserGroup[0].avatar || trade.user.avatar || "";
+                            });
+                        });
+                        callbackTmp(null, results);
+                    }).catch(e => {
+                        logger.debug(e);
+                        callbackTmp(null, results);
+                    });
+                },
+                function(results, callbackTmp) {
                     chatShowTrade.find(searchObj).count(function(err, rowNum) {
-                        callbackTmp(null, rowNum);
+                        results.totalSize = rowNum;
+                        callbackTmp(null, results);
                     });
                 }
-            },
+            ],
             function(err, results) {
                 if (params.pageNo) {
                     callback(ApiResult.page(params.pageNo, params.pageSize, results.totalSize, results.list ? results.list.tradeList : []));

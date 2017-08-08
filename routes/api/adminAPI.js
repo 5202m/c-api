@@ -35,6 +35,7 @@ const common = require('../../util/common');
 const errorMessage = require('../../util/errorMessage.js');
 const adminService = require('../../service/adminService');
 const APIUtil = require('../../util/APIUtil');
+const logger = require('../../resources/logConf').getLogger('adminAPI'); //引入log4js
 
 /**
  * @api {post} /admin/checkSystemUserInfo 获取房间的在线人数
@@ -171,12 +172,13 @@ router.get("/getChatGroupListByAuthUser", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    adminService.getChatGroupListByAuthUser(
-        req.query.userId,
-        (data) => {
+    adminService.getChatGroupListByAuthUser(req.query)
+        .then(data => {
             res.json(APIUtil.APIResult(null, data));
-        }
-    );
+        }).catch(e => {
+            logger.error("getChatGroupListByAuthUser failure: ", e);
+            res.json(APIUtil.APIResult("code_10", null));
+        });
 });
 /**
  * @api {get} /admin/getChatGroupRoomsList 获取聊天室列表
@@ -228,11 +230,13 @@ router.get("/getChatGroupListByAuthUser", (req, res) => {
  * @apiUse ParametersMissedError
  */
 router.get("/getChatGroupRoomsList", (req, res) => {
-    adminService.getChatGroupRoomsList(
-        (data) => {
+    adminService.getChatGroupRoomsList(req.query)
+        .then(data => {
             res.json(APIUtil.APIResult(null, data));
-        }
-    );
+        }).catch(e => {
+            logger.error("getChatGroupRoomsList failure: ", e);
+            res.json(APIUtil.APIResult("code_10", null));
+        });
 });
 /**
  * @api {post} /admin/setUserGag 设置禁言用户
@@ -275,7 +279,7 @@ router.get("/getChatGroupRoomsList", (req, res) => {
  * @apiUse ParametersMissedError
  */
 router.post("/setUserGag", (req, res) => {
-    let requires = ["userId", "groupType", "groupId", "gagDate", "gagTips", "gagRemark"];
+    let requires = ["userId", "groupType", "groupId"/*, "gagDate", "gagTips", "gagRemark"*/];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });
@@ -326,7 +330,7 @@ router.post("/setUserGag", (req, res) => {
  * @apiUse ParametersMissedError
  */
 router.post("/setVisitorGag", (req, res) => {
-    let requires = ["groupType", "groupId", "userId", "type"];
+    let requires = ["groupType", "groupId", "userId"/*, "type"*/];
     let isSatify = requires.every((name) => {
         return common.isValid(req.body[name]);
     });

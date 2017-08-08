@@ -126,7 +126,8 @@ router.post("/addClientTrain", (req, res) => {
     let trainParams = {
         groupId: req.body["groupId"],
         nickname: req.body["nickname"],
-        noApprove: req.body['noApprove']
+        noApprove: req.body['noApprove'],
+        userId: req.body["userId"]
     };
     common.wrapSystemCategory(trainParams, req.body.systemCategory);
     service.addClientTrain(trainParams, {
@@ -239,11 +240,12 @@ router.get("/getTrainList", (req, res) => {
  * @apiName addSignin
  * @apiGroup clientTrain
  *
- * @apiParam {String} groupType 组别，必填，直播间groupType值
+ * @apiParam {String} groupType 组别，直播间groupType值
  * @apiParam {String} mobilePhone 手机号.
  * @apiParam {Boolean} clientip 客户ip
  * @apiParam {String} clientGroup 客户组 vip/active/notActive/real/simulate/register/visitor
- * @apiParam {String} avatar 用户头像
+ * @apiParam {String} [avatar] 用户头像
+ * @apiParam {Number} [isNoPoints] 是否自动添加积分，只接受0或者1，1以外的值都认为是0。
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Object} data  返回的数据

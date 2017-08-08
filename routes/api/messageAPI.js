@@ -620,4 +620,49 @@ router.post("/", (req, res) => {
     }
 });
 
+
+/**
+ * @api {post} /message/getMessageUser 查询当天发言用户列表
+ * @apiName getMessageUser
+ * @apiGroup message
+ *
+ * @apiParam {String} groupType 组别 取userInfo.groupType值
+ * @apiParam {String} systemCategory 系统类别 pm/fx/hx
+ *
+ * @apiUse CommonResultDescription
+ * @apiSuccess {Array} data  返回的数据
+ *
+ * @apiSampleRequest /api/message/getMessageUser
+ * @apiExample Example usage:
+ *  /api/message/getMessageUser?groupType=fxstudio&systemCategory=fx
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "result": 0,
+ *          "errcode: "0",
+ *           errmsg: "",
+ *          "data": [
+ *          ]
+ *      }
+ *
+ * @apiUse ParametersMissedError
+ */
+router.post("/getMessageUser", (req, res) => {
+    let requires = ["groupType", "systemCategory"];
+    let isSatify = requires.every((name) => {
+        return common.isValid(req.body[name]);
+    });
+    if (!isSatify) {
+        res.json(APIUtil.APIResult("code_1000", null));
+        return;
+    }
+
+    messageService.getMessageByLteTodayCurrentTime(
+        req.body,
+        (data) => {
+            res.json(APIUtil.APIResultFromData(data));
+        }
+    );
+});
+
 module.exports = router;

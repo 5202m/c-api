@@ -197,12 +197,12 @@ var subscribeService = {
             case subscribeService.subscribeType.syllabus:
                 templateCode = "LiveReminder";
                 templateParam = {
-                    time : common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
-                    courseTime : data.startTime,
-                    teacherName : data.lecturer,
-                    groupName : data.groupName,
-                    title : data.title,
-                    context : data.context
+                    time: common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                    courseTime: data.startTime,
+                    teacherName: data.lecturer,
+                    groupName: data.groupName,
+                    title: data.title,
+                    context: data.context
                 };
                 break;
 
@@ -611,7 +611,8 @@ var subscribeService = {
                         }
                     });
                 } else {
-                    callback({ isOK: false, msg: '订阅失败' });
+                    logger.error("保存订阅数据失败! >>saveSubscribe:", JSON.stringify(data));
+                    callback({ isOK: false, msg: data.errmsg || '订阅失败' });
                 }
             });
         } else {

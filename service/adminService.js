@@ -97,19 +97,48 @@ var adminService = {
      * @param userId
      * @param callback
      */
-    getChatGroupListByAuthUser: function(userId, callback) {
-        chatGroup.find({ status: { $in: [1, 2] }, valid: 1, authUsers: userId }, "id name groupType", function(err, rooms) {
-            callback(rooms);
+    getChatGroupListByAuthUser: function(param, callback) {
+        let deferred = new common.Deferred();
+        let queryObj = { status: { $in: [1, 2] }, valid: 1, authUsers: param.userId };
+        common.wrapSystemCategory(queryObj, param.systemCategory);
+        chatGroup.find(queryObj, "id name groupType", function(err, rooms) {
+            if (err) {
+                deferred.reject(err);
+                return;
+            }
+            deferred.resolve(rooms);
         });
+        return deferred.promise;
     },
     /**
      * 获取房间类型列表
      * @param callback
      */
-    getChatGroupRoomsList: function(callback) {
-        boDict.findOne({ code: constant.chatGroup.dict_chat_group_type, valid: 1, status: 1 }, "children", function(err, roomTypes) {
-            callback(roomTypes.children);
+    getChatGroupRoomsList: function(param) {
+        let deferred = new common.Deferred();
+        let systemCategory = param.systemCategory;
+        let queryObj = { code: constant.chatGroup.dict_chat_group_type, valid: 1, status: 1 };
+        queryObj["children"] = {
+            $elemMatch:{systemCategory:{ $regex: common.getSplitMatchReg(systemCategory)} ,valid: 1,status: 1}
+        };
+        boDict.findOne(queryObj, "children", function(err, roomTypes) {
+            if (err) {
+                deferred.reject(err);
+                return;
+            }
+            if(roomTypes && roomTypes.children.length > 0) {
+                let childrens = [];
+                for(let i = 0; i < roomTypes.children.length; i++){
+                    let children = roomTypes.children[i].toObject();
+                    if (children.systemCategory == systemCategory) {
+                        childrens.push(children);
+                    }
+                }
+                roomTypes.children = childrens;
+            }
+            deferred.resolve(roomTypes ? roomTypes.children : roomTypes);
         });
+        return deferred.promise;
     },
     /**
      * 设置登录用户禁言
@@ -186,7 +215,7 @@ var adminService = {
                         callback({ isOk: false, isIn: false, msg: '未设置规则' });
                     }
                 } else {
-                    callback({ isOk: false, isIn: false, msg: '禁言失败' });
+                    callback({ isOk: false, isIn: false, msg: '未设置规则' });
                 }
             }
         });

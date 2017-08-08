@@ -11,7 +11,7 @@ var chatPraiseService = {
      * 提取点赞内容
      */
     getPraiseNum: function(params, callback) {
-        let userId = params.userId,
+        let userId = params.praiseId || params.userId,
             type = params.type,
             platform = params.platform;
         let searchObj = { praiseType: type, fromPlatform: platform };

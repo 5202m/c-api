@@ -259,7 +259,7 @@ var userService = {
                             return deferred.promise;
                         }
                     }
-                    if (!isImg && isPass && type != 'speak_not_allowed' && common.isValid(beforeVal)) {
+                    if (isPass && type != 'speak_not_allowed' && common.isValid(beforeVal)) {
                         beforeVal = beforeVal.replace(/(^[,，])|([,|，]$)/g, ''); //去掉结尾的逗号
                         beforeVal = beforeVal.replace(/,|，/g, '|'); //逗号替换成|，便于统一使用正则表达式
                         if (type == 'visitor_filter') {
@@ -268,31 +268,33 @@ var userService = {
                                 return deferred.promise;
                             }
                         }
-                        if (type == 'speak_num_set' && visitorSpeak.allowed && speakNum > 0 && Number(beforeVal) <= speakNum) { //发言次数限制(针对游客）
-                            deferred.reject({ isOK: false, tip: tip });
-                            return deferred.promise;
-                        }
-                        if (type == 'keyword_filter') { //过滤关键字或过滤链接
-                            if (eval('/' + beforeVal + '/').test(contentVal)) {
+                        if (!isImg) {
+                            if (type == 'speak_num_set' && visitorSpeak.allowed && speakNum > 0 && Number(beforeVal) <= speakNum) { //发言次数限制(针对游客）
                                 deferred.reject({ isOK: false, tip: tip });
                                 return deferred.promise;
                             }
-                        }
-                        if (type == 'url_not_allowed') { //禁止链接
-                            var val = beforeVal.replace(/\//g, '\\/').replace(/\./g, '\\.');
-                            if (eval('/' + val + '/').test(contentVal)) {
-                                deferred.reject({ isOK: false, tip: tip });
-                                return deferred.promise;
+                            if (type == 'keyword_filter') { //过滤关键字或过滤链接
+                                if (eval('/' + beforeVal + '/').test(contentVal)) {
+                                    deferred.reject({ isOK: false, tip: tip });
+                                    return deferred.promise;
+                                }
                             }
-                        }
-                        if (type == 'url_allowed') { //除该连接外其他连接会禁止
-                            urlArr.push(beforeVal);
-                            urlTipArr.push(tip);
-                        }
-                        if (type == 'keyword_replace') { //替换关键字
-                            if (eval('/' + beforeVal + '/').test(contentVal)) {
-                                content.value = common.encodeHtml(content.value).replace(eval('/' + beforeVal + '/g'), ruleArr[i].afterRuleVal);
-                                resultTip.push(tip);
+                            if (type == 'url_not_allowed') { //禁止链接
+                                var val = beforeVal.replace(/\//g, '\\/').replace(/\./g, '\\.');
+                                if (eval('/' + val + '/').test(contentVal)) {
+                                    deferred.reject({ isOK: false, tip: tip });
+                                    return deferred.promise;
+                                }
+                            }
+                            if (type == 'url_allowed') { //除该连接外其他连接会禁止
+                                urlArr.push(beforeVal);
+                                urlTipArr.push(tip);
+                            }
+                            if (type == 'keyword_replace') { //替换关键字
+                                if (eval('/' + beforeVal + '/').test(contentVal)) {
+                                    content.value = common.encodeHtml(content.value).replace(eval('/' + beforeVal + '/g'), ruleArr[i].afterRuleVal);
+                                    resultTip.push(tip);
+                                }
                             }
                         }
                     }
@@ -489,7 +491,10 @@ var userService = {
                 }
             }
         };
-
+        if (!common.hasPrefix(userInfo.groupId, userInfo.groupType)) {
+            callback(false);
+            return;
+        }
         var setValObj = {
             '$push': {
                 'loginPlatform.chatUserGroup.$.rooms': {
@@ -1251,6 +1256,28 @@ var userService = {
             .catch(deferred.reject);
         return deferred.promise;
     },
+    getMemberListByMobilePhones: function(params) {
+        let deferred = new common.Deferred();
+        let mobilePhoneArray = typeof params.mobilePhones === 'string' ? params.mobilePhones.split(",") : params.mobilePhones;
+        let queryObj = {
+            mobilePhone: { $in: mobilePhoneArray },
+            valid: 1,
+            "loginPlatform.chatUserGroup._id": params.groupType
+        };
+        common.wrapSystemCategory(queryObj, params.systemCategory);
+        let fieldObj = {
+            "mobilePhone": 1,
+            "loginPlatform.chatUserGroup.$": 1
+        };
+        member.find(queryObj, fieldObj, (err, rows) => {
+            if (err) {
+                logger.error(err);
+                deferred.reject(err);
+            }
+            deferred.resolve(rows);
+        });
+        return deferred.promise;
+    },
     /**
      * 获取分析师列表
      * @param systemCategory
@@ -1331,7 +1358,7 @@ var userService = {
         followedTeacher.find({ status: 1, followers: params.userId }, "userNo")
             .then(userNoList => {
                 let list = userNoList.map(user => user.userNo);
-                _this.getUserList(list.toString(), deferred.resolve);
+                _this.getUserList({ userNo: list.toString() }, deferred.resolve);
             })
             .catch(err => {
                 logger.error("getFollowedTeachers error", err);

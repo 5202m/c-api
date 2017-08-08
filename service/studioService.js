@@ -75,69 +75,81 @@ var studioService = {
                     }
                 },
                 memberInfo: function(callback) {
-                    if (isGetMember && userInfo.userId) {
-                        let queryObj = {
-                            valid: 1,
-                            'loginPlatform.chatUserGroup': {
-                                $elemMatch: {
-                                    _id: userInfo.groupType,
-                                    userId: userInfo.userId
-                                }
-                            }
-                        };
-                        common.wrapSystemCategory(queryObj, indexParams.systemCategory);
-                        member.findOne(queryObj, function(err, row) {
-                            if (!err && row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
-                                var group = row.loginPlatform.chatUserGroup.id(userInfo.groupType);
-                                if (group) {
-                                    userInfo.userId = group.userId;
-                                    userInfo.avatar = group.avatar;
-                                    userInfo.userType = group.userType;
-                                    userInfo.vipUser = group.vipUser;
-                                    userInfo.clientGroup = group.vipUser ? constant.clientGroup.vip : group.clientGroup;
-                                    userInfo.nickname = group.nickname;
-                                    userInfo.userName = group.userName;
-                                    userInfo.email = group.email;
-                                    userInfo.accountNo = group.accountNo;
-                                    userInfo.mobilePhone = row.mobilePhone;
-                                    userInfo.joinDate = row.createDate;
-                                }
-                            } else {
-                                logger.warn("memberInfo error", err, row, JSON.stringify({
-                                    valid: 1,
-                                    'loginPlatform.chatUserGroup': {
-                                        $elemMatch: {
-                                            _id: userInfo.groupType,
-                                            userId: userInfo.userId
-                                        }
+                        if (isGetMember && userInfo.userId) {
+                            let queryObj = {
+                                valid: 1,
+                                'loginPlatform.chatUserGroup': {
+                                    $elemMatch: {
+                                        _id: userInfo.groupType,
+                                        userId: userInfo.userId
                                     }
-                                }));
-                            }
-                            callback(null, userInfo);
-                        });
-                        return;
-                    }
-                    callback(null, userInfo);
-                },
-                pointsGlobal: function(callback) {
-                    let pointsParams = {
-                        groupType: userInfo.groupType,
-                        userId: userInfo.mobilePhone,
-                        hasJournal: true,
-                        systemCategory: indexParams.systemCategory
-                    };
-                    common.wrapSystemCategory(pointsParams, indexParams.systemCategory);
-                    chatPointsService.getPointsInfo(pointsParams, function(r) {
-                        var point = 0;
-                        if (r && r.pointsGlobal) {
-                            point = r.pointsGlobal
+                                }
+                            };
+                            common.wrapSystemCategory(queryObj, indexParams.systemCategory);
+                            member.findOne(queryObj, function(err, row) {
+                                if (!err && row && common.checkArrExist(row.loginPlatform.chatUserGroup)) {
+                                    var group = row.loginPlatform.chatUserGroup.id(userInfo.groupType);
+                                    if (group) {
+                                        userInfo.userId = group.userId;
+                                        userInfo.avatar = group.avatar;
+                                        userInfo.userType = group.userType;
+                                        userInfo.vipUser = group.vipUser;
+                                        userInfo.clientGroup = group.vipUser ? constant.clientGroup.vip : group.clientGroup;
+                                        userInfo.nickname = group.nickname;
+                                        userInfo.userName = group.userName;
+                                        userInfo.email = group.email;
+                                        userInfo.accountNo = group.accountNo;
+                                        userInfo.mobilePhone = row.mobilePhone;
+                                        userInfo.joinDate = row.createDate;
+                                    }
+                                } else {
+                                    logger.warn("memberInfo error", err, row, JSON.stringify({
+                                        valid: 1,
+                                        'loginPlatform.chatUserGroup': {
+                                            $elemMatch: {
+                                                _id: userInfo.groupType,
+                                                userId: userInfo.userId
+                                            }
+                                        }
+                                    }));
+                                }
+                                callback(null, userInfo);
+                            });
+                            return;
                         }
-                        callback(null, point);
-                    });
-                }
+                        callback(null, userInfo);
+                    }
+                    // ,pointsGlobal: function(callback) {
+                    //     let pointsParams = {
+                    //         groupType: userInfo.groupType,
+                    //         userId: userInfo.mobilePhone,
+                    //         hasJournal: true,
+                    //         systemCategory: indexParams.systemCategory
+                    //     };
+                    //     common.wrapSystemCategory(pointsParams, indexParams.systemCategory);
+                    //     chatPointsService.getPointsInfo(pointsParams, function(r) {
+                    //         var point = 0;
+                    //         if (r && r.pointsGlobal) {
+                    //             point = r.pointsGlobal
+                    //         }
+                    //         callback(null, point);
+                    //     });
+                    // }
             },
             function(err, results) {
-                dataCallback(results);
+                let pointsParams = {
+                    groupType: userInfo.groupType,
+                    userId: userInfo.mobilePhone,
+                    hasJournal: true,
+                    systemCategory: indexParams.systemCategory
+                };
+                chatPointsService.getPointsInfo(pointsParams, function(r) {
+                    results.pointsGlobal = 0;
+                    if (r && r.pointsGlobal) {
+                        results.pointsGlobal = r.pointsGlobal;
+                    }
+                    dataCallback(results);
+                });
             });
     },
     /**
@@ -338,7 +350,8 @@ var studioService = {
             clientGroup = params.clientGroup;
         let queryObj = {
             groupType: groupType,
-            clientGroupId: clientGroup
+            clientGroupId: clientGroup,
+            valid: 1
         };
         common.wrapSystemCategory(queryObj, params.systemCategory);
         chatClientGroup.findOne(queryObj, function(err, row) {

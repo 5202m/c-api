@@ -519,7 +519,7 @@ var chatService = {
                 var userSaveInfo = {};
                 if (!isAllowPass) {
                     var tipResult = userService.checkUserGag(row, userInfo.groupId); //检查用户禁言
-                    if (!tipResult.isOK) { //是否设置了用户禁言
+                    if (!tipResult.isOK && !isWh) { //是否设置了用户禁言
                         chatMessage.sendMsg(
                             userInfo.groupType,
                             userInfo.socketId,
@@ -888,6 +888,14 @@ var chatService = {
             function(err, results) {
                 callback(ApiResult.page(params.pageNo, params.pageSize, results.totalSize, results.list));
             });
+    },
+    /****
+     * 活动信息推送
+     * @param groupType
+     * @param activityInfoResult
+     */
+    activity: function(groupType, activityInfoResult) {
+        noticeMessage.activityPushInfo(groupType, activityInfoResult);
     }
 };
 chatService.init();

@@ -20,9 +20,12 @@
  * @apiSuccess {Number} errcode  错误码.
  */
 "use strict";
+const fs = require('fs');
+const crypto = require('crypto');
 let logger = require("../../resources/logConf").getLogger("studioAPI");
 let express = require('express');
 let router = express.Router();
+const profiler = require('v8-profiler');
 let studioService = require('../../service/studioService');
 let common = require('../../util/common');
 let APIUtil = require('../../util/APIUtil.js');
@@ -59,6 +62,19 @@ let APIUtil = require('../../util/APIUtil.js');
  * @apiUse ParametersMissedError
  */
 router.get("/getIndexLoadData", (req, res) => {
+
+    const duration = req.query.duration || 60;
+    //Start Profiling
+    profiler.startProfiling('CPU profile');
+    setTimeout(() => {
+        //Stop Profiling after duration
+        const profile = profiler.stopProfiling();
+        profile.export()
+        .pipe(fs.createWriteStream('cpuprofile-' + Date.now() + '.cpuprofile'))
+        .on('finish', () => profile.delete());
+        //res.sendStatus(200);
+    }, duration * 1000);
+
     let requires = ["groupType"]; //, "groupId"
     let isSatify = requires.every((name) => {
         return common.isValid(req.query[name]);
