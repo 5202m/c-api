@@ -282,7 +282,7 @@ var clientTrainService = {
             clientip = params["clientip"],
             isNoPoints = params["isNoPoints"] == 1;
         var searchObj = { userId: userInfo.mobilePhone, groupType: userInfo.groupType };
-        common.wrapSystemCategory(searchObj, userInfo.systemCategory);
+        common.wrapSystemCategory(searchObj, params["systemCategory"]);
         signin.findOne(searchObj, function(err, signinInfo) {
             if (err) {
                 logger.error("查询签到数据失败!:", err);
@@ -297,7 +297,8 @@ var clientTrainService = {
                     signinTime: null,
                     historySignTime: [],
                     signinDays: 0,
-                    serialSigDays: 0
+                    serialSigDays: 0,
+                    systemCategory: params["systemCategory"]
                 });
             }
             var today = new Date();
