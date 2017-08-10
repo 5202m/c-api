@@ -10,7 +10,8 @@ var constant = {
         fxchat: 'fxchat', //外汇微解盘
         studio: 'studio', //pm直播间
         fxstudio: 'fxstudio', //fx直播间
-        hxstudio: 'hxstudio' //hx直播间
+        hxstudio: 'hxstudio', //hx直播间
+        fxstock: 'fxstock' //高维直播间
     },
     'lang': 'zh',
     'curPageNo': 1,
@@ -23,12 +24,14 @@ var constant = {
         wechat: "wechat", //pm微解盘
         fxchat: "fxchat", //fx微解盘
         studio: "studio", //pm直播间
-        fxstudio: "fxstudio" //fx直播间
+        fxstudio: "fxstudio", //fx直播间
+        fxstock: "fxstock"  //高维直播间
     },
     studioDefRoom: {
         studio: "studio_teach", //pm直播间
         fxstudio: "fxstudio_11", //fx直播间
-        hxstudio: "hxstudio_26" //hx直播间
+        hxstudio: "hxstudio_26", //hx直播间
+        fxstock: "fxstock_23" //高维直播间
     },
     studioThirdUsed: { //第三方引用直播间默认房间
         pm: {
@@ -150,7 +153,8 @@ var constant = {
     groupTypeSystemCategoryMapping: {
         "studio": "pm",
         "fxstudio": "fx",
-        "hxstudio": "hx"
+        "hxstudio": "hx",
+        "fxstock": "fx"
     }
 };
 
