@@ -155,12 +155,12 @@ var smsService = {
             if (isAuthCode) {
                 content = "您本次的验证码为: " + content + ",如有疑问请联系客服:4006656338";
             }
-        } else if(/^fxstock/.test(useType)){
+        } /*else if(/^fxstock/.test(useType)){
             smsUrl = Config.smsUrl.fx;
             if (isAuthCode) {
                 content = "【高维财富】您本次的验证码为: " + content + ",如非本人操作请忽略!";
             }
-        } else { //PM(默认)
+        }*/ else { //PM(默认)
             smsUrl = Config.smsUrl.pm;
             if (isAuthCode) {
                 content = "您本次的验证码为: " + content + ",如有疑问请联系客服:4006578820(国内)或(00852)81099928(香港)";
