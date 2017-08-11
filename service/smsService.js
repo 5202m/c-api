@@ -158,7 +158,7 @@ var smsService = {
         } else if(/^fxstock/.test(useType)){
             smsUrl = Config.smsUrl.fx;
             if (isAuthCode) {
-                content = "您本次的验证码为: " + content;
+                content = "【高维财富】您本次的验证码为: " + content + ",如非本人操作请忽略!";
             }
         } else { //PM(默认)
             smsUrl = Config.smsUrl.pm;
