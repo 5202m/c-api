@@ -1246,12 +1246,24 @@ var userService = {
         searchObj["loginPlatform.chatUserGroup.userId"] = {
             "$in": userNos
         };
+        common.wrapSystemCategory(searchObj, params.systemCategory);
         member.find(searchObj, {
                 "mobilePhone": 1,
                 "loginPlatform.chatUserGroup.$": 1
             })
             .then(jsonData => {
-                deferred.resolve(jsonData.map(user => _this.handleMemberInfoData(user)));
+                let userArray = jsonData.map(user => _this.handleMemberInfoData(user));
+                chatPointsService.getChatPointsByUserIds({
+                        userIds: userArray.map(user => user.mobilePhone),
+                        groupType: params.groupType,
+                        systemCategory: params.systemCategory
+                    })
+                    .then(pointsArray => {
+                        let pointsObj = {};
+                        pointsArray.forEach(pointItem => pointsObj[pointItem.userId] = pointItem.points);
+                        userArray.forEach(user => user.chatPoints = pointsObj[user.mobilePhone]);
+                        deferred.resolve(userArray);
+                    });
             })
             .catch(deferred.reject);
         return deferred.promise;

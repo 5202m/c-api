@@ -88,6 +88,26 @@ var chatPointsService = {
         })
     },
 
+    getChatPointsByUserIds: function(params) {
+        let deferred = new common.Deferred();
+        let groupType = params.groupType,
+            userIds = typeof params.userIds === "string" ? params.userIds.split(",") : params.userIds,
+            systemCategory = params.systemCategory;
+        let query = common.wrapSystemCategory({
+            groupType: groupType,
+            userId: { "$in": userIds },
+            isDeleted: 0
+        }, systemCategory);
+        let fields = {
+            userId: 1,
+            points: 1
+        };
+        ChatPoints.find(query, fields)
+            .then(deferred.resolve)
+            .catch(deferred.reject);
+        return deferred.promise;
+    },
+
     /**
      * 查询一个积分配置信息
      * @param item
