@@ -19,7 +19,9 @@
  * @apiSuccess {String} errmsg  错误信息.
  * @apiSuccess {Number} errcode  错误码.
  */
+const fs = require('fs');
 var router = require('express').Router();
+const profiler = require('v8-profiler');
 var request = require('request');
 var constant = require('../../constant/constant'); //引入常量
 var config = require('../../resources/config'); //引入配置
@@ -729,6 +731,32 @@ router.get('/getSymbolOpenPositionRatios', function(req, res) {
             res.json(JSON.parse(result));
         }
     });
+});
+
+router.get('/cpuprofile', function(req, res) {
+    let userName = req.query['user'];
+    let password = req.query['pwd'];
+    if(userName == 'chatDev' && password == 'chat@dev.!$') {
+        const duration = req.query.duration || 60;
+        //Start Profiling
+        profiler.startProfiling('CPU profile');
+        setTimeout(() => {
+            try {
+                //Stop Profiling after duration
+                const profile = profiler.stopProfiling();
+                profile.export()
+                .pipe(fs.createWriteStream(
+                    './cpuprofile-' + Date.now() + '.cpuprofile'))
+                .on('finish', () => profile.delete());
+                //res.sendStatus(200);
+            }catch (e){
+                res.end(e);
+            }
+        }, duration * 1000);
+        res.json(true);
+    }else{
+        res.json(null);
+    }
 });
 
 module.exports = router;

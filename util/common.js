@@ -88,7 +88,7 @@ var common = {
      * @param type
      */
     isStudio: function(groupType) {
-        return groupType && groupType.indexOf("studio") != -1;
+        return groupType && (groupType.indexOf("studio") != -1 || groupType.indexOf("stock") != -1);
     },
     /**
      * 过滤空格

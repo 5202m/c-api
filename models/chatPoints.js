@@ -41,6 +41,7 @@ let chatPointsSchema = mongoose.createSchema({
     "createDate": Date,
     "updateUser": String,
     "updateIp": String,
-    "updateDate": Date
+    "updateDate": Date,
+    "systemCategory": String
 });
 module.exports = mongoose.model('chatPoints', chatPointsSchema, "chatPoints");
