@@ -117,22 +117,34 @@ var smsService = {
         if (smsPara.validTime > 0) {
             loc_smsInfo.validUntil = new Date(loc_currDate.getTime() + smsPara.validTime);
         }
-        var smsUrl = this.getMsgUrl(smsPara.useType, smsPara.type, smsPara.mobilePhone, smsPara.content);
-        Request(smsUrl, function(error, response, data) {
-            var loc_result = null;
-            if (!error && response.statusCode == 200 && Common.isValid(data)) {
-                loc_smsInfo.status = 1;
-            } else {
-                logger.error("smsAPI[" + smsUrl + "]->sendSms has error:" + error);
-                loc_result = new Error("发送短信失败！");
-                loc_smsInfo.status = 2;
-            }
-            //保存短信发送记录信息
+        var loc_result = null;
+        if(/^fxstock/.test(smsPara.useType)){
+            //保存短信发送记录信息  因为高维的没有发送出去，所以直接入库
+            loc_smsInfo.status = 1;
             common.wrapSystemCategory(loc_smsInfo, smsPara.systemCategory);
-            smsService.saveSmsInfo(loc_smsInfo, function() {
+            smsService.saveSmsInfo(loc_smsInfo, function () {
                 callback(loc_result);
             });
-        });
+        } else {
+            var smsUrl = this.getMsgUrl(smsPara.useType, smsPara.type, smsPara.mobilePhone, smsPara.content);
+            Request(smsUrl, function (error, response, data) {
+                //var loc_result = null;
+                if (!error && response.statusCode == 200 && Common.isValid(
+                        data)) {
+                    loc_smsInfo.status = 1;
+                } else {
+                    logger.error(
+                        "smsAPI[" + smsUrl + "]->sendSms has error:" + error);
+                    loc_result = new Error("发送短信失败！");
+                    loc_smsInfo.status = 2;
+                }
+                //保存短信发送记录信息
+                common.wrapSystemCategory(loc_smsInfo, smsPara.systemCategory);
+                smsService.saveSmsInfo(loc_smsInfo, function () {
+                    callback(loc_result);
+                });
+            });
+        }
     },
 
     /**
