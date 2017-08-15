@@ -17,7 +17,7 @@ let ObjectId = Schema.ObjectId;
 
 let chatPointsSchema = mongoose.createSchema({
     "_id": ObjectId,
-    "groupType": { type: String, index: true }, //房间组别
+    "groupType": String, //房间组别
     "userId": { type: String, index: true }, //用户编号（手机）
     "pointsGlobal": Number, //总积分
     "points": Number, //有效积分

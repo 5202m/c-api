@@ -78,14 +78,14 @@ var chatPointsService = {
             userId: userId,
             isDeleted: 0
         }, systemCategory);
-        APIUtil.DBFindOne(ChatPoints, {
-            query: query
-        }, function(err, config) {
-            if (err) {
+        let start = new Date().getTime();
+        ChatPoints.findOne(query, function(err, config){
+            if(err){
                 logger.error("<<getConfig:查询积分配置信息出错，[errMessage:%s]", err);
             }
+            console.log('use time====', new Date().getTime() - start);
             callback(err, config);
-        })
+        });
     },
 
     getChatPointsByUserIds: function(params) {
