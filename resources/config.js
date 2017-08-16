@@ -50,9 +50,12 @@ var config = {
     filesFtpBasePath: "/",
     filesFtpPWD: "pmmisftppwd123",
     //db
-    dbURL: 'mongodb://192.168.35.236/pm_mis_fromPD',
-    dbUserName: 'pmmisuser',
-    dbUserPWD: 'pmmispwd123',
+    // dbURL: 'mongodb://192.168.35.236/pm_mis_fromPD',
+    // dbUserName: 'pmmisuser',
+    // dbUserPWD: 'pmmispwd123',
+    dbURL: 'mongodb://192.168.35.80/pm_mis_fromPD',
+    dbUserName: '',
+    dbUserPWD: '',
     messagePush: { appKey: 'c139eac92b28b05be7d54d95', masterSecret: 'bf11c36cdc35a7b52ee1131e' }, //消息推送
     fxgoldApiUrl: "http://api.fxgold.com", //金汇财经接口
     web24k: "http://www.24k.hk/public/datas", //24k数据公用host前缀
