@@ -310,7 +310,7 @@ var subscribeService = {
                     templateCode = "TradingStrategy";
                     var tagMap = { "trading_strategy": "交易策略", "shout_single": "喊单", "resting_order": "挂单" };
                     templateParam = {
-                        time: Common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                        time: common.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
                         authId: data.authId,
                         authName: data.authName,
                         tag: data.tag,
