@@ -103,14 +103,15 @@ var showTradeService = {
                     let results = {};
                     var from = (params.pageNo - 1) * params.pageSize;
                     var orderByJsonObj = { "sorted": 'desc', "showDate": 'desc' };
+                    let pageSize = parseInt(params.pageSize) || 0;
                     chatShowTrade.find(searchObj)
                         .sort(orderByJsonObj)
                         .skip(from)
-                        .limit(params.pageSize)
+                        .limit(pageSize)
                         .exec("find", function(err, data) {
                             if (err) {
                                 logger.error("查询晒单数据失败! >>getShowTradeList:", err);
-                                callbackTmp(null, null);
+                                callbackTmp(null, results);
                                 return;
                             }
                             var result = { tradeList: [] };

@@ -67,6 +67,12 @@ var dboptions = {
     pass: config.dbUserPWD
 };
 mongoose.connect(config.dbURL, dboptions);
+var db = mongoose.connection;
+
+db.on('error', console.error.bind(console, '连接错误:'));
+db.once('open', function() {
+    console.log('连接成功', config.dbURL);
+});
 /*＃＃＃＃＃＃＃＃＃＃数据库连接配置＃＃＃＃＃＃＃＃end */
 
 (function(JSON) {

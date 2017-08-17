@@ -78,8 +78,8 @@ var chatPointsService = {
             userId: userId,
             isDeleted: 0
         }, systemCategory);
-        ChatPoints.findOne(query, function(err, config){
-            if(err){
+        ChatPoints.findOne(query, function(err, config) {
+            if (err) {
                 logger.error("<<getConfig:查询积分配置信息出错，[errMessage:%s]", err);
             }
             callback(err, config);
@@ -121,7 +121,7 @@ var chatPointsService = {
             item: item,
             groupType: groupType,
             clientGroup: {
-                $in: [clientGroup]
+                '$in': [clientGroup]
             },
             isDeleted: 0,
             status: 1
@@ -131,7 +131,7 @@ var chatPointsService = {
         }, function(err, config) {
             if (err) {
                 logger.error("<<getConfig:查询积分配置信息出错，[errMessage:%s]", err);
-                callback(APIUtil.APIResult("code_3003", null));
+                callback(APIUtil.APIResult("code_3000", null));
             }
             callback(err, config);
         });
@@ -154,7 +154,7 @@ var chatPointsService = {
                 if (err) {
                     callback(APIUtil.APIResult("code_10", null));
                 } else if (!config) {
-                    callback(APIUtil.APIResult("code_3003", null));
+                    callback(APIUtil.APIResult("code_3000", null));
                 } else {
                     chatPointsService.getChatPoints(params,
                         function(err, pointsInfo) {
