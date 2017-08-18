@@ -217,10 +217,12 @@ var chatPointsService = {
             rate = Constant.pointsRate[params.groupType][params.clientGroup];
         }
         var chkResult = chatPointsService.checkLimit(config, pointsInfo, journal, rate);
-        if (journal.change == 0) {
-            //积分变化为0不记录积分流水
-            callback(APIUtil.APIResult(null, journal));
-        } else if (!chkResult) {
+        if (!chkResult) {
+            if (journal.change == 0) {
+                //积分变化为0不记录积分流水
+                callback(APIUtil.APIResult(null, journal));
+                return;
+            }
             journal.before = pointsInfo.points;
             if (params.isGlobal || journal.change > 0) {
                 pointsInfo.pointsGlobal += journal.change;
