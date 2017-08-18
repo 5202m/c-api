@@ -491,7 +491,7 @@ var userService = {
                 }
             }
         };
-        if (!common.hasPrefix(userInfo.groupId, userInfo.groupType)) {
+        if (!common.hasPrefix(userInfo.groupType, userInfo.groupId)) {
             callback(false);
             return;
         }
