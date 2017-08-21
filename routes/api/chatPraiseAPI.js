@@ -45,14 +45,14 @@ var ApiResult = require('../../util/APIUtil.js').APIResult;
  *
  * @apiParam {String} praiseId 点赞ID
  * @apiParam {String} type 点赞人的类型
- * @apiParam {String} platfrom 平台，直播间groupType值
+ * @apiParam {String} platform 平台，直播间groupType值
  *
  * @apiUse CommonResultDescription
  * @apiSuccess {Array} data  返回的数据
  *
  * @apiSampleRequest /api/chatPraise/getPraiseNum
  * @apiExample Example usage:
- *  /api/chatPraise/getPraiseNum?praiseId=caiyizhu&type=user&platfrom=studio
+ *  /api/chatPraise/getPraiseNum?praiseId=caiyizhu&type=user&platform=studio
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  * {
@@ -76,6 +76,7 @@ router.get("/getPraiseNum", function(req, res) {
     var praiseId = req.query["praiseId"],
         type = req.query["type"],
         platform = req.query["platfrom"] || req.query["platform"];
+    req.query["platform"] = platform;
     if (common.isBlank(type) ||
         common.isBlank(platform)) {
         res.json(ApiResult(errorMessage.code_1000, null));
