@@ -51,7 +51,8 @@ var chatShowTradeSchema = mongoose.createSchema({
         content: String, //内容
         dateTime: Date, //评论时间
         refId: String, //参照编号
-        valid: { type: Number, default: 1 } //是否有效
+        valid: { type: Number, default: 1 }, //是否有效
+        status: { type:Number, default: 0 } //审核状态，1已审核，0待审核
     }]
 });
 module.exports = mongoose.model('chatShowTrade', chatShowTradeSchema, "chatShowTrade");

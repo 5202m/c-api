@@ -121,6 +121,16 @@ var showTradeService = {
                                     tradeInfo = data[i].toObject();
                                     tradeInfo.user = data[i].boUser.toObject();
                                     delete tradeInfo["boUser"];
+                                    tradeInfo.comments = [];
+                                    let comments = data[i].comments.toObject();
+                                    let commentsLen = comments.length;
+                                    if(commentsLen > 0){
+                                        for (var j = 0; j < commentsLen; j++){
+                                            if(comments[j].status === 1){
+                                                tradeInfo.comments.push(comments[j]);
+                                            }
+                                        }
+                                    }
                                     result.tradeList.push(tradeInfo);
                                 }
                             }
