@@ -78,7 +78,11 @@ var chatPointsService = {
             userId: userId,
             isDeleted: 0
         }, systemCategory);
-        ChatPoints.findOne(query, function(err, config) {
+        let fields = 'groupType userId pointsGlobal points remark status isDeleted createUser createDate systemCategory';
+        if(params.hasJournal){
+            fields += ' journal';
+        }
+        ChatPoints.findOne(query, fields, function(err, config) {
             if (err) {
                 logger.error("<<getConfig:查询积分配置信息出错，[errMessage:%s]", err);
             }
