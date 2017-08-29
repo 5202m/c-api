@@ -722,7 +722,7 @@ var fx678FinanceService = {
         description = configTmp.description;
         description = description.replace(/,/g, "_U_U_U,") + "_U_U_U";
         newDataTmp.importanceLevel = configTmp.importanceLevel;
-        newDataTmp.description     = description;
+        newDataTmp.description     = description;console.log('if==',newDataTmp.description);
         newDataTmp.description     = fx678FinanceService.getDescription(newDataTmp);
         newDataTmp.valid           = configTmp.valid;
         newDataTmp.dataType        = configTmp.dataType;
@@ -731,7 +731,7 @@ var fx678FinanceService = {
         newDataTmp.dataType = 0; //默认数据类型
         newDataTmp.valid = 1; //默认有效性
         newDataTmp.description = fx678FinanceService.getDescription(newDataTmp);
-
+        console.log('else==', newDataTmp.description);
         //不存在配置，自动新增一个默认配置
         configTmp = {};
         configTmp._id             = newDataTmp.basicIndexId;
