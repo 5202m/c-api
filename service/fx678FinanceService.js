@@ -548,6 +548,7 @@ var fx678FinanceService = {
           dbData.basicIndexId = apiData.ID;
           dbData.period = apiData.IDX_PERIOD;
           dbData.importance = Common.parseInt(apiData.IDX_RELEVANCE);//fx678FinanceService.formatImportance(apiData.IDX_RELEVANCE);
+          dbData.importanceLevel = fx678FinanceService.getDefImportanceLevel(dbData.importance); //默认重要等级
           dbData.predictValue = Common.isBlank(apiData.SURVEY_PRICE) ? apiData.SURVEY_PRICE : apiData.SURVEY_PRICE + apiData.UNIT;//预期值
           dbData.lastValue = Common.isBlank(apiData.PREVIOUS_PRICE) ? apiData.PREVIOUS_PRICE : apiData.PREVIOUS_PRICE + apiData.UNIT;//前值
           dbData.value = Common.isBlank(apiData.ACTUAL_PRICE) ? apiData.ACTUAL_PRICE : apiData.ACTUAL_PRICE + apiData.UNIT;//公布值
@@ -612,7 +613,7 @@ var fx678FinanceService = {
     var compareFn = function(dataDb, dataApi){
       return dataDb && dataApi && dataDb.basicIndexId == dataApi.ID;
     };
-    var dataDbIndex, dataDb,isPush=false;
+    var dataDbIndex, isPush=false;
     //ADP、非农、CPI、PPI、PCE、GDP、议息、LMCI
     let name = '', nameHas = false;
     var currDate = new Date(), currDateStr = Common.formatterDate(currDate,'-');
@@ -625,7 +626,7 @@ var fx678FinanceService = {
       }
     });
     let updateToDB = function(dataApi, dataDbIndex){
-      dataDb = results.db[dataDbIndex];
+      let dataDb = results.db[dataDbIndex];
       results.db[dataDbIndex] = null; //标记已经处理
       name = dataDb.name.toUpperCase();
       nameHas =  name.indexOf('ADP') > -1 || name.indexOf('CPI') > -1
