@@ -722,7 +722,7 @@ var fx678FinanceService = {
         description = configTmp.description;
         description = description.replace(/,/g, "_U_U_U,") + "_U_U_U";
         newDataTmp.importanceLevel = configTmp.importanceLevel;
-        newDataTmp.description     = description;console.log('if==',newDataTmp.description);
+        newDataTmp.description     = description;
         newDataTmp.description     = fx678FinanceService.getDescription(newDataTmp);
         newDataTmp.valid           = configTmp.valid;
         newDataTmp.dataType        = configTmp.dataType;
@@ -731,7 +731,6 @@ var fx678FinanceService = {
         newDataTmp.dataType = 0; //默认数据类型
         newDataTmp.valid = 1; //默认有效性
         newDataTmp.description = fx678FinanceService.getDescription(newDataTmp);
-        console.log('else==', newDataTmp.description);
         //不存在配置，自动新增一个默认配置
         configTmp = {};
         configTmp._id             = newDataTmp.basicIndexId;
@@ -916,7 +915,7 @@ var fx678FinanceService = {
           }
         }
         //针对所有未处理数据库中的财经大事，状态标记
-        for(i = 0, lenI = !results.db ? 0 : results.db.length; i < lenI; i++){
+        /*for(i = 0, lenI = !results.db ? 0 : results.db.length; i < lenI; i++){
           eventDb = results.db[i];
           if(eventDb != null && eventDb.valid == 1){
             //汇通接口删除数据，valid设置为2，但是针对于mis设置无效数据，则不修改该值
@@ -928,7 +927,7 @@ var fx678FinanceService = {
               }
             });
           }
-        }
+        }*/
         //批量保存财经数据
         fx678FinanceService.saveEvents(newEvents, function(err){
           if(err){
