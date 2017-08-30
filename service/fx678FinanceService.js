@@ -542,7 +542,7 @@ var fx678FinanceService = {
         if(detailData === null){
           deferred.reject(dbData);
         }else {
-          let publishFT = fx678FinanceService.getPublishFrequncy(apiData.PUBLISH_TIME, detailData.UPDATE_PERIOD);
+          let publishFT = fx678FinanceService.getPublishFrequncy(apiData.PUBLISH_TIME, apiData.UPDATE_PERIOD);
           dbData.name = apiData.TITLE;
           dbData.country = apiData.COUNTRY_CN;
           dbData.basicIndexId = apiData.ID;
@@ -561,11 +561,11 @@ var fx678FinanceService = {
           dbData.time = time;
           dbData.unit = apiData.UNIT;
           dbData.interpretation = detailData.PIC_INTERPRET;
-          dbData.publishOrg = detailData.PUBLISH_ORG;
+          dbData.publishOrg = apiData.PUBLISH_ORG;
           dbData.publishFrequncy = publishFT.frequncy;
           dbData.statisticMethod = "";//detailData.PARAGHRASE;
           dbData.explanation = detailData.PARAGHRASE;
-          dbData.influence = fx678FinanceService.getInfluence(apiData.ACTUAL_PRICE, apiData.SURVEY_PRICE, apiData.Res);//apiData.influence;
+          dbData.influence = apiData.AFFECT;//fx678FinanceService.getInfluence(apiData.ACTUAL_PRICE, apiData.SURVEY_PRICE, apiData.Res);//apiData.influence;
           dbData.nextPublishTime = publishFT.nextTime;
           dbData.valid = 1;
           deferred.resolve(dbData);
@@ -594,7 +594,7 @@ var fx678FinanceService = {
     }
     dbEvent.status     = "";
     dbEvent.type       = type;
-    dbEvent.country    = apiEvent.COUNTRY;
+    dbEvent.country    = Common.trim(apiEvent.COUNTRY);
     dbEvent.region     = apiEvent.AREA;
     dbEvent.importance = Common.parseInt(apiEvent.IMPORTANCE);
     dbEvent.content    = apiEvent.EVENT_DESC;
