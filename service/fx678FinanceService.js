@@ -859,7 +859,7 @@ var fx678FinanceService = {
         insertDbType = '2';
         break;
       case '3':
-        insertDbType = '3';
+        insertDbType = '1';
         break;
     }
     Async.forEach(dates, function(dateTmp, callbackTmp){
