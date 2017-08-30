@@ -879,9 +879,7 @@ var fx678FinanceService = {
           return;
         }
         var compareFn = function(eventDb, eventApi){
-          return eventDb
-              && eventDb.type == insertDbType
-              && eventDb.title == eventApi.EVENT_DESC;
+          return eventDb && eventDb.type == insertDbType && eventDb.title == eventApi.EVENT_DESC;
         };
         var i, lenI, eventApi, eventDbIndex, eventDb;
         var newEvents = [];
@@ -901,7 +899,7 @@ var fx678FinanceService = {
           }else{
             eventDb = results.db[eventDbIndex];
             results.db[eventDbIndex] = null; //标记已经处理
-            eventDb = fx678FinanceService.refreshEvent(type, eventDb, eventApi);
+            eventDb = fx678FinanceService.refreshEvent(insertDbType, eventDb, eventApi);
             eventDb.updateDate = currDate;
             if(eventDb.valid == 2){
               //汇通数据接口删除数据后，valid为2; 重新添加数据后，valid再次修正为1
