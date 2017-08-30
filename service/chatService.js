@@ -537,8 +537,10 @@ var chatService = {
                         userSaveInfo.clientGroup = "vip";
                     }
                     userSaveInfo.mobilePhone = row.mobilePhone;
-                    if (userSaveInfo.nickname) {
+                    if (common.isValid(userSaveInfo.nickname)) {
                         userInfo.nickname = userSaveInfo.nickname; //如果后台设置了昵称则更新为后台
+                    }else{
+                        userSaveInfo.nickname = userInfo.nickname;
                     }
 
                     userSaveInfo.userType = userInfo.userType = userSaveInfo.userType || userInfo.userType;
