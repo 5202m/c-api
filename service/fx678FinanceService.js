@@ -29,7 +29,7 @@ var fx678FinanceService = {
    * @param path
    */
   formatUrl : function(path){
-    return Config.fx678ApiUrl + path;
+    return Config.fx678ApiUrlForZx + path;
   },
 
   /**

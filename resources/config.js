@@ -61,7 +61,7 @@ var config = {
     socketServerUrl: { webSocket: 'http://192.168.35.81:3007', socketIO: 'http://192.168.35.81:3007', apiSocket: 'http://192.168.35.81:3007/fxFinance' },
     chatSocketUrl: 'http://192.168.35.81:3007', //socket 服务api地址
     symbolLongShortOpenPositionRatios: "http://192.168.75.40:8081/GwfxApi/RESTful/PublicManager", // 多空持仓比例
-    fx678ApiUrl: "http://dataapi.fx678.com" //汇通财经接口
+    fx678ApiUrlForZx: "http://dataapi.fx678.com" //汇通财经接口
 };
 //导出常量类
 module.exports = config;
