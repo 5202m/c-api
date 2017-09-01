@@ -79,7 +79,7 @@ var chatPointsService = {
             isDeleted: 0
         }, systemCategory);
         let fields = 'groupType userId pointsGlobal points remark status isDeleted createUser createDate systemCategory';
-        if(params.hasJournal){
+        if (params.hasJournal) {
             fields += ' journal';
         }
         ChatPoints.findOne(query, fields, function(err, config) {
@@ -160,6 +160,7 @@ var chatPointsService = {
                 } else if (!config) {
                     callback(APIUtil.APIResult("code_3000", null));
                 } else {
+                    params.hasJournal = true;
                     chatPointsService.getChatPoints(params,
                         function(err, pointsInfo) {
                             if (err) {
