@@ -27,6 +27,7 @@
 var express = require('express');
 var router = express.Router();
 var ZxFinanceService = require('../../service/zxFinanceService.js');
+var fx678FinanceService = require('../../service/fx678FinanceService');
 var ApiResult = require('../../util/ApiResult.js');
 var Logger = require('../../resources/logConf').getLogger("zxFinanceAPI");
 let common = require('../../util/common');
@@ -354,7 +355,7 @@ router.post('/saveFinanceDataReview', function(req, res){
         createUser : req.body['userId'],
         ip : req.body['ip']
     };
-    ZxFinanceService.saveFinanceDataReview(params, (data) => {console.log(data);
+    ZxFinanceService.saveFinanceDataReview(params, (data) => {
         res.json(ApiResult.result(null, data));
     });
 });
