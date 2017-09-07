@@ -79,7 +79,7 @@ var chatPointsService = {
             isDeleted: 0
         }, systemCategory);
         let fields = 'groupType userId pointsGlobal points remark status isDeleted createUser createDate systemCategory';
-        if(params.hasJournal){
+        if (params.hasJournal) {
             fields += ' journal';
         }
         ChatPoints.findOne(query, fields, function(err, config) {
@@ -160,6 +160,7 @@ var chatPointsService = {
                 } else if (!config) {
                     callback(APIUtil.APIResult("code_3000", null));
                 } else {
+                    params.hasJournal = true;
                     chatPointsService.getChatPoints(params,
                         function(err, pointsInfo) {
                             if (err) {
@@ -221,10 +222,12 @@ var chatPointsService = {
             rate = Constant.pointsRate[params.groupType][params.clientGroup];
         }
         var chkResult = chatPointsService.checkLimit(config, pointsInfo, journal, rate);
-        if (journal.change == 0) {
-            //积分变化为0不记录积分流水
-            callback(APIUtil.APIResult(null, journal));
-        } else if (!chkResult) {
+        if (!chkResult) {
+            if (journal.change == 0) {
+                //积分变化为0不记录积分流水
+                callback(APIUtil.APIResult(null, journal));
+                return;
+            }
             journal.before = pointsInfo.points;
             if (params.isGlobal || journal.change > 0) {
                 pointsInfo.pointsGlobal += journal.change;
