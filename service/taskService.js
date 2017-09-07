@@ -198,7 +198,7 @@ var taskService = {
         Schedule.scheduleJob(ruleBefore, function(){
             logger.info("【定时任务】课程安排订阅通知：每10分钟检查即将开始的课程安排通知订阅客户!");
             SubscribeService.noticeSyllabus(function(isOK){
-                logger.debug("【定时任务】发送课程安排通知" + (isOK ? "成功" : "失败"));
+                logger.info("【定时任务】发送课程安排通知" + (isOK ? "成功" : "失败"));
             });
         });
     },

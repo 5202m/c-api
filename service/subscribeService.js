@@ -259,15 +259,15 @@ var subscribeService = {
             //logger.info("<<doSendSms:发送邮件通知：content=[%s]", JSON.stringify(emailData));
             Request.post(Config.utm.emailUrl, function(error, response, data) {
                 if (error || response.statusCode != 200 || !data) {
-                    logger.error("<<doSendSms:发送通知邮件异常，errMessage:", error);
+                    logger.info("<<doSendSms:发送通知邮件异常，errMessage:", error);
                 } else {
                     try {
                         data = JSON.parse(data);
                         if (data.respCode != "Success") {
-                            logger.error("<<doSendSms:发送通知邮件失败，[errMessage:%s]", data.respMsg);
+                            logger.info("<<doSendSms:发送通知邮件失败，[errMessage:%s]", data.respMsg);
                         }
                     } catch (e) {
-                        logger.error("<<doSendSms:发送通知邮件出错，[response:%s]", data);
+                        logger.info("<<doSendSms:发送通知邮件出错，[response:%s]", data);
                     }
                 }
             }).form(emailData);
@@ -351,15 +351,15 @@ var subscribeService = {
             logger.info("<<doSendSms:发送短信通知：content=[%s]", JSON.stringify(smsData));
             Request.post(Config.utm.smsUrl, function(error, response, data) {
                 if (error || response.statusCode != 200 || !data) {
-                    logger.error("<<doSendSms:发送通知短信异常，errMessage:", error);
+                    logger.info("<<doSendSms:发送通知短信异常，errMessage:", error);
                 } else {
                     try {
                         data = JSON.parse(data);
                         if (data.respCode != "Success") {
-                            logger.error("<<doSendSms:发送通知短信失败，[errMessage:%s]", data.respMsg);
+                            logger.info("<<doSendSms:发送通知短信失败，[errMessage:%s]", data.respMsg);
                         }
                     } catch (e) {
-                        logger.error("<<doSendSms:发送通知短信出错，[response:%s]", data);
+                        logger.info("<<doSendSms:发送通知短信出错，[response:%s]", data);
                     }
                 }
             }).form(smsData);
@@ -374,13 +374,13 @@ var subscribeService = {
         let articleId = params.dataId;
         params.id = articleId;
         if (!articleId) {
-            logger.warn("<<noticeArticle:文章编号无效：%s", articleId);
+            logger.info("<<noticeArticle:文章编号无效：%s", articleId);
             callback(false);
             return;
         }
         ArticleService.getArticleInfo(params, function(article) {
             if (!article) {
-                logger.warn("<<noticeArticle:文章信息不存在");
+                logger.info("<<noticeArticle:文章信息不存在");
                 callback(false);
                 return;
             }
@@ -388,7 +388,7 @@ var subscribeService = {
             var subscribeType = subscribeService.getSubscribeType(article);
             var noticeTime = new Date();
             if (groupTypeArr.length == 0 || !subscribeType) {
-                logger.warn("<<noticeArticle:文章信息不需要发送订阅通知，房间组别：%s，订阅类型：%s", groupTypeArr.join(","), subscribeType);
+                logger.info("<<noticeArticle:文章信息不需要发送订阅通知，房间组别：%s，订阅类型：%s", groupTypeArr.join(","), subscribeType);
                 callback(false);
                 return;
             }
