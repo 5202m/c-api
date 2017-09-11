@@ -543,15 +543,15 @@ var fx678FinanceService = {
           deferred.reject(dbData);
         }else {
           let publishFT = fx678FinanceService.getPublishFrequncy(apiData.PUBLISH_TIME, apiData.UPDATE_PERIOD);
-          dbData.name = apiData.TITLE;
+          dbData.name = apiData.TITLE + (Common.isBlank(apiData.UNIT) ? "" : ("(" + apiData.UNIT + ")"));
           dbData.country = apiData.COUNTRY_CN;
           dbData.basicIndexId = apiData.ID;
           dbData.period = apiData.IDX_PERIOD;
           dbData.importance = Common.parseInt(apiData.IDX_RELEVANCE);//fx678FinanceService.formatImportance(apiData.IDX_RELEVANCE);
           dbData.importanceLevel = fx678FinanceService.getDefImportanceLevel(dbData.importance); //默认重要等级
-          dbData.predictValue = Common.isBlank(apiData.SURVEY_PRICE) ? apiData.SURVEY_PRICE : apiData.SURVEY_PRICE + apiData.UNIT;//预期值
-          dbData.lastValue = Common.isBlank(apiData.PREVIOUS_PRICE) ? apiData.PREVIOUS_PRICE : apiData.PREVIOUS_PRICE + apiData.UNIT;//前值
-          dbData.value = Common.isBlank(apiData.ACTUAL_PRICE) ? apiData.ACTUAL_PRICE : apiData.ACTUAL_PRICE + apiData.UNIT;//公布值
+          dbData.predictValue = apiData.SURVEY_PRICE;//预期值
+          dbData.lastValue = apiData.PREVIOUS_PRICE;//前值
+          dbData.value = apiData.ACTUAL_PRICE;//公布值
           dbData.year = year;
           dbData.positiveItem = "";
           dbData.negativeItem = "";
