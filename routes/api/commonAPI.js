@@ -510,7 +510,7 @@ router.get('/getInformation', function(req, res) {
     cacheClient.get(key, function(err, result) {
         if (err) {
             logger.error("getInformationCache fail:" + err);
-            res.json({ isOK: false, data: null });
+            res.json({ isOK: false, errcode: "5006", errmsg: "请求超时", data: null });
         } else if (!result) {
             request(config.fx678ApiUrl + "/union/jdgjs/news/flash.xml", function(error, data) {
                 if (!error && common.isValid(data.body)) {
@@ -519,24 +519,24 @@ router.get('/getInformation', function(req, res) {
                         parser.parseString(data.body, function(parseError, result) {
                             if (parseError) {
                                 logger.error("getInformation for fx678 parser>>>error:" + parseError);
-                                res.json({ isOK: false, data: null });
+                                res.json({ isOK: false, errcode: "5005", errmsg: "数据转换出错",  data: null });
                                 return;
                             }
                             cacheClient.set(key, JSON.stringify(result));
                             cacheClient.expire(key, 5 * 60); //设置有效时间
-                            res.json({ isOK: true, data: result });
+                            res.json({ isOK: true, errcode: "0", errmsg: "", data: result });
                         });
                     } catch (e) {
                         logger.error("getInformation for fx678 has error:" + e);
-                        res.json({ isOK: false, data: null });
+                        res.json({ isOK: false, errcode: "5005", errmsg: "数据转换出错",  data: null });
                     }
                 } else {
                     logger.error("getInformation for fx678 has error:" + error);
-                    res.json({ isOK: false, data: null });
+                    res.json({ isOK: false, errcode: "5006", errmsg: "请求超时", data: null });
                 }
             });
         } else {
-            res.json({ isOK: true, data: JSON.parse(result) }); //获取的结果是字符串，需要转为json对象
+            res.json({ isOK: true, errcode: "0", errmsg: "", data: JSON.parse(result) }); //获取的结果是字符串，需要转为json对象
         }
     });
 });
