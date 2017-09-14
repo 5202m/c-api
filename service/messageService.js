@@ -17,11 +17,16 @@ var messageService = {
      */
     loadMsg: function(userInfo, lastPublishTime, allowWhisper, callback) {
         var groupType = userInfo.groupType,
-            groupId = userInfo.groupId;
+            groupId = userInfo.groupId,
+            isFront = userInfo.isFront;
         var selectSQL = 'userId nickname avatar clientGroup position toUser userType groupId content.msgType content.value content.needMax publishTime status';
         var searchObj = { groupType: groupType, groupId: groupId, status: 1, valid: 1 };
         var selectRows = this.maxRows;
         if (allowWhisper) {
+            if(isFront == 'true'){
+                let befor10Day = common.DateAdd('d', -10, new Date());
+                searchObj.createDate = { "$gte": befor10Day };
+            }
             selectRows = 30;
             searchObj["toUser.talkStyle"] = 1;
             if (userInfo.userType == constant.roleUserType.member) {
