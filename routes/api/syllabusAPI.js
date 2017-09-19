@@ -113,15 +113,15 @@ router.get("/getCourseInfo", (req, res) => {
         res.json(APIUtil.APIResult("code_1000", null));
         return;
     }
-    let startTime = new Date(req.query["startTime"] - 0);
-    let endTime = new Date(req.query["endTime"] - 0);
+    let startTime = new Date(decodeURIComponent(req.query["startTime"]) - 0);
+    let endTime = new Date(decodeURIComponent(req.query["endTime"]) - 0);
     syllabusService.getCourseInfo({
             groupType: req.query["groupType"],
             groupId: req.query["groupId"],
             day: req.query["day"],
             startTime: startTime,
             endTime: endTime,
-            authorId: req.query["authorId"],
+            authorId: decodeURIComponent(req.query["authorId"]),
             systemCategory: req.query["systemCategory"]
         },
         (data) => {
