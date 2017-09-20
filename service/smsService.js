@@ -126,24 +126,24 @@ var smsService = {
                 callback(loc_result);
             });
         } else {*/
-            var smsUrl = this.getMsgUrl(smsPara.useType, smsPara.type, smsPara.mobilePhone, smsPara.content);
-            Request(smsUrl, function (error, response, data) {
-                //var loc_result = null;
-                if (!error && response.statusCode == 200 && Common.isValid(
-                        data)) {
-                    loc_smsInfo.status = 1;
-                } else {
-                    logger.error(
-                        "smsAPI[" + smsUrl + "]->sendSms has error:" + error);
-                    loc_result = new Error("发送短信失败！");
-                    loc_smsInfo.status = 2;
-                }
-                //保存短信发送记录信息
-                common.wrapSystemCategory(loc_smsInfo, smsPara.systemCategory);
-                smsService.saveSmsInfo(loc_smsInfo, function () {
-                    callback(loc_result);
-                });
+        var smsUrl = this.getMsgUrl(smsPara.useType, smsPara.type, smsPara.mobilePhone, smsPara.content);
+        Request(smsUrl, function(error, response, data) {
+            //var loc_result = null;
+            if (!error && response.statusCode == 200 && Common.isValid(
+                    data)) {
+                loc_smsInfo.status = 1;
+            } else {
+                logger.error(
+                    "smsAPI[" + smsUrl + "]->sendSms has error:" + error);
+                loc_result = new Error("发送短信失败！");
+                loc_smsInfo.status = 2;
+            }
+            //保存短信发送记录信息
+            common.wrapSystemCategory(loc_smsInfo, smsPara.systemCategory);
+            smsService.saveSmsInfo(loc_smsInfo, function() {
+                callback(loc_result);
             });
+        });
         //}
     },
 
@@ -167,7 +167,7 @@ var smsService = {
             if (isAuthCode) {
                 content = "您本次的验证码为: " + content + ",如有疑问请联系客服:4006656338";
             }
-        } else if(/^fxstock/.test(useType)){
+        } else if (/^fxstock/.test(useType)) {
             smsUrl = Config.smsUrl.fx;
             if (isAuthCode) {
                 content = "您本次的验证码为: " + content + ",如非本人操作请忽略!";
@@ -337,7 +337,7 @@ var smsService = {
                 }, function(err) {
                     if (err) {
                         //更新验证码状态失败，不影响验证码校验，仅打印错误日志。
-                        logger.error("更新验证码状态失败, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + error);
+                        logger.error("更新验证码状态失败, smsInfo=[" + JSON.stringify(smsInfo) + "] error：" + err);
                     }
                     callback(APIUtil.APIResult(null, true, null));
                 });
