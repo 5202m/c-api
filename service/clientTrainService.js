@@ -228,7 +228,7 @@ var clientTrainService = {
         chatGroup.find(searchObj).select(searchFields).limit(limit).sort({ 'createDate': 'desc' }).exec(function(err, rooms) {
             if (err) {
                 logger.error("获取房间列表失败! >>getChatGroupList:", err);
-                callback(null);
+                deferred.reject(null);
             } else {
                 var tmList = [];
                 var row = null,
